@@ -160,8 +160,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 })
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY
-    console.log("[v0] ANTHROPIC_API_KEY present:", !!apiKey, "length:", apiKey?.length || 0)
+    // Check both uppercase and lowercase versions of the env var
+    const apiKey = process.env.ANTHROPIC_API_KEY || process.env.anthropic_api_key
     
     if (!apiKey) {
       return NextResponse.json(
