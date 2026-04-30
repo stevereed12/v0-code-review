@@ -166,10 +166,25 @@ export async function POST(request: NextRequest) {
       process.env.ANTHROPIC_AUTH_TOKEN ||
       process.env.anthropic_api_key
     
+    // Debug: log key info (but not the actual key)
+    console.log("[v0] Key debug:", {
+      ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ? `found, len=${process.env.ANTHROPIC_API_KEY.length}, starts=${process.env.ANTHROPIC_API_KEY.slice(0,12)}` : "not found",
+      ANTHROPIC_AUTH_TOKEN: process.env.ANTHROPIC_AUTH_TOKEN ? `found, len=${process.env.ANTHROPIC_AUTH_TOKEN.length}` : "not found",
+    })
+    
     if (!apiKey) {
       return NextResponse.json(
         { error: "Anthropic API key not configured. Please add ANTHROPIC_API_KEY in Settings > Vars." },
         { status: 500 }
+      )
+    }
+    
+    // Validate key format
+    const trimmedKey = apiKey.trim()
+    if (!trimmedKey.startsWith("sk-ant-")) {
+      return NextResponse.json(
+        { error: `Invalid API key format. Key should start with 'sk-ant-'. Got: ${trimmedKey.slice(0, 10)}...` },
+        { status: 400 }
       )
     }
 
@@ -191,7 +206,7 @@ export async function POST(request: NextRequest) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-api-key": apiKey,
+            "x-api-key": trimmedKey,
             "anthropic-version": "2023-06-01",
           },
           body: JSON.stringify(body),
