@@ -2,14 +2,44 @@
 
 import type { LivePrice, PriceHistory } from "./types"
 
+const API_KEY_STORAGE_KEY = "white80:anthropic_api_key"
+
+export function getStoredApiKey(): string | null {
+  if (typeof window === "undefined") return null
+  return localStorage.getItem(API_KEY_STORAGE_KEY)
+}
+
+export function setStoredApiKey(key: string): void {
+  if (typeof window === "undefined") return
+  localStorage.setItem(API_KEY_STORAGE_KEY, key)
+}
+
+export function clearStoredApiKey(): void {
+  if (typeof window === "undefined") return
+  localStorage.removeItem(API_KEY_STORAGE_KEY)
+}
+
+export class ApiKeyRequiredError extends Error {
+  constructor() {
+    super("API_KEY_REQUIRED")
+    this.name = "ApiKeyRequiredError"
+  }
+}
+
 export async function askClaude<T>(prompt: string, useSearch = true, maxTokens = 6000): Promise<T> {
+  const clientApiKey = getStoredApiKey()
+  
   const res = await fetch("/api/claude", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt, useSearch, maxTokens }),
+    body: JSON.stringify({ prompt, useSearch, maxTokens, clientApiKey }),
   })
 
   const json = await res.json()
+
+  if (json.error === "API_KEY_REQUIRED") {
+    throw new ApiKeyRequiredError()
+  }
 
   if (!res.ok || json.error) {
     throw new Error(json.error || `API error ${res.status}`)

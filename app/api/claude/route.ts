@@ -155,19 +155,19 @@ function extractJSON(s: string): unknown {
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, useSearch = true, maxTokens = 6000 } = await request.json()
+    const { prompt, useSearch = true, maxTokens = 6000, clientApiKey } = await request.json()
 
     if (!prompt) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 })
     }
 
-    // Only check ANTHROPIC_API_KEY - the correct env var name
-    const apiKey = process.env.ANTHROPIC_API_KEY?.trim()
+    // Check for API key: client-provided takes priority, then env var
+    const apiKey = clientApiKey?.trim() || process.env.ANTHROPIC_API_KEY?.trim()
     
     if (!apiKey) {
       return NextResponse.json(
-        { error: "ANTHROPIC_API_KEY not found. Please add it in Settings > Vars and refresh the page." },
-        { status: 500 }
+        { error: "API_KEY_REQUIRED" },
+        { status: 401 }
       )
     }
     

@@ -3,7 +3,8 @@
 import { useState, useCallback, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { storage, STORAGE_KEYS } from "@/lib/storage"
-import { askClaude, fetchLivePrices } from "@/lib/api"
+import { askClaude, fetchLivePrices, getStoredApiKey, ApiKeyRequiredError } from "@/lib/api"
+import { ApiKeyModal } from "./api-key-modal"
 import { buildSignalPrompt, buildBriefPrompt, buildNewsPrompt, buildScoutPrompt, buildCuratorPrompt } from "@/lib/prompts"
 import { requestNotificationPermission, notifyOnComplete } from "@/lib/notifications"
 import {
@@ -61,6 +62,13 @@ export function White80Dashboard() {
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [storageReady, setStorageReady] = useState(false)
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false)
+  const [hasApiKey, setHasApiKey] = useState(false)
+
+  // Check for API key on mount
+  useEffect(() => {
+    setHasApiKey(!!getStoredApiKey())
+  }, [])
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -198,7 +206,11 @@ export function White80Dashboard() {
       setGeneratedAt((g) => ({ ...g, curator: new Date().toLocaleTimeString() }))
       notifyOnComplete("curator", undefined, { soundEnabled, notificationsEnabled })
     } catch (err) {
-      setErrors((e) => ({ ...e, curator: (err as Error).message }))
+      if (err instanceof ApiKeyRequiredError) {
+        setShowApiKeyModal(true)
+      } else {
+        setErrors((e) => ({ ...e, curator: (err as Error).message }))
+      }
     } finally {
       setLoading((s) => ({ ...s, curator: false }))
     }
@@ -270,7 +282,11 @@ export function White80Dashboard() {
 
       notifyOnComplete("signals", withPrices.length, { soundEnabled, notificationsEnabled })
     } catch (err) {
-      setErrors((e) => ({ ...e, signals: (err as Error).message }))
+      if (err instanceof ApiKeyRequiredError) {
+        setShowApiKeyModal(true)
+      } else {
+        setErrors((e) => ({ ...e, signals: (err as Error).message }))
+      }
     } finally {
       setLoading((s) => ({ ...s, signals: false }))
     }
@@ -285,7 +301,11 @@ export function White80Dashboard() {
       setGeneratedAt((g) => ({ ...g, news: new Date().toLocaleTimeString() }))
       notifyOnComplete("news", parsed.length, { soundEnabled, notificationsEnabled })
     } catch (err) {
-      setErrors((e) => ({ ...e, news: (err as Error).message }))
+      if (err instanceof ApiKeyRequiredError) {
+        setShowApiKeyModal(true)
+      } else {
+        setErrors((e) => ({ ...e, news: (err as Error).message }))
+      }
     } finally {
       setLoading((s) => ({ ...s, news: false }))
     }
@@ -300,7 +320,11 @@ export function White80Dashboard() {
       setGeneratedAt((g) => ({ ...g, brief: new Date().toLocaleTimeString() }))
       notifyOnComplete("brief", undefined, { soundEnabled, notificationsEnabled })
     } catch (err) {
-      setErrors((e) => ({ ...e, brief: (err as Error).message }))
+      if (err instanceof ApiKeyRequiredError) {
+        setShowApiKeyModal(true)
+      } else {
+        setErrors((e) => ({ ...e, brief: (err as Error).message }))
+      }
     } finally {
       setLoading((s) => ({ ...s, brief: false }))
     }
@@ -319,7 +343,11 @@ export function White80Dashboard() {
       setGeneratedAt((g) => ({ ...g, scout: new Date().toLocaleTimeString() }))
       notifyOnComplete("scout", parsed.length, { soundEnabled, notificationsEnabled })
     } catch (err) {
-      setErrors((e) => ({ ...e, scout: (err as Error).message }))
+      if (err instanceof ApiKeyRequiredError) {
+        setShowApiKeyModal(true)
+      } else {
+        setErrors((e) => ({ ...e, scout: (err as Error).message }))
+      }
     } finally {
       setLoading((s) => ({ ...s, scout: false }))
     }
@@ -401,7 +429,29 @@ export function White80Dashboard() {
       className="font-serif text-[#d6dff0] min-h-screen p-6 pb-16"
       style={{ background: "radial-gradient(ellipse at top, #151e30, #05070e 70%)" }}
     >
+      {/* API Key Modal */}
+      {showApiKeyModal && (
+        <ApiKeyModal
+          onKeySet={() => {
+            setShowApiKeyModal(false)
+            setHasApiKey(true)
+          }}
+          onClose={() => setShowApiKeyModal(false)}
+        />
+      )}
+
       <div className="max-w-[980px] mx-auto">
+        {/* API Key Status Banner */}
+        {!hasApiKey && (
+          <button
+            onClick={() => setShowApiKeyModal(true)}
+            className="w-full mb-4 p-3 bg-[#fb923c]/10 border border-[#fb923c]/40 rounded flex items-center justify-center gap-2 text-[#fb923c] font-mono text-sm hover:bg-[#fb923c]/20 transition-colors"
+          >
+            <span>API Key Required</span>
+            <span className="text-xs opacity-70">Click to add your Anthropic API key</span>
+          </button>
+        )}
+
         {/* Header */}
         <div className="mb-4">
           <div className="flex justify-between items-baseline mb-1">
