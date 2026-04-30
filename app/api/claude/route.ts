@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
+// Server restart trigger: 2026-04-30T13:20
 // ─── JSON EXTRACTION UTILITY ─────────────────────────────────────────────────
 
 function extractJSON(s: string): unknown {
