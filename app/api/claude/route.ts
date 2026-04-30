@@ -160,12 +160,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 })
     }
 
-    // Check both uppercase and lowercase versions of the env var
-    const apiKey = process.env.ANTHROPIC_API_KEY || process.env.anthropic_api_key
+    // Debug: log all env vars that contain 'anthropic' or 'api' (case insensitive)
+    const allEnvKeys = Object.keys(process.env)
+    const relevantKeys = allEnvKeys.filter(k => 
+      k.toLowerCase().includes('anthropic') || 
+      k.toLowerCase().includes('claude') ||
+      k.toLowerCase().includes('api_key')
+    )
+    console.log("[v0] Relevant env vars:", relevantKeys)
+    console.log("[v0] All env var count:", allEnvKeys.length)
+    
+    // Try multiple possible key names
+    const apiKey = 
+      process.env.ANTHROPIC_API_KEY || 
+      process.env.anthropic_api_key ||
+      process.env.Anthropic_Api_Key ||
+      process.env.AnthropicApiKey
+    
+    console.log("[v0] API key found:", !!apiKey, "length:", apiKey?.length || 0)
     
     if (!apiKey) {
       return NextResponse.json(
-        { error: "ANTHROPIC_API_KEY not configured. Please add it in Settings > Vars." },
+        { 
+          error: "ANTHROPIC_API_KEY not configured. Please add it in Settings > Vars.",
+          debug: { relevantKeys, totalEnvVars: allEnvKeys.length }
+        },
         { status: 500 }
       )
     }
