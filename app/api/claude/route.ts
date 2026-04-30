@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
-// Server restart trigger: 2026-04-30T13:20
+// Server restart trigger: 2026-04-30T13:25:00
 // ─── JSON EXTRACTION UTILITY ─────────────────────────────────────────────────
 
 function extractJSON(s: string): unknown {
@@ -161,33 +161,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 })
     }
 
-    // Check for API key in various formats
-    const apiKey = 
-      process.env.ANTHROPIC_API_KEY || 
-      process.env.ANTHROPIC_AUTH_TOKEN ||
-      process.env.anthropic_api_key
-    
-    // Debug: log key info (but not the actual key)
-    console.log("[v0] Key debug:", {
-      ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ? `found, len=${process.env.ANTHROPIC_API_KEY.length}, starts=${process.env.ANTHROPIC_API_KEY.slice(0,12)}` : "not found",
-      ANTHROPIC_AUTH_TOKEN: process.env.ANTHROPIC_AUTH_TOKEN ? `found, len=${process.env.ANTHROPIC_AUTH_TOKEN.length}` : "not found",
-    })
+    // Only check ANTHROPIC_API_KEY - the correct env var name
+    const apiKey = process.env.ANTHROPIC_API_KEY?.trim()
     
     if (!apiKey) {
       return NextResponse.json(
-        { error: "Anthropic API key not configured. Please add ANTHROPIC_API_KEY in Settings > Vars." },
+        { error: "ANTHROPIC_API_KEY not found. Please add it in Settings > Vars and refresh the page." },
         { status: 500 }
       )
     }
     
     // Validate key format
-    const trimmedKey = apiKey.trim()
-    if (!trimmedKey.startsWith("sk-ant-")) {
+    if (!apiKey.startsWith("sk-ant-")) {
       return NextResponse.json(
-        { error: `Invalid API key format. Key should start with 'sk-ant-'. Got: ${trimmedKey.slice(0, 10)}...` },
+        { error: `Invalid API key format. Expected 'sk-ant-...' but got '${apiKey.slice(0, 10)}...'` },
         { status: 400 }
       )
     }
+    
+    const trimmedKey = apiKey
 
     const body: Record<string, unknown> = {
       model: "claude-sonnet-4-20250514",
