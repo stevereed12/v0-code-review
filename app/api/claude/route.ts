@@ -161,8 +161,13 @@ export async function POST(request: NextRequest) {
     }
 
     const apiKey = process.env.ANTHROPIC_API_KEY
+    console.log("[v0] ANTHROPIC_API_KEY present:", !!apiKey, "length:", apiKey?.length || 0)
+    
     if (!apiKey) {
-      return NextResponse.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 })
+      return NextResponse.json(
+        { error: "ANTHROPIC_API_KEY not configured. Please add it in Settings > Vars." },
+        { status: 500 }
+      )
     }
 
     const body: Record<string, unknown> = {
