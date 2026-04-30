@@ -160,15 +160,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 })
     }
 
-    // Try multiple possible key names - ANTHROPIC_AUTH_TOKEN is what v0 uses
+    // Check for API key in various formats
     const apiKey = 
-      process.env.ANTHROPIC_AUTH_TOKEN ||
       process.env.ANTHROPIC_API_KEY || 
+      process.env.ANTHROPIC_AUTH_TOKEN ||
       process.env.anthropic_api_key
     
     if (!apiKey) {
       return NextResponse.json(
-        { error: "Anthropic API key not configured. Please add ANTHROPIC_AUTH_TOKEN in Settings > Vars." },
+        { error: "Anthropic API key not configured. Please add ANTHROPIC_API_KEY in Settings > Vars." },
         { status: 500 }
       )
     }
