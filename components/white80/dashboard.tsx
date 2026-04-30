@@ -1,0 +1,997 @@
+"use client"
+
+import { useState, useCallback, useEffect } from "react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { storage, STORAGE_KEYS } from "@/lib/storage"
+import { askClaude, fetchLivePrices } from "@/lib/api"
+import { buildSignalPrompt, buildBriefPrompt, buildNewsPrompt, buildScoutPrompt, buildCuratorPrompt } from "@/lib/prompts"
+import { requestNotificationPermission, notifyOnComplete } from "@/lib/notifications"
+import {
+  SEED_WATCHLIST,
+  THEMES,
+  SCOUT_THEMES,
+  CAP_TIERS,
+  HORIZONS,
+  type Signal,
+  type TickerNews,
+  type Brief,
+  type CuratorState,
+  type ScoutResult,
+  type TrackerLog,
+  type LivePrice,
+  type CapTier,
+  type Horizon,
+} from "@/lib/types"
+import { WatchlistHeader } from "./watchlist-header"
+import { SignalCard } from "./signal-card"
+import { NewsCard } from "./news-card"
+import { ScoutCard } from "./scout-card"
+import { TrackerRow } from "./tracker-row"
+import { ActionButton } from "./action-button"
+import { SettingsPanel } from "./settings-panel"
+import { ExportModal } from "./export-modal"
+import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3 } from "lucide-react"
+
+export function White80Dashboard() {
+  // Core state
+  const [watchlist, setWatchlist] = useState<string[]>(SEED_WATCHLIST)
+  const [pinnedTickers, setPinnedTickers] = useState<string[]>([])
+  const [blockedTickers, setBlockedTickers] = useState<string[]>([])
+  const [curatorState, setCuratorState] = useState<CuratorState | null>(null)
+  const [signals, setSignals] = useState<Signal[]>([])
+  const [brief, setBrief] = useState<Brief | null>(null)
+  const [news, setNews] = useState<TickerNews[]>([])
+  const [trackerLog, setTrackerLog] = useState<TrackerLog[]>([])
+  const [scoutResults, setScoutResults] = useState<ScoutResult[]>([])
+  const [scoutThemes, setScoutThemes] = useState<string[]>(["ai_infra", "energy_transition"])
+  const [scoutCapTier, setScoutCapTier] = useState<CapTier>("small")
+  const [scoutHorizon, setScoutHorizon] = useState<Horizon>("6-12mo")
+  const [livePrices, setLivePrices] = useState<Record<string, LivePrice>>({})
+  const [pricesAt, setPricesAt] = useState<string | null>(null)
+
+  // UI state
+  const [loading, setLoading] = useState({ curator: false, signals: false, brief: false, news: false, scout: false })
+  const [errors, setErrors] = useState<Record<string, string | null>>({})
+  const [generatedAt, setGeneratedAt] = useState<Record<string, string>>({})
+  const [autoNewsRefresh, setAutoNewsRefresh] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [showExport, setShowExport] = useState(false)
+  const [confirmReset, setConfirmReset] = useState(false)
+  const [confirmClearTracker, setConfirmClearTracker] = useState(false)
+  const [soundEnabled, setSoundEnabled] = useState(true)
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false)
+  const [storageReady, setStorageReady] = useState(false)
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const wl = storage.get<string[]>(STORAGE_KEYS.WATCHLIST)
+    const pn = storage.get<string[]>(STORAGE_KEYS.PINNED)
+    const bl = storage.get<string[]>(STORAGE_KEYS.BLOCKED)
+    const tr = storage.get<TrackerLog[]>(STORAGE_KEYS.TRACKER)
+    const nw = storage.get<TickerNews[]>(STORAGE_KEYS.NEWS)
+    const cu = storage.get<CuratorState>(STORAGE_KEYS.CURATOR)
+    const sc = storage.get<ScoutResult[]>(STORAGE_KEYS.SCOUT)
+    const st = storage.get<string[]>(STORAGE_KEYS.SCOUT_THEMES)
+    const scp = storage.get<CapTier>(STORAGE_KEYS.SCOUT_CAP)
+    const sh = storage.get<Horizon>(STORAGE_KEYS.SCOUT_HORIZON)
+    const ne = storage.get<boolean>(STORAGE_KEYS.NOTIFICATIONS_ENABLED)
+    const se = storage.get<boolean>(STORAGE_KEYS.SOUND_ENABLED)
+
+    if (wl) setWatchlist(wl)
+    if (pn) setPinnedTickers(pn)
+    if (bl) setBlockedTickers(bl)
+    if (tr) setTrackerLog(tr)
+    if (nw) setNews(nw)
+    if (cu) setCuratorState(cu)
+    if (sc) setScoutResults(sc)
+    if (st) setScoutThemes(st)
+    if (scp) setScoutCapTier(scp)
+    if (sh) setScoutHorizon(sh)
+    if (ne !== null) setNotificationsEnabled(ne)
+    if (se !== null) setSoundEnabled(se)
+
+    setStorageReady(true)
+  }, [])
+
+  // Save to localStorage on changes
+  useEffect(() => {
+    if (storageReady) storage.set(STORAGE_KEYS.WATCHLIST, watchlist)
+  }, [watchlist, storageReady])
+  useEffect(() => {
+    if (storageReady) storage.set(STORAGE_KEYS.PINNED, pinnedTickers)
+  }, [pinnedTickers, storageReady])
+  useEffect(() => {
+    if (storageReady) storage.set(STORAGE_KEYS.BLOCKED, blockedTickers)
+  }, [blockedTickers, storageReady])
+  useEffect(() => {
+    if (storageReady) storage.set(STORAGE_KEYS.TRACKER, trackerLog)
+  }, [trackerLog, storageReady])
+  useEffect(() => {
+    if (storageReady && news.length > 0) storage.set(STORAGE_KEYS.NEWS, news)
+  }, [news, storageReady])
+  useEffect(() => {
+    if (storageReady && curatorState) storage.set(STORAGE_KEYS.CURATOR, curatorState)
+  }, [curatorState, storageReady])
+  useEffect(() => {
+    if (storageReady && scoutResults.length > 0) storage.set(STORAGE_KEYS.SCOUT, scoutResults)
+  }, [scoutResults, storageReady])
+  useEffect(() => {
+    if (storageReady) storage.set(STORAGE_KEYS.SCOUT_THEMES, scoutThemes)
+  }, [scoutThemes, storageReady])
+  useEffect(() => {
+    if (storageReady) storage.set(STORAGE_KEYS.SCOUT_CAP, scoutCapTier)
+  }, [scoutCapTier, storageReady])
+  useEffect(() => {
+    if (storageReady) storage.set(STORAGE_KEYS.SCOUT_HORIZON, scoutHorizon)
+  }, [scoutHorizon, storageReady])
+  useEffect(() => {
+    if (storageReady) storage.set(STORAGE_KEYS.NOTIFICATIONS_ENABLED, notificationsEnabled)
+  }, [notificationsEnabled, storageReady])
+  useEffect(() => {
+    if (storageReady) storage.set(STORAGE_KEYS.SOUND_ENABLED, soundEnabled)
+  }, [soundEnabled, storageReady])
+
+  // Handle notification permission
+  const handleNotificationsToggle = async (enabled: boolean) => {
+    if (enabled) {
+      const granted = await requestNotificationPermission()
+      setNotificationsEnabled(granted)
+    } else {
+      setNotificationsEnabled(false)
+    }
+  }
+
+  // Reset all data
+  const resetAllData = () => {
+    if (!confirmReset) {
+      setConfirmReset(true)
+      setTimeout(() => setConfirmReset(false), 4000)
+      return
+    }
+    setConfirmReset(false)
+    storage.clear()
+    setWatchlist(SEED_WATCHLIST)
+    setPinnedTickers([])
+    setBlockedTickers([])
+    setTrackerLog([])
+    setNews([])
+    setCuratorState(null)
+    setScoutResults([])
+    setScoutThemes(["ai_infra", "energy_transition"])
+    setScoutCapTier("small")
+    setScoutHorizon("6-12mo")
+  }
+
+  // Watchlist operations
+  const removeFromWatchlist = (ticker: string) => {
+    setWatchlist((w) => w.filter((t) => t !== ticker))
+    setPinnedTickers((p) => p.filter((t) => t !== ticker))
+  }
+
+  const togglePin = (ticker: string) => {
+    setPinnedTickers((p) => (p.includes(ticker) ? p.filter((t) => t !== ticker) : [...p, ticker]))
+  }
+
+  const addTicker = (ticker: string, pin: boolean) => {
+    if (blockedTickers.includes(ticker)) {
+      setBlockedTickers((b) => b.filter((t) => t !== ticker))
+    }
+    setWatchlist((w) => [ticker, ...w])
+    if (pin) {
+      setPinnedTickers((p) => (p.includes(ticker) ? p : [...p, ticker]))
+    }
+  }
+
+  // API operations
+  const runCurator = useCallback(async () => {
+    setLoading((s) => ({ ...s, curator: true }))
+    setErrors((e) => ({ ...e, curator: null }))
+    try {
+      const parsed = await askClaude<CuratorState>(buildCuratorPrompt(watchlist))
+      let final = parsed.active_watchlist || watchlist
+      pinnedTickers.forEach((t) => {
+        if (!final.includes(t)) final.unshift(t)
+      })
+      final = final.filter((t) => !blockedTickers.includes(t))
+      setCuratorState(parsed)
+      setWatchlist(final)
+      setGeneratedAt((g) => ({ ...g, curator: new Date().toLocaleTimeString() }))
+      notifyOnComplete("curator", undefined, { soundEnabled, notificationsEnabled })
+    } catch (err) {
+      setErrors((e) => ({ ...e, curator: (err as Error).message }))
+    } finally {
+      setLoading((s) => ({ ...s, curator: false }))
+    }
+  }, [watchlist, pinnedTickers, blockedTickers, soundEnabled, notificationsEnabled])
+
+  const runSignals = useCallback(async () => {
+    setLoading((s) => ({ ...s, signals: true }))
+    setErrors((e) => ({ ...e, signals: null }))
+    try {
+      // Fetch live prices
+      let prices: Record<string, LivePrice> = {}
+      try {
+        prices = await fetchLivePrices(watchlist)
+        setLivePrices(prices)
+        setPricesAt(new Date().toLocaleTimeString())
+      } catch {
+        // Continue without prices
+      }
+
+      // Build news context
+      let newsContext: string | null = null
+      if (news.length > 0) {
+        newsContext = news
+          .filter((n) => n.items?.length > 0 && n.summary !== "quiet")
+          .map((n) => {
+            const items = n.items
+              .slice(0, 3)
+              .map((i) => `  - [${i.impact}/${i.magnitude}] ${i.headline} (${i.age_hours}h ago)`)
+              .join("\n")
+            return `${n.ticker}: ${n.summary}\n${items}`
+          })
+          .join("\n\n")
+        if (!newsContext.trim()) newsContext = null
+      }
+
+      // Generate signals
+      const parsed = await askClaude<Signal[]>(buildSignalPrompt(watchlist, newsContext, prices))
+
+      // Override with verified prices
+      const withPrices = parsed.map((s) => {
+        const p = prices[s.ticker]
+        if (p && typeof p.price === "number") {
+          return { ...s, price: p.price, change_pct: p.change_pct }
+        }
+        return s
+      })
+
+      setSignals(withPrices)
+      setGeneratedAt((g) => ({ ...g, signals: new Date().toLocaleTimeString() }))
+
+      // Auto-log to tracker
+      const newLogs: TrackerLog[] = withPrices.map((s) => ({
+        id: `${s.ticker}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        ts: new Date().toISOString(),
+        ticker: s.ticker,
+        signal: s.signal,
+        play: s.play,
+        price_at_signal: s.price,
+        target: s.target,
+        stop: s.stop,
+        risk: s.risk,
+        catalyst: s.catalyst,
+        news_aware: s.news_aware || false,
+        status: "PENDING",
+        outcome: null,
+        notes: "",
+      }))
+      setTrackerLog((prev) => [...newLogs, ...prev])
+
+      notifyOnComplete("signals", withPrices.length, { soundEnabled, notificationsEnabled })
+    } catch (err) {
+      setErrors((e) => ({ ...e, signals: (err as Error).message }))
+    } finally {
+      setLoading((s) => ({ ...s, signals: false }))
+    }
+  }, [watchlist, news, soundEnabled, notificationsEnabled])
+
+  const runNews = useCallback(async () => {
+    setLoading((s) => ({ ...s, news: true }))
+    setErrors((e) => ({ ...e, news: null }))
+    try {
+      const parsed = await askClaude<TickerNews[]>(buildNewsPrompt(watchlist))
+      setNews(parsed)
+      setGeneratedAt((g) => ({ ...g, news: new Date().toLocaleTimeString() }))
+      notifyOnComplete("news", parsed.length, { soundEnabled, notificationsEnabled })
+    } catch (err) {
+      setErrors((e) => ({ ...e, news: (err as Error).message }))
+    } finally {
+      setLoading((s) => ({ ...s, news: false }))
+    }
+  }, [watchlist, soundEnabled, notificationsEnabled])
+
+  const runBrief = useCallback(async () => {
+    setLoading((s) => ({ ...s, brief: true }))
+    setErrors((e) => ({ ...e, brief: null }))
+    try {
+      const parsed = await askClaude<Brief>(buildBriefPrompt(watchlist))
+      setBrief(parsed)
+      setGeneratedAt((g) => ({ ...g, brief: new Date().toLocaleTimeString() }))
+      notifyOnComplete("brief", undefined, { soundEnabled, notificationsEnabled })
+    } catch (err) {
+      setErrors((e) => ({ ...e, brief: (err as Error).message }))
+    } finally {
+      setLoading((s) => ({ ...s, brief: false }))
+    }
+  }, [watchlist, soundEnabled, notificationsEnabled])
+
+  const runScout = useCallback(async () => {
+    if (scoutThemes.length === 0) {
+      setErrors((e) => ({ ...e, scout: "Pick at least one theme" }))
+      return
+    }
+    setLoading((s) => ({ ...s, scout: true }))
+    setErrors((e) => ({ ...e, scout: null }))
+    try {
+      const parsed = await askClaude<ScoutResult[]>(buildScoutPrompt(scoutThemes, scoutCapTier, scoutHorizon, watchlist))
+      setScoutResults(parsed)
+      setGeneratedAt((g) => ({ ...g, scout: new Date().toLocaleTimeString() }))
+      notifyOnComplete("scout", parsed.length, { soundEnabled, notificationsEnabled })
+    } catch (err) {
+      setErrors((e) => ({ ...e, scout: (err as Error).message }))
+    } finally {
+      setLoading((s) => ({ ...s, scout: false }))
+    }
+  }, [scoutThemes, scoutCapTier, scoutHorizon, watchlist, soundEnabled, notificationsEnabled])
+
+  // Auto-refresh news
+  useEffect(() => {
+    if (!autoNewsRefresh) return
+    const interval = setInterval(runNews, 15 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [autoNewsRefresh, runNews])
+
+  // Tracker operations
+  const updateLog = (id: string, patch: Partial<TrackerLog>) => {
+    setTrackerLog((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)))
+  }
+
+  const deleteLog = (id: string) => {
+    setTrackerLog((prev) => prev.filter((l) => l.id !== id))
+  }
+
+  const clearTracker = () => {
+    if (!confirmClearTracker) {
+      setConfirmClearTracker(true)
+      setTimeout(() => setConfirmClearTracker(false), 4000)
+      return
+    }
+    setConfirmClearTracker(false)
+    setTrackerLog([])
+  }
+
+  // Scout operations
+  const promoteScoutToWatchlist = (ticker: string) => {
+    if (watchlist.includes(ticker)) return
+    setWatchlist((w) => [ticker, ...w])
+    setPinnedTickers((p) => (p.includes(ticker) ? p : [...p, ticker]))
+  }
+
+  const toggleScoutTheme = (id: string) => {
+    setScoutThemes((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]))
+  }
+
+  // Tracker stats
+  const trackerStats = (() => {
+    const total = trackerLog.length
+    const approved = trackerLog.filter((l) => l.status === "APPROVED").length
+    const passed = trackerLog.filter((l) => l.status === "PASSED").length
+    const pending = trackerLog.filter((l) => l.status === "PENDING").length
+    const wins = trackerLog.filter((l) => l.outcome === "WIN").length
+    const losses = trackerLog.filter((l) => l.outcome === "LOSS").length
+    const even = trackerLog.filter((l) => l.outcome === "EVEN").length
+    const resolved = wins + losses + even
+    const precision = resolved > 0 ? ((wins / resolved) * 100).toFixed(0) : "-"
+    const approvalRate = approved + passed > 0 ? ((approved / (approved + passed)) * 100).toFixed(0) : "-"
+    return { total, approved, passed, pending, wins, losses, even, resolved, precision, approvalRate }
+  })()
+
+  // Import handler
+  const handleImport = (data: {
+    watchlist: string[]
+    pinnedTickers: string[]
+    blockedTickers: string[]
+    trackerLog: TrackerLog[]
+    scoutThemes: string[]
+    scoutCapTier: string
+    scoutHorizon: string
+  }) => {
+    setWatchlist(data.watchlist)
+    setPinnedTickers(data.pinnedTickers)
+    setBlockedTickers(data.blockedTickers)
+    setTrackerLog(data.trackerLog)
+    setScoutThemes(data.scoutThemes)
+    setScoutCapTier(data.scoutCapTier as CapTier)
+    setScoutHorizon(data.scoutHorizon as Horizon)
+  }
+
+  return (
+    <div
+      className="font-serif text-[#d6dff0] min-h-screen p-6 pb-16"
+      style={{ background: "radial-gradient(ellipse at top, #151e30, #05070e 70%)" }}
+    >
+      <div className="max-w-[980px] mx-auto">
+        {/* Header */}
+        <div className="mb-4">
+          <div className="flex justify-between items-baseline mb-1">
+            <div>
+              <h1 className="text-4xl font-semibold tracking-tight">
+                White <span className="text-[#00e5ff]">80</span>
+              </h1>
+              <div className="font-mono text-[9px] tracking-[2.5px] text-[#3d4f6b] mt-0.5">
+                PERSONAL ALPHA SYSTEM - v1.0
+              </div>
+            </div>
+            <div className="font-mono text-[10px] text-[#3d4f6b] text-right">
+              {new Date()
+                .toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+                .toUpperCase()}
+              <div className="text-[9px] mt-0.5" style={{ color: curatorState?.regime ? "#00e5ff" : "#3d4f6b" }}>
+                {curatorState?.regime || "REGIME UNSET"}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Watchlist Header */}
+        <WatchlistHeader
+          watchlist={watchlist}
+          pinnedTickers={pinnedTickers}
+          generatedAt={generatedAt.curator}
+          onRemove={removeFromWatchlist}
+          onTogglePin={togglePin}
+          onAddTicker={addTicker}
+        />
+
+        {/* Settings Toggle */}
+        <button
+          onClick={() => setShowSettings(!showSettings)}
+          className={`mb-4 flex items-center gap-2 font-mono text-[10px] tracking-wider px-3 py-1.5 rounded border transition-all ${
+            showSettings
+              ? "bg-[#00e5ff]/10 border-[#00e5ff] text-[#00e5ff]"
+              : "border-[#1a2540] text-[#3d4f6b] hover:text-[#d6dff0]"
+          }`}
+        >
+          <Settings className="w-3.5 h-3.5" />
+          SETTINGS
+        </button>
+
+        {showSettings && (
+          <SettingsPanel
+            soundEnabled={soundEnabled}
+            notificationsEnabled={notificationsEnabled}
+            onSoundToggle={setSoundEnabled}
+            onNotificationsToggle={handleNotificationsToggle}
+            onOpenExport={() => setShowExport(true)}
+            onResetAll={resetAllData}
+            confirmReset={confirmReset}
+          />
+        )}
+
+        {/* Main Tabs */}
+        <Tabs defaultValue="watchlist" className="w-full">
+          <TabsList className="w-full justify-start bg-transparent border-b border-[#131c2e] rounded-none p-0 h-auto mb-5">
+            {[
+              { value: "watchlist", label: "WATCHLIST", icon: TrendingUp },
+              { value: "scout", label: "SCOUT", icon: Radar },
+              { value: "news", label: "NEWS", icon: Newspaper },
+              { value: "signals", label: "SIGNALS", icon: Activity },
+              { value: "brief", label: "PRE-MARKET", icon: FileText },
+              { value: "tracker", label: "TRACKER", icon: BarChart3 },
+            ].map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="font-mono text-[10px] tracking-wider px-3.5 py-2.5 border-b-2 border-transparent data-[state=active]:border-[#00e5ff] data-[state=active]:text-[#00e5ff] text-[#3d4f6b] rounded-none bg-transparent"
+              >
+                <tab.icon className="w-3.5 h-3.5 mr-1.5" />
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {/* WATCHLIST TAB */}
+          <TabsContent value="watchlist" className="mt-0">
+            <ActionButton
+              onClick={runCurator}
+              loading={loading.curator}
+              label="RUN CURATOR"
+              loadingLabel="CURATING..."
+              color="#00e5ff"
+              className="mb-4"
+            />
+
+            {errors.curator && (
+              <div className="font-mono bg-[#f87171]/10 border border-[#f87171]/40 p-2.5 rounded text-[10px] text-[#f87171] mb-4">
+                ERROR: {errors.curator}
+              </div>
+            )}
+
+            {!curatorState && !loading.curator && (
+              <div className="font-mono text-center py-10 text-[10px] text-[#3d4f6b] tracking-wider">
+                Run curator to dynamically refine the watchlist based on current setups, news, and thematic fit.
+              </div>
+            )}
+
+            {curatorState && (
+              <div className="animate-in fade-in duration-300">
+                {/* Summary */}
+                <div className="bg-[#0c1020] border border-[#131c2e] rounded p-4 mb-4">
+                  <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2">CURATOR SUMMARY</div>
+                  <div className="text-base leading-relaxed">{curatorState.summary}</div>
+                  {curatorState.regime && (
+                    <div className="mt-2.5 inline-block px-2 py-0.5 border border-[#00e5ff]/40 rounded-sm">
+                      <span className="font-mono text-[9px] text-[#00e5ff] tracking-wider">
+                        REGIME - {curatorState.regime}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Promote / Demote */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                  <div className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5">
+                    <div className="font-mono text-[9px] tracking-[2px] text-[#00ffaa] mb-2.5">
+                      PROMOTED - {curatorState.promote?.length || 0}
+                    </div>
+                    {!curatorState.promote?.length ? (
+                      <div className="font-mono text-[10px] text-[#3d4f6b]">none today</div>
+                    ) : (
+                      curatorState.promote.map((p, i) => (
+                        <div
+                          key={i}
+                          className="pb-2.5 mb-2.5 border-b border-[#131c2e] last:border-0 last:pb-0 last:mb-0"
+                        >
+                          <div className="flex justify-between items-baseline mb-0.5">
+                            <span className="font-mono text-[13px] text-[#00ffaa] font-medium">{p.ticker}</span>
+                            <span className="font-mono text-[8px] text-[#3d4f6b] tracking-wide">
+                              {p.theme?.toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="text-[13px] leading-snug">{p.reason}</div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5">
+                    <div className="font-mono text-[9px] tracking-[2px] text-[#fb923c] mb-2.5">
+                      DEMOTED - {curatorState.demote?.length || 0}
+                    </div>
+                    {!curatorState.demote?.length ? (
+                      <div className="font-mono text-[10px] text-[#3d4f6b]">none today</div>
+                    ) : (
+                      curatorState.demote.map((d, i) => (
+                        <div
+                          key={i}
+                          className="pb-2.5 mb-2.5 border-b border-[#131c2e] last:border-0 last:pb-0 last:mb-0"
+                        >
+                          <div className="font-mono text-[13px] text-[#fb923c] font-medium mb-0.5">{d.ticker}</div>
+                          <div className="text-[13px] leading-snug">{d.reason}</div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Theme gravity wells */}
+                <div className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5">
+                  <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2.5">THEMATIC GRAVITY WELLS</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {THEMES.map((t) => (
+                      <span
+                        key={t.id}
+                        className="font-mono text-[10px] px-2 py-1 bg-[#151e30] border border-[#1a2540] text-[#a78bfa] rounded-sm"
+                      >
+                        {t.label} - w{t.weight}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* SCOUT TAB */}
+          <TabsContent value="scout" className="mt-0">
+            {/* Configuration */}
+            <div className="bg-[#090c14] border border-[#131c2e] rounded p-3.5 mb-3.5">
+              <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2.5">SCOUT CONFIGURATION</div>
+
+              {/* Cap tier */}
+              <div className="mb-3">
+                <div className="font-mono text-[9px] text-[#3d4f6b] mb-1.5 tracking-wider">MARKET CAP TIER</div>
+                <div className="flex flex-wrap gap-1">
+                  {(Object.entries(CAP_TIERS) as [CapTier, (typeof CAP_TIERS)[CapTier]][]).map(([k, v]) => (
+                    <button
+                      key={k}
+                      onClick={() => setScoutCapTier(k)}
+                      className={`font-mono text-[10px] px-2.5 py-1 rounded-sm border transition-all ${
+                        scoutCapTier === k
+                          ? "bg-[#00e5ff]/10 border-[#00e5ff] text-[#00e5ff]"
+                          : "border-[#1a2540] text-[#3d4f6b]"
+                      }`}
+                    >
+                      {v.label} <span className="opacity-60 text-[9px]">{v.range}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Horizon */}
+              <div className="mb-3">
+                <div className="font-mono text-[9px] text-[#3d4f6b] mb-1.5 tracking-wider">HOLDING HORIZON</div>
+                <div className="flex flex-wrap gap-1">
+                  {(Object.entries(HORIZONS) as [Horizon, string][]).map(([k, desc]) => (
+                    <button
+                      key={k}
+                      onClick={() => setScoutHorizon(k)}
+                      className={`font-mono text-[10px] px-2.5 py-1 rounded-sm border transition-all ${
+                        scoutHorizon === k
+                          ? "bg-[#a78bfa]/10 border-[#a78bfa] text-[#a78bfa]"
+                          : "border-[#1a2540] text-[#3d4f6b]"
+                      }`}
+                      title={desc}
+                    >
+                      {k}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Themes */}
+              <div>
+                <div className="font-mono text-[9px] text-[#3d4f6b] mb-1.5 tracking-wider">
+                  THEMES ({scoutThemes.length} SELECTED)
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {SCOUT_THEMES.map((t) => {
+                    const on = scoutThemes.includes(t.id)
+                    return (
+                      <button
+                        key={t.id}
+                        onClick={() => toggleScoutTheme(t.id)}
+                        className={`font-mono text-[10px] px-2.5 py-1 rounded-sm border transition-all ${
+                          on ? "bg-[#00ffaa]/10 border-[#00ffaa] text-[#00ffaa]" : "border-[#1a2540] text-[#3d4f6b]"
+                        }`}
+                      >
+                        {on && "* "}
+                        {t.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <ActionButton
+              onClick={runScout}
+              loading={loading.scout}
+              label="RUN SCOUT"
+              loadingLabel="SCOUTING..."
+              color="#00ffaa"
+              className="mb-4"
+            />
+
+            {errors.scout && (
+              <div className="font-mono bg-[#f87171]/10 border border-[#f87171]/40 p-2.5 rounded text-[10px] text-[#f87171] mb-4">
+                ERROR: {errors.scout}
+              </div>
+            )}
+
+            {scoutResults.length === 0 && !loading.scout && (
+              <div className="font-mono text-center py-10 text-[10px] text-[#3d4f6b] tracking-wider leading-relaxed">
+                Scout finds high-conviction buy-and-hold names
+                <br />
+                outside the mega-cap mainstream.
+                <br />
+                Configure tier + horizon + themes, then run.
+              </div>
+            )}
+
+            {scoutResults.map((r, i) => (
+              <ScoutCard
+                key={i}
+                result={r}
+                onWatchlist={watchlist.includes(r.ticker)}
+                onPromote={() => promoteScoutToWatchlist(r.ticker)}
+              />
+            ))}
+          </TabsContent>
+
+          {/* NEWS TAB */}
+          <TabsContent value="news" className="mt-0">
+            <div className="flex gap-2 mb-4">
+              <ActionButton
+                onClick={runNews}
+                loading={loading.news}
+                label="RUN NEWS MONITOR"
+                loadingLabel="SCANNING NEWS..."
+                color="#facc15"
+                className="flex-1"
+              />
+              <button
+                onClick={() => setAutoNewsRefresh((a) => !a)}
+                className={`font-mono py-3 px-4 text-[10px] tracking-wider rounded border transition-all ${
+                  autoNewsRefresh
+                    ? "bg-[#00ffaa]/10 border-[#00ffaa] text-[#00ffaa]"
+                    : "border-[#1a2540] text-[#3d4f6b]"
+                }`}
+                title="Auto-refresh every 15 min"
+              >
+                {autoNewsRefresh ? "AUTO 15m" : "AUTO OFF"}
+              </button>
+            </div>
+
+            {errors.news && (
+              <div className="font-mono bg-[#f87171]/10 border border-[#f87171]/40 p-2.5 rounded text-[10px] text-[#f87171] mb-4">
+                ERROR: {errors.news}
+              </div>
+            )}
+
+            {news.length === 0 && !loading.news && (
+              <div className="font-mono text-center py-10 text-[10px] text-[#3d4f6b] tracking-wider leading-relaxed">
+                Run news monitor to scan the active watchlist for fresh catalysts.
+                <br />
+                Latest news flow feeds directly into Signals.
+              </div>
+            )}
+
+            {news.length > 0 && (
+              <>
+                {/* Aggregate counter */}
+                <div className="bg-[#090c14] border border-[#131c2e] rounded p-2.5 mb-3 flex justify-around flex-wrap gap-3">
+                  {(() => {
+                    const all = news.flatMap((n) => n.items || [])
+                    const bull = all.filter((i) => i.impact === "BULLISH").length
+                    const bear = all.filter((i) => i.impact === "BEARISH").length
+                    const high = all.filter((i) => i.magnitude === "HIGH").length
+                    const quiet = news.filter((n) => !n.items?.length || n.summary === "quiet").length
+                    return (
+                      <>
+                        <div className="font-mono text-[10px] text-[#3d4f6b] tracking-wider">
+                          <span className="text-[#00ffaa] text-sm font-medium">{bull}</span> bull
+                        </div>
+                        <div className="font-mono text-[10px] text-[#3d4f6b] tracking-wider">
+                          <span className="text-[#f87171] text-sm font-medium">{bear}</span> bear
+                        </div>
+                        <div className="font-mono text-[10px] text-[#3d4f6b] tracking-wider">
+                          <span className="text-[#fb923c] text-sm font-medium">{high}</span> high impact
+                        </div>
+                        <div className="font-mono text-[10px] text-[#3d4f6b] tracking-wider">
+                          <span className="text-[#3d4f6b] text-sm font-medium">{quiet}</span> quiet
+                        </div>
+                      </>
+                    )
+                  })()}
+                </div>
+
+                {news.map((n, i) => (
+                  <NewsCard key={i} news={n} />
+                ))}
+
+                <div className="font-mono mt-3.5 p-2.5 bg-[#00e5ff]/5 border border-[#00e5ff]/30 rounded text-[10px] text-[#00e5ff] tracking-wide">
+                  * News flow auto-feeds into Signals. Run signals next to get news-aware plays.
+                </div>
+              </>
+            )}
+          </TabsContent>
+
+          {/* SIGNALS TAB */}
+          <TabsContent value="signals" className="mt-0">
+            <ActionButton
+              onClick={runSignals}
+              loading={loading.signals}
+              label="RUN SIGNALS"
+              loadingLabel="SCANNING..."
+              color="#00ffaa"
+              className="mb-4"
+            />
+
+            {errors.signals && (
+              <div className="font-mono bg-[#f87171]/10 border border-[#f87171]/40 p-2.5 rounded text-[10px] text-[#f87171] mb-4">
+                ERROR: {errors.signals}
+              </div>
+            )}
+
+            {pricesAt && Object.keys(livePrices).length > 0 && (
+              <div className="font-mono bg-[#00ffaa]/5 border border-[#00ffaa]/40 p-2 rounded text-[10px] text-[#00ffaa] tracking-wide mb-3 flex justify-between items-center flex-wrap gap-1.5">
+                <span>
+                  * YAHOO - {Object.keys(livePrices).length}/{watchlist.length} TICKERS
+                </span>
+                <span className="text-[#3d4f6b]">fetched {pricesAt}</span>
+              </div>
+            )}
+
+            {signals.length === 0 && !loading.signals && (
+              <div className="font-mono text-center py-10 text-[10px] text-[#3d4f6b] tracking-wider">
+                Run signals to scan the active watchlist for setups.
+              </div>
+            )}
+
+            {signals.map((s, i) => (
+              <SignalCard key={i} signal={s} />
+            ))}
+          </TabsContent>
+
+          {/* PRE-MARKET BRIEF TAB */}
+          <TabsContent value="brief" className="mt-0">
+            <ActionButton
+              onClick={runBrief}
+              loading={loading.brief}
+              label="RUN PRE-MARKET BRIEF"
+              loadingLabel="BRIEFING..."
+              color="#a78bfa"
+              className="mb-4"
+            />
+
+            {errors.brief && (
+              <div className="font-mono bg-[#f87171]/10 border border-[#f87171]/40 p-2.5 rounded text-[10px] text-[#f87171] mb-4">
+                ERROR: {errors.brief}
+              </div>
+            )}
+
+            {!brief && !loading.brief && (
+              <div className="font-mono text-center py-10 text-[10px] text-[#3d4f6b] tracking-wider">
+                Run brief for overnight action, headlines, and today&apos;s setup.
+              </div>
+            )}
+
+            {brief && (
+              <div className="animate-in fade-in duration-300">
+                <div
+                  className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5 mb-3"
+                  style={{
+                    borderLeft: `3px solid ${brief.tone === "RISK-ON" ? "#00ffaa" : brief.tone === "RISK-OFF" ? "#f87171" : "#facc15"}`,
+                  }}
+                >
+                  <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-1.5">
+                    OVERNIGHT FUTURES - {brief.tone}
+                  </div>
+                  <div className="text-sm leading-relaxed">{brief.futures}</div>
+                </div>
+
+                <div className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5 mb-3">
+                  <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2">TOP HEADLINES</div>
+                  {brief.headlines?.map((h, i) => (
+                    <div key={i} className="text-[13px] leading-relaxed py-1 border-b border-[#131c2e] last:border-0">
+                      <span className="text-[#00e5ff] mr-1.5">-</span>
+                      {h}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                  <div className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5">
+                    <div className="font-mono text-[9px] tracking-[2px] text-[#fb923c] mb-2">EARNINGS TODAY</div>
+                    {brief.earnings_today?.length ? (
+                      brief.earnings_today.map((e, i) => (
+                        <div key={i} className="font-mono text-[11px] py-0.5">
+                          {e}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="font-mono text-[10px] text-[#3d4f6b]">none on watchlist</div>
+                    )}
+                  </div>
+                  <div className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5">
+                    <div className="font-mono text-[9px] tracking-[2px] text-[#a78bfa] mb-2">ECON TODAY</div>
+                    {brief.econ_today?.length ? (
+                      brief.econ_today.map((e, i) => (
+                        <div key={i} className="font-mono text-[11px] py-0.5">
+                          {e}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="font-mono text-[10px] text-[#3d4f6b]">quiet day</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5">
+                  <div className="font-mono text-[9px] tracking-[2px] text-[#00e5ff] mb-2">WATCHLIST READ</div>
+                  <div className="text-sm leading-relaxed">{brief.watchlist_take}</div>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* TRACKER TAB */}
+          <TabsContent value="tracker" className="mt-0">
+            {/* Stats grid */}
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4">
+              {[
+                { label: "TOTAL", value: trackerStats.total, color: "#d6dff0" },
+                { label: "PENDING", value: trackerStats.pending, color: "#facc15" },
+                { label: "APPROVAL", value: trackerStats.approvalRate === "-" ? "-" : `${trackerStats.approvalRate}%`, color: "#00e5ff" },
+                {
+                  label: "PRECISION",
+                  value: trackerStats.precision === "-" ? "-" : `${trackerStats.precision}%`,
+                  color:
+                    trackerStats.precision !== "-" && parseInt(trackerStats.precision) >= 65
+                      ? "#00ffaa"
+                      : trackerStats.precision !== "-" && parseInt(trackerStats.precision) < 50
+                        ? "#f87171"
+                        : "#facc15",
+                },
+                { label: "WINS", value: trackerStats.wins, color: "#00ffaa" },
+                { label: "LOSSES", value: trackerStats.losses, color: "#f87171" },
+              ].map((s, i) => (
+                <div key={i} className="bg-[#0c1020] border border-[#131c2e] rounded p-2.5">
+                  <div className="font-mono text-[8px] tracking-wider text-[#3d4f6b] mb-1">{s.label}</div>
+                  <div className="font-mono text-xl font-medium tracking-wide" style={{ color: s.color }}>
+                    {s.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Vision target */}
+            <div className="bg-[#a78bfa]/10 border border-[#a78bfa]/40 rounded p-2.5 mb-3.5">
+              <div className="font-mono text-[9px] text-[#a78bfa] tracking-wider mb-1">VISION TARGETS</div>
+              <div className="text-[13px] leading-snug">
+                Precision &gt;55% at 90 days - &gt;65% at 12 months - Beat SPY by 800bps risk-adjusted
+              </div>
+            </div>
+
+            {trackerLog.length === 0 && (
+              <div className="font-mono text-center py-10 text-[10px] text-[#3d4f6b] tracking-wider leading-relaxed">
+                Tracker auto-logs every signal fired.
+                <br />
+                Mark approve/pass and outcomes to compute precision over time.
+              </div>
+            )}
+
+            {trackerLog.length > 0 && (
+              <>
+                <div className="flex justify-between items-center mb-2.5">
+                  <span className="font-mono text-[9px] text-[#3d4f6b] tracking-wider">
+                    SIGNAL LOG - {trackerLog.length}
+                  </span>
+                  <button
+                    onClick={clearTracker}
+                    className={`font-mono text-[9px] tracking-wider px-2.5 py-1 rounded-sm border transition-all ${
+                      confirmClearTracker
+                        ? "bg-[#f87171]/20 border-[#f87171] text-[#f87171]"
+                        : "border-[#f87171]/40 text-[#f87171]"
+                    }`}
+                  >
+                    {confirmClearTracker ? "CONFIRM?" : "CLEAR ALL"}
+                  </button>
+                </div>
+
+                {trackerLog.map((log) => (
+                  <TrackerRow
+                    key={log.id}
+                    log={log}
+                    onUpdate={(patch) => updateLog(log.id, patch)}
+                    onDelete={() => deleteLog(log.id)}
+                  />
+                ))}
+              </>
+            )}
+          </TabsContent>
+        </Tabs>
+
+        {/* Footer */}
+        <div className="mt-10 pt-4 border-t border-[#131c2e] flex justify-between flex-wrap gap-2 items-center">
+          <span className="font-mono text-[9px] text-[#3d4f6b] tracking-wider">
+            WHITE 80 - PERSONAL ALPHA SYSTEM - POWERED BY CLAUDE
+          </span>
+          <div className="flex gap-3 items-center flex-wrap">
+            <span className="font-mono text-[9px] text-[#3d4f6b]">
+              {Object.entries(generatedAt)
+                .map(([k, v]) => `${k}:${v}`)
+                .join(" - ") || "no runs yet"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Export Modal */}
+      <ExportModal
+        open={showExport}
+        onClose={() => setShowExport(false)}
+        watchlist={watchlist}
+        pinnedTickers={pinnedTickers}
+        blockedTickers={blockedTickers}
+        trackerLog={trackerLog}
+        scoutThemes={scoutThemes}
+        scoutCapTier={scoutCapTier}
+        scoutHorizon={scoutHorizon}
+        onImport={handleImport}
+      />
+    </div>
+  )
+}
