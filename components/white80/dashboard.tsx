@@ -31,7 +31,8 @@ import { TrackerRow } from "./tracker-row"
 import { ActionButton } from "./action-button"
 import { SettingsPanel } from "./settings-panel"
 import { ExportModal } from "./export-modal"
-import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3 } from "lucide-react"
+import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3, Crosshair } from "lucide-react"
+import { Tier1Scanner } from "./tier1-scanner"
 
 export function White80Dashboard() {
   // Core state
@@ -64,10 +65,16 @@ export function White80Dashboard() {
   const [storageReady, setStorageReady] = useState(false)
   const [showApiKeyModal, setShowApiKeyModal] = useState(false)
   const [hasApiKey, setHasApiKey] = useState(false)
+  const [currentDate, setCurrentDate] = useState<string>("")
 
-  // Check for API key on mount
+  // Check for API key and set date on mount (client-side only to avoid hydration mismatch)
   useEffect(() => {
     setHasApiKey(!!getStoredApiKey())
+    setCurrentDate(
+      new Date()
+        .toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+        .toUpperCase()
+    )
   }, [])
 
   // Load from localStorage on mount
@@ -464,9 +471,7 @@ export function White80Dashboard() {
               </div>
             </div>
             <div className="font-mono text-[10px] text-[#3d4f6b] text-right">
-              {new Date()
-                .toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
-                .toUpperCase()}
+              {currentDate || "---"}
               <div className="text-[9px] mt-0.5" style={{ color: curatorState?.regime ? "#00e5ff" : "#3d4f6b" }}>
                 {curatorState?.regime || "REGIME UNSET"}
               </div>
@@ -512,14 +517,15 @@ export function White80Dashboard() {
         {/* Main Tabs */}
         <Tabs defaultValue="watchlist" className="w-full">
           <TabsList className="w-full justify-start bg-transparent border-b border-[#131c2e] rounded-none p-0 h-auto mb-5">
-            {[
-              { value: "watchlist", label: "WATCHLIST", icon: TrendingUp },
-              { value: "scout", label: "SCOUT", icon: Radar },
-              { value: "news", label: "NEWS", icon: Newspaper },
-              { value: "signals", label: "SIGNALS", icon: Activity },
-              { value: "brief", label: "PRE-MARKET", icon: FileText },
-              { value: "tracker", label: "TRACKER", icon: BarChart3 },
-            ].map((tab) => (
+{[
+                { value: "tier1", label: "TIER 1", icon: Crosshair },
+                { value: "watchlist", label: "WATCHLIST", icon: TrendingUp },
+                { value: "scout", label: "SCOUT", icon: Radar },
+                { value: "news", label: "NEWS", icon: Newspaper },
+                { value: "signals", label: "SIGNALS", icon: Activity },
+                { value: "brief", label: "PRE-MARKET", icon: FileText },
+                { value: "tracker", label: "TRACKER", icon: BarChart3 },
+              ].map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
@@ -531,8 +537,20 @@ export function White80Dashboard() {
             ))}
           </TabsList>
 
-          {/* WATCHLIST TAB */}
-          <TabsContent value="watchlist" className="mt-0">
+{/* TIER 1 SCANNER TAB */}
+              <TabsContent value="tier1" className="mt-0">
+                <Tier1Scanner 
+                  onPromoteToWatchlist={(ticker) => {
+                    if (!watchlist.includes(ticker)) {
+                      setWatchlist(w => [ticker, ...w])
+                      setPinnedTickers(p => p.includes(ticker) ? p : [...p, ticker])
+                    }
+                  }}
+                />
+              </TabsContent>
+
+              {/* WATCHLIST TAB */}
+              <TabsContent value="watchlist" className="mt-0">
             <ActionButton
               onClick={runCurator}
               loading={loading.curator}
