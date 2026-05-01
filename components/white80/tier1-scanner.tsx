@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
-import { runTier1Scan, getStoredPolygonKey, PolygonKeyRequiredError } from "@/lib/api"
+import { getStoredApiKey, getStoredPolygonKey } from "@/lib/api"
 import { PolygonKeyModal } from "./polygon-key-modal"
 import type { Tier1Signal } from "@/lib/tier1-types"
 
