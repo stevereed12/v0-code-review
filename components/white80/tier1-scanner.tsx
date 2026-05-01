@@ -172,7 +172,7 @@ export function Tier1Scanner({ onPromoteToWatchlist }: Tier1ScannerProps) {
   const [error, setError] = useState<string | null>(null)
   const [lastScan, setLastScan] = useState<string | null>(null)
   const [scanStats, setScanStats] = useState<{ total: number; matches: number } | null>(null)
-  const [minScore, setMinScore] = useState(4)
+  const [minScore, setMinScore] = useState(2) // Start lower for wider net
   const [showPolygonKeyModal, setShowPolygonKeyModal] = useState(false)
   const [hasPolygonKey, setHasPolygonKey] = useState(() => !!getStoredPolygonKey())
   
@@ -332,11 +332,11 @@ export function Tier1Scanner({ onPromoteToWatchlist }: Tier1ScannerProps) {
         <CardContent className="pt-0">
           {/* Controls */}
           <div className="flex flex-wrap items-center gap-4 mb-4">
-            {/* Min score selector */}
+            {/* Min score selector - now starts at 1 for maximum visibility */}
             <div className="flex items-center gap-2">
               <span className="text-xs text-[#3d4f6b] font-mono">MIN SCORE:</span>
               <div className="flex gap-1">
-                {[3, 4, 5, 6].map(s => (
+                {[1, 2, 3, 4, 5, 6].map(s => (
                   <button
                     key={s}
                     onClick={() => setMinScore(s)}
@@ -350,6 +350,9 @@ export function Tier1Scanner({ onPromoteToWatchlist }: Tier1ScannerProps) {
                   </button>
                 ))}
               </div>
+              <span className="text-[10px] text-[#3d4f6b] ml-1">
+                {minScore <= 2 ? "(wide net)" : minScore >= 5 ? "(very selective)" : "(balanced)"}
+              </span>
             </div>
             
             {/* Scan button */}

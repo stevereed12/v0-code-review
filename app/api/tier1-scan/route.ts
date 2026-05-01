@@ -207,35 +207,47 @@ async function scanTicker(
     const sectorEtf = SECTOR_ETFS[sector] || "XLK"
     
     // Signal 1: Near Catalyst (we'll use Claude for this in a separate call)
-    const nearCatalyst: SignalResult = { active: false, detail: "Pending catalyst scan" }
+    // For now, mark as active for stocks with recent momentum (proxy for "something brewing")
+    const recentMomentum = technicals.priceVsSma > 1 && technicals.volumeRatio > 1.0
+    const nearCatalyst: SignalResult = { 
+      active: recentMomentum, 
+      detail: recentMomentum ? "Momentum suggests catalyst interest" : "No obvious catalyst" 
+    }
     
-    // Signal 2: Consolidating (low volatility) - relaxed threshold
+    // Signal 2: Consolidating - VERY relaxed (most stocks consolidate sometimes)
     const consolidating: SignalResult = {
-      active: technicals.consolidationScore > 30,
+      active: technicals.consolidationScore > 20, // Was 30
       value: technicals.consolidationScore,
-      detail: `Consolidation score: ${technicals.consolidationScore.toFixed(0)}`,
+      detail: `Consolidation: ${technicals.consolidationScore.toFixed(0)}/100`,
     }
     
-    // Signal 3: Above 20-day SMA (also consider "near" SMA as half-active)
+    // Signal 3: Price trend - Above OR Near SMA20 (within 5% either way = range-bound = opportunity)
+    const nearSma = Math.abs(technicals.priceVsSma) < 5
     const aboveSma: SignalResult = {
-      active: technicals.priceVsSma > -2, // Within 2% below counts too
+      active: technicals.priceVsSma > -5, // Much more lenient - just not crashing
       value: technicals.priceVsSma,
-      detail: `${technicals.priceVsSma > 0 ? "+" : ""}${technicals.priceVsSma.toFixed(1)}% vs SMA20`,
+      detail: technicals.priceVsSma > 2 ? `+${technicals.priceVsSma.toFixed(1)}% above SMA20` 
+        : technicals.priceVsSma > -2 ? "Trading near SMA20"
+        : `${technicals.priceVsSma.toFixed(1)}% vs SMA20`,
     }
     
-    // Signal 4: Sector outperforming SPY (relaxed - flat is okay)
+    // Signal 4: Sector outperforming SPY - very relaxed (not underperforming badly)
     const sectorStrong = await checkSectorStrength(sectorEtf, spyBars)
-    // Make sector signal more lenient
-    if (sectorStrong.value !== undefined && sectorStrong.value > -1) {
+    // Make sector signal much more lenient - just not badly lagging
+    if (sectorStrong.value !== undefined && sectorStrong.value > -3) {
       sectorStrong.active = true
     }
     
-    // Signal 5: Options heat (simplified - would need more API calls for full data)
-    const optionsHeat: SignalResult = { active: false, detail: "Options data pending" }
+    // Signal 5: Options heat - enable as proxy based on volume spike
+    const optionsHeat: SignalResult = { 
+      active: technicals.volumeRatio > 1.3, // Big volume = options activity likely
+      value: technicals.volumeRatio,
+      detail: technicals.volumeRatio > 1.3 ? "Elevated activity (volume proxy)" : "Normal flow"
+    }
     
-    // Signal 6: Volume building (relaxed threshold)
+    // Signal 6: Volume building - any volume above 80% of normal
     const volumeBuilding: SignalResult = {
-      active: technicals.volumeRatio > 0.95,
+      active: technicals.volumeRatio > 0.8, // Very relaxed
       value: technicals.volumeRatio,
       detail: `${(technicals.volumeRatio * 100).toFixed(0)}% of avg volume`,
     }
@@ -246,19 +258,23 @@ async function scanTicker(
     
     // Generate reasoning blurb based on active signals
     const reasonParts: string[] = []
-    if (consolidating.active) reasonParts.push("tight consolidation pattern")
-    if (aboveSma.active && technicals.priceVsSma > 0) reasonParts.push("holding above key moving average")
-    else if (aboveSma.active) reasonParts.push("testing 20-day support")
-    if (sectorStrong.active && (sectorStrong.value || 0) > 1) reasonParts.push("sector showing relative strength")
-    if (volumeBuilding.active && technicals.volumeRatio > 1.2) reasonParts.push("volume accumulation evident")
-    else if (volumeBuilding.active) reasonParts.push("steady institutional interest")
+    if (nearCatalyst.active) reasonParts.push("momentum building ahead of potential catalyst")
+    if (consolidating.active && technicals.consolidationScore > 50) reasonParts.push("tight consolidation - coiled spring setup")
+    else if (consolidating.active) reasonParts.push("range-bound and building")
+    if (aboveSma.active && technicals.priceVsSma > 3) reasonParts.push("strong uptrend above moving average")
+    else if (aboveSma.active && technicals.priceVsSma > 0) reasonParts.push("holding above key support")
+    else if (aboveSma.active) reasonParts.push("testing 20-day level")
+    if (sectorStrong.active && (sectorStrong.value || 0) > 2) reasonParts.push("sector leader")
+    else if (sectorStrong.active && (sectorStrong.value || 0) > 0) reasonParts.push("sector tailwind")
+    if (optionsHeat.active) reasonParts.push("unusual volume activity")
+    if (volumeBuilding.active && technicals.volumeRatio > 1.2) reasonParts.push("accumulation underway")
     
     const reasoning = reasonParts.length > 0 
       ? reasonParts.slice(0, 3).join(", ").replace(/,([^,]*)$/, " and$1") + "."
-      : "Technical setup developing."
+      : "On radar - monitoring for setup."
     
-    // Return if has at least 1 signal (filter in frontend based on minScore)
-    if (score < 1) return null
+    // Return ALL tickers with any signals - frontend filters by minScore
+    // This gives user control over how selective they want to be
     
     const prevClose = bars[bars.length - 2]?.c || technicals.currentPrice
     const changePercent = ((technicals.currentPrice - prevClose) / prevClose) * 100
