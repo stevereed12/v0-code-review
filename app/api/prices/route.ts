@@ -1,8 +1,98 @@
 import { NextRequest, NextResponse } from "next/server"
 
-// Use the chart API (v8) which is more reliable than quote API (v7)
-// Fetch each symbol individually and extract latest price
-async function fetchPriceFromChart(symbol: string): Promise<Record<string, unknown> | null> {
+const POLYGON_BASE = "https://api.polygon.io"
+
+// Get Polygon API key from request or env
+function getPolygonKey(request: NextRequest): string | null {
+  const clientKey = request.nextUrl.searchParams.get("polygonKey")
+  return clientKey || process.env.POLYGON_API_KEY || null
+}
+
+// Fetch price from Polygon
+async function fetchFromPolygon(
+  symbol: string,
+  apiKey: string
+): Promise<Record<string, unknown> | null> {
+  try {
+    // Get previous day's data for accurate prev_close
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    
+    // Snapshot endpoint gives us the latest price + prev day data
+    const snapshotUrl = `${POLYGON_BASE}/v2/snapshot/locale/us/markets/stocks/tickers/${symbol}?apiKey=${apiKey}`
+    
+    const res = await fetch(snapshotUrl, {
+      headers: { Accept: "application/json" },
+      next: { revalidate: 15 }, // Cache for 15 seconds
+    })
+
+    if (!res.ok) {
+      console.warn(`Polygon snapshot failed for ${symbol}: ${res.status}`)
+      return null
+    }
+
+    const data = await res.json()
+    const ticker = data?.ticker
+
+    if (!ticker) return null
+
+    const day = ticker.day || {}
+    const prevDay = ticker.prevDay || {}
+    const lastQuote = ticker.lastQuote || {}
+    const lastTrade = ticker.lastTrade || {}
+    
+    // Determine current price and session
+    const price = lastTrade.p || day.c || prevDay.c
+    const prevClose = prevDay.c || day.o
+    const change = price - prevClose
+    const changePct = prevClose ? (change / prevClose) * 100 : 0
+    
+    // Determine market state based on timestamp
+    const now = new Date()
+    const hour = now.getUTCHours() - 5 // EST offset (approximate)
+    let marketState = "CLOSED"
+    let session = "LAST"
+    
+    if (hour >= 4 && hour < 9.5) {
+      marketState = "PRE"
+      session = "PRE"
+    } else if (hour >= 9.5 && hour < 16) {
+      marketState = "REGULAR"
+      session = "REGULAR"
+    } else if (hour >= 16 && hour < 20) {
+      marketState = "POST"
+      session = "POST"
+    }
+
+    const ts = lastTrade.t ? Math.floor(lastTrade.t / 1000000000) : Math.floor(Date.now() / 1000)
+    const ageSeconds = Math.max(0, Math.floor(Date.now() / 1000 - ts))
+
+    return {
+      price,
+      change,
+      change_pct: changePct,
+      prev_close: prevClose,
+      day_high: day.h || prevDay.h,
+      day_low: day.l || prevDay.l,
+      volume: day.v || 0,
+      market_state: marketState,
+      session,
+      ts,
+      age_seconds: ageSeconds,
+      name: symbol,
+      source: "polygon",
+      bid: lastQuote.p,
+      ask: lastQuote.P,
+    }
+  } catch (err) {
+    console.warn(`Polygon error for ${symbol}:`, err)
+    return null
+  }
+}
+
+// Fallback to Yahoo if Polygon unavailable
+async function fetchFromYahoo(symbol: string): Promise<Record<string, unknown> | null> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d&includePrePost=true`
   
   try {
@@ -24,11 +114,9 @@ async function fetchPriceFromChart(symbol: string): Promise<Record<string, unkno
     const quote = result.indicators?.quote?.[0]
     const timestamps = result.timestamp || []
     
-    // Get the most recent data point
     const lastIdx = timestamps.length - 1
     const lastTs = timestamps[lastIdx] || meta.regularMarketTime
     
-    // Determine which price to use based on market state
     const marketState = meta.marketState || "CLOSED"
     let price = meta.regularMarketPrice
     let change = 0
@@ -37,7 +125,6 @@ async function fetchPriceFromChart(symbol: string): Promise<Record<string, unkno
     
     const prevClose = meta.previousClose || meta.chartPreviousClose
     
-    // Use post-market price if available and market is closed/post
     if (meta.postMarketPrice && (marketState === "POST" || marketState === "POSTPOST" || marketState === "CLOSED")) {
       price = meta.postMarketPrice
       change = meta.postMarketChange || (price - prevClose)
@@ -55,7 +142,6 @@ async function fetchPriceFromChart(symbol: string): Promise<Record<string, unkno
       session = marketState === "REGULAR" ? "REGULAR" : "LAST"
     }
 
-    // Get day high/low from quote data
     const dayHigh = quote?.high ? Math.max(...quote.high.filter((v: number | null) => v !== null)) : meta.regularMarketDayHigh
     const dayLow = quote?.low ? Math.min(...quote.low.filter((v: number | null) => v !== null && v > 0)) : meta.regularMarketDayLow
 
@@ -74,6 +160,7 @@ async function fetchPriceFromChart(symbol: string): Promise<Record<string, unkno
       ts: lastTs,
       age_seconds: ageSeconds,
       name: meta.shortName || meta.longName || symbol,
+      source: "yahoo",
     }
   } catch {
     return null
@@ -89,23 +176,35 @@ export async function GET(request: NextRequest) {
   }
 
   const symbols = symbolsParam.split(",").map(s => s.trim().toUpperCase())
+  const polygonKey = getPolygonKey(request)
   
   try {
-    // Fetch all symbols in parallel using the chart API
+    // Fetch all symbols in parallel
     const results = await Promise.all(
       symbols.map(async (symbol) => {
-        const data = await fetchPriceFromChart(symbol)
+        // Try Polygon first if key available, then fallback to Yahoo
+        let data = null
+        if (polygonKey) {
+          data = await fetchFromPolygon(symbol, polygonKey)
+        }
+        if (!data) {
+          data = await fetchFromYahoo(symbol)
+        }
         return { symbol, data }
       })
     )
 
     const map: Record<string, unknown> = {}
     let successCount = 0
+    let polygonCount = 0
+    let yahooCount = 0
     
     for (const { symbol, data } of results) {
       if (data) {
         map[symbol] = data
         successCount++
+        if ((data as { source?: string }).source === "polygon") polygonCount++
+        else yahooCount++
       }
     }
 
@@ -113,7 +212,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No price data available" }, { status: 404 })
     }
 
-    return NextResponse.json({ data: map })
+    return NextResponse.json({ 
+      data: map,
+      meta: {
+        total: successCount,
+        polygon: polygonCount,
+        yahoo: yahooCount,
+      }
+    })
   } catch (err) {
     console.error("Price fetch error:", err)
     return NextResponse.json({ error: (err as Error).message }, { status: 500 })

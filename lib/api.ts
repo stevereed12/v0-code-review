@@ -76,7 +76,14 @@ export async function askClaude<T>(prompt: string, useSearch = true, maxTokens =
 export async function fetchLivePrices(tickers: string[]): Promise<Record<string, LivePrice>> {
   if (!tickers || tickers.length === 0) return {}
 
-  const res = await fetch(`/api/prices?symbols=${tickers.join(",")}`)
+  // Pass Polygon key if available for better data
+  const polygonKey = getStoredPolygonKey()
+  let url = `/api/prices?symbols=${tickers.join(",")}`
+  if (polygonKey) {
+    url += `&polygonKey=${encodeURIComponent(polygonKey)}`
+  }
+
+  const res = await fetch(url)
   const json = await res.json()
 
   if (!res.ok || json.error) {
@@ -87,7 +94,14 @@ export async function fetchLivePrices(tickers: string[]): Promise<Record<string,
 }
 
 export async function fetchChartData(ticker: string): Promise<PriceHistory[]> {
-  const res = await fetch(`/api/chart?symbol=${ticker}`)
+  // Pass Polygon key if available for better data
+  const polygonKey = getStoredPolygonKey()
+  let url = `/api/chart?symbol=${ticker}`
+  if (polygonKey) {
+    url += `&polygonKey=${encodeURIComponent(polygonKey)}`
+  }
+
+  const res = await fetch(url)
   const json = await res.json()
 
   if (!res.ok || json.error) {
