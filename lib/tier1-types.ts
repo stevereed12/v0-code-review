@@ -112,8 +112,8 @@ export interface ScanConfig {
 }
 
 export const DEFAULT_SCAN_CONFIG: ScanConfig = {
-  minScore: 4,
-  maxResults: 25,
+  minScore: 3, // Lower default to show more opportunities
+  maxResults: 50, // Show more results
   includeOptionsData: true,
-  catalystWindowDays: [7, 21],
+  catalystWindowDays: [7, 28], // Expand window to 4 weeks
 }

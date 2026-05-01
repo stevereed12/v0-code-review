@@ -209,9 +209,9 @@ async function scanTicker(
     // Signal 1: Near Catalyst (we'll use Claude for this in a separate call)
     const nearCatalyst: SignalResult = { active: false, detail: "Pending catalyst scan" }
     
-    // Signal 2: Consolidating (low volatility)
+    // Signal 2: Consolidating (low volatility) - lowered threshold for more matches
     const consolidating: SignalResult = {
-      active: technicals.consolidationScore > 60,
+      active: technicals.consolidationScore > 40,
       value: technicals.consolidationScore,
       detail: `Consolidation score: ${technicals.consolidationScore.toFixed(0)}`,
     }
@@ -240,8 +240,8 @@ async function scanTicker(
     const signals = { nearCatalyst, consolidating, aboveSma, sectorStrong, optionsHeat, volumeBuilding }
     const score = Object.values(signals).filter(s => s.active).length
     
-    // Only return if meets minimum score
-    if (score < config.minScore - 1) return null // -1 because catalyst is pending
+    // Return if has at least 2 signals (filter in frontend based on minScore)
+    if (score < 2) return null
     
     const prevClose = bars[bars.length - 2]?.c || technicals.currentPrice
     const changePercent = ((technicals.currentPrice - prevClose) / prevClose) * 100
@@ -279,13 +279,14 @@ export async function POST(request: NextRequest) {
     }
     
     const config: ScanConfig = { ...DEFAULT_SCAN_CONFIG, ...body.config }
-    const tickersToScan = body.tickers || SCAN_UNIVERSE.slice(0, 50) // Limit for demo
+    // Scan full universe - use batching and rate limiting to handle volume
+    const tickersToScan = body.tickers || SCAN_UNIVERSE
     
     // Get SPY bars for sector comparison
     const spyBars = await getBars("SPY", 20)
     
     // Scan in batches to avoid rate limits
-    const batchSize = 10
+    const batchSize = 5 // Smaller batches for stability
     const results: Tier1Signal[] = []
     const errors: string[] = []
     
@@ -304,9 +305,9 @@ export async function POST(request: NextRequest) {
         }
       }
       
-      // Small delay between batches to respect rate limits
+      // Delay between batches to respect Polygon rate limits (5 calls/min on free tier)
       if (i + batchSize < tickersToScan.length) {
-        await new Promise(r => setTimeout(r, 200))
+        await new Promise(r => setTimeout(r, 300))
       }
     }
     
