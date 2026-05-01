@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
-import { getStoredApiKey } from "@/lib/api"
+import { runTier1Scan, getStoredPolygonKey, PolygonKeyRequiredError } from "@/lib/api"
+import { PolygonKeyModal } from "./polygon-key-modal"
 import type { Tier1Signal } from "@/lib/tier1-types"
 
 // ─── COLORS ──────────────────────────────────────────────────────────────────
@@ -165,6 +166,8 @@ export function Tier1Scanner({ onPromoteToWatchlist }: Tier1ScannerProps) {
   const [lastScan, setLastScan] = useState<string | null>(null)
   const [scanStats, setScanStats] = useState<{ total: number; matches: number } | null>(null)
   const [minScore, setMinScore] = useState(4)
+  const [showPolygonKeyModal, setShowPolygonKeyModal] = useState(false)
+  const [hasPolygonKey, setHasPolygonKey] = useState(() => !!getStoredPolygonKey())
   
   const runScan = useCallback(async () => {
     setLoading(true)
@@ -173,6 +176,7 @@ export function Tier1Scanner({ onPromoteToWatchlist }: Tier1ScannerProps) {
     
     try {
       // Step 1: Run Polygon scan for technical signals
+      const clientPolygonKey = getStoredPolygonKey()
       const scanRes = await fetch("/api/tier1-scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -180,7 +184,8 @@ export function Tier1Scanner({ onPromoteToWatchlist }: Tier1ScannerProps) {
           config: { 
             minScore: minScore - 1, // Allow one less since catalyst is pending
             maxResults: 50,
-          }
+          },
+          clientPolygonKey,
         }),
       })
       
@@ -262,7 +267,12 @@ export function Tier1Scanner({ onPromoteToWatchlist }: Tier1ScannerProps) {
       setResults(filtered)
       setLastScan(new Date().toLocaleTimeString())
     } catch (err) {
-      setError((err as Error).message)
+      const message = (err as Error).message
+      if (message === "POLYGON_KEY_REQUIRED" || message.includes("POLYGON_KEY_REQUIRED")) {
+        setShowPolygonKeyModal(true)
+      } else {
+        setError(message)
+      }
     } finally {
       setLoading(false)
       setLoadingPhase("")
@@ -271,6 +281,28 @@ export function Tier1Scanner({ onPromoteToWatchlist }: Tier1ScannerProps) {
   
   return (
     <div className="space-y-4">
+      {/* Polygon Key Modal */}
+      {showPolygonKeyModal && (
+        <PolygonKeyModal
+          onKeySet={() => {
+            setShowPolygonKeyModal(false)
+            setHasPolygonKey(true)
+          }}
+          onClose={() => setShowPolygonKeyModal(false)}
+        />
+      )}
+
+      {/* Polygon Key Status Banner */}
+      {!hasPolygonKey && (
+        <button
+          onClick={() => setShowPolygonKeyModal(true)}
+          className="w-full p-3 bg-[#fb923c]/10 border border-[#fb923c]/40 rounded flex items-center justify-center gap-2 text-[#fb923c] font-mono text-sm hover:bg-[#fb923c]/20 transition-colors"
+        >
+          <span>Polygon API Key Required</span>
+          <span className="text-xs opacity-70">Click to add your key for market data</span>
+        </button>
+      )}
+
       {/* Header */}
       <Card className="bg-[#090c14] border-[#131c2e]">
         <CardHeader className="pb-3">

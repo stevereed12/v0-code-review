@@ -6,13 +6,20 @@ import { DEFAULT_SCAN_CONFIG, SECTOR_ETFS } from "@/lib/tier1-types"
 
 const POLYGON_BASE = "https://api.polygon.io"
 
+// Store key in request context for this request
+let requestApiKey: string | null = null
+
+function setRequestApiKey(key: string | null) {
+  requestApiKey = key
+}
+
 function getApiKey(): string | null {
-  return process.env.POLYGON_API_KEY || null
+  return requestApiKey || process.env.POLYGON_API_KEY || null
 }
 
 async function polygonFetch(endpoint: string): Promise<unknown> {
   const apiKey = getApiKey()
-  if (!apiKey) throw new Error("POLYGON_API_KEY not configured")
+  if (!apiKey) throw new Error("POLYGON_KEY_REQUIRED")
   
   const url = `${POLYGON_BASE}${endpoint}${endpoint.includes("?") ? "&" : "?"}apiKey=${apiKey}`
   const res = await fetch(url, { next: { revalidate: 300 } }) // Cache 5 min
@@ -257,13 +264,20 @@ async function scanTicker(
 // ─── API ROUTE ───────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
-  const apiKey = getApiKey()
-  if (!apiKey) {
-    return NextResponse.json({ error: "POLYGON_API_KEY not configured" }, { status: 500 })
-  }
-  
   try {
     const body = await request.json()
+    
+    // Set client-provided key if available
+    const clientKey = body.clientPolygonKey?.trim()
+    if (clientKey) {
+      setRequestApiKey(clientKey)
+    }
+    
+    const apiKey = getApiKey()
+    if (!apiKey) {
+      return NextResponse.json({ error: "POLYGON_KEY_REQUIRED" }, { status: 401 })
+    }
+    
     const config: ScanConfig = { ...DEFAULT_SCAN_CONFIG, ...body.config }
     const tickersToScan = body.tickers || SCAN_UNIVERSE.slice(0, 50) // Limit for demo
     
@@ -317,14 +331,19 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const ticker = searchParams.get("ticker")
+  const clientKey = searchParams.get("polygonKey")
   
   if (!ticker) {
     return NextResponse.json({ error: "ticker parameter required" }, { status: 400 })
   }
   
+  if (clientKey) {
+    setRequestApiKey(clientKey)
+  }
+  
   const apiKey = getApiKey()
   if (!apiKey) {
-    return NextResponse.json({ error: "POLYGON_API_KEY not configured" }, { status: 500 })
+    return NextResponse.json({ error: "POLYGON_KEY_REQUIRED" }, { status: 401 })
   }
   
   try {

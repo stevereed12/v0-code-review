@@ -2,21 +2,46 @@
 
 import type { LivePrice, PriceHistory } from "./types"
 
-const API_KEY_STORAGE_KEY = "white80:anthropic_api_key"
+const ANTHROPIC_KEY_STORAGE = "white80:anthropic_api_key"
+const POLYGON_KEY_STORAGE = "white80:polygon_api_key"
 
+// Anthropic API Key
 export function getStoredApiKey(): string | null {
   if (typeof window === "undefined") return null
-  return localStorage.getItem(API_KEY_STORAGE_KEY)
+  return localStorage.getItem(ANTHROPIC_KEY_STORAGE)
 }
 
 export function setStoredApiKey(key: string): void {
   if (typeof window === "undefined") return
-  localStorage.setItem(API_KEY_STORAGE_KEY, key)
+  localStorage.setItem(ANTHROPIC_KEY_STORAGE, key)
 }
 
 export function clearStoredApiKey(): void {
   if (typeof window === "undefined") return
-  localStorage.removeItem(API_KEY_STORAGE_KEY)
+  localStorage.removeItem(ANTHROPIC_KEY_STORAGE)
+}
+
+// Polygon API Key
+export function getStoredPolygonKey(): string | null {
+  if (typeof window === "undefined") return null
+  return localStorage.getItem(POLYGON_KEY_STORAGE)
+}
+
+export function setStoredPolygonKey(key: string): void {
+  if (typeof window === "undefined") return
+  localStorage.setItem(POLYGON_KEY_STORAGE, key)
+}
+
+export function clearStoredPolygonKey(): void {
+  if (typeof window === "undefined") return
+  localStorage.removeItem(POLYGON_KEY_STORAGE)
+}
+
+export class PolygonKeyRequiredError extends Error {
+  constructor() {
+    super("POLYGON_KEY_REQUIRED")
+    this.name = "PolygonKeyRequiredError"
+  }
 }
 
 export class ApiKeyRequiredError extends Error {
@@ -67,6 +92,29 @@ export async function fetchChartData(ticker: string): Promise<PriceHistory[]> {
 
   if (!res.ok || json.error) {
     throw new Error(json.error || `Chart API error ${res.status}`)
+  }
+
+  return json.data
+}
+
+// Tier 1 Scanner
+export async function runTier1Scan(config?: Record<string, unknown>, tickers?: string[]) {
+  const clientPolygonKey = getStoredPolygonKey()
+  
+  const res = await fetch("/api/tier1-scan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ config, tickers, clientPolygonKey }),
+  })
+
+  const json = await res.json()
+
+  if (json.error === "POLYGON_KEY_REQUIRED") {
+    throw new PolygonKeyRequiredError()
+  }
+
+  if (!res.ok || json.error) {
+    throw new Error(json.error || `Tier 1 scan error ${res.status}`)
   }
 
   return json.data
