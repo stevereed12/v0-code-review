@@ -57,9 +57,24 @@ The "session" tag (PRE/REGULAR/POST/LAST) tells you which session the price is f
 Tailor plays to current market state — e.g., during pre-market, suggest entries at the open or limit orders, not market orders.`
   }
 
-  return `You are White 80, a daily trading signal engine. Today is ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}, ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", timeZoneName: "short" })}.${priceBlock}${newsBlock}
+  const todayStr = new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+  const timeStr = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", timeZoneName: "short" })
 
-For each ticker (${tickers.join(", ")}), generate a trading signal using the verified prices above. Use web search ONLY for context like recent technical setups, options unusual activity, or thematic news — NOT for prices.
+  return `You are White 80, a daily trading signal engine. 
+
+TODAY IS: ${todayStr}, ${timeStr}
+
+CRITICAL DATE VALIDATION:
+- Use web search to verify CURRENT catalyst dates
+- If an earnings date or event has ALREADY PASSED, do NOT mention it as upcoming
+- Only reference catalysts that are ACTUALLY in the future from today's date
+- When in doubt about a date, search to confirm before including it
+${priceBlock}${newsBlock}
+
+For each ticker (${tickers.join(", ")}), generate a trading signal using the verified prices above. Use web search to:
+1. VERIFY that any catalyst dates mentioned are actually in the future
+2. Find recent technical setups and options unusual activity
+3. Get current thematic context
 
 Return a JSON array. No markdown, no backticks, just raw JSON:
 
@@ -70,19 +85,22 @@ Return a JSON array. No markdown, no backticks, just raw JSON:
 "change_pct": 1.2,
 "signal": "BUY",
 "play": "Buy $130 calls exp this Friday",
-"thesis": "2-sentence conviction note that REFERENCES the news context if relevant",
+"thesis": "2-sentence conviction note - only mention FUTURE catalysts, not past ones",
 "risk": "Medium",
-"catalyst": "earnings Thursday",
+"catalyst": "Only include if verified as FUTURE date, otherwise use 'none' or 'technical setup'",
 "target": 145.00,
 "stop": 118.00,
 "news_aware": true
 }
 ]
 
-Set news_aware to true ONLY if your play directly factored in a recent news item. Otherwise false.
-Signal must be one of: BUY, SELL, HOLD, WATCH, FADE. Risk must be one of: Low, Medium, High.
-Use the exact price/change_pct from the verified prices above for each ticker.
-Return the array for all ${tickers.length} tickers.`
+RULES:
+- Set news_aware to true ONLY if your play directly factored in a verified recent news item
+- Signal must be one of: BUY, SELL, HOLD, WATCH, FADE
+- Risk must be one of: Low, Medium, High
+- Use the exact price/change_pct from the verified prices above
+- DO NOT reference past earnings or events as if they are upcoming
+- Return the array for all ${tickers.length} tickers`
 }
 
 export function buildBriefPrompt(tickers: string[]): string {

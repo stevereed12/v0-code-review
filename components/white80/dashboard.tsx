@@ -897,59 +897,89 @@ export function White80Dashboard() {
             )}
 
             {brief && (
-              <div className="animate-in fade-in duration-300">
+              <div className="animate-in fade-in duration-300 space-y-4">
+                {/* Tone Banner */}
                 <div
-                  className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5 mb-3"
+                  className="rounded-lg p-4"
                   style={{
-                    borderLeft: `3px solid ${brief.tone === "RISK-ON" ? "#00ffaa" : brief.tone === "RISK-OFF" ? "#f87171" : "#facc15"}`,
+                    background: brief.tone === "RISK-ON" ? "linear-gradient(135deg, rgba(0,255,170,0.1) 0%, rgba(0,229,255,0.05) 100%)" 
+                      : brief.tone === "RISK-OFF" ? "linear-gradient(135deg, rgba(248,113,113,0.1) 0%, rgba(251,146,60,0.05) 100%)"
+                      : "linear-gradient(135deg, rgba(250,204,21,0.1) 0%, rgba(167,139,250,0.05) 100%)",
+                    border: `1px solid ${brief.tone === "RISK-ON" ? "#00ffaa40" : brief.tone === "RISK-OFF" ? "#f8717140" : "#facc1540"}`,
                   }}
                 >
-                  <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-1.5">
-                    OVERNIGHT FUTURES - {brief.tone}
-                  </div>
-                  <div className="text-sm leading-relaxed">{brief.futures}</div>
-                </div>
-
-                <div className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5 mb-3">
-                  <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2">TOP HEADLINES</div>
-                  {brief.headlines?.map((h, i) => (
-                    <div key={i} className="text-[13px] leading-relaxed py-1 border-b border-[#131c2e] last:border-0">
-                      <span className="text-[#00e5ff] mr-1.5">-</span>
-                      {h}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="font-mono text-[10px] tracking-[2px] text-[#3d4f6b]">MARKET TONE</div>
+                    <div 
+                      className="font-mono text-xs font-semibold px-3 py-1 rounded"
+                      style={{ 
+                        color: brief.tone === "RISK-ON" ? "#00ffaa" : brief.tone === "RISK-OFF" ? "#f87171" : "#facc15",
+                        background: brief.tone === "RISK-ON" ? "#00ffaa15" : brief.tone === "RISK-OFF" ? "#f8717115" : "#facc1515",
+                        border: `1px solid ${brief.tone === "RISK-ON" ? "#00ffaa40" : brief.tone === "RISK-OFF" ? "#f8717140" : "#facc1540"}`,
+                      }}
+                    >
+                      {brief.tone}
                     </div>
-                  ))}
+                  </div>
+                  <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2">OVERNIGHT FUTURES</div>
+                  <div className="text-[15px] leading-relaxed text-[#d6dff0]">{brief.futures}</div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                  <div className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5">
-                    <div className="font-mono text-[9px] tracking-[2px] text-[#fb923c] mb-2">EARNINGS TODAY</div>
+                {/* Headlines */}
+                <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
+                  <div className="font-mono text-[10px] tracking-[2px] text-[#3d4f6b] mb-3">TOP HEADLINES</div>
+                  <div className="space-y-2">
+                    {brief.headlines?.map((h, i) => (
+                      <div key={i} className="flex gap-3 text-[14px] leading-relaxed py-2 border-b border-[#131c2e] last:border-0">
+                        <span className="text-[#00e5ff] font-mono text-xs mt-0.5">{i + 1}</span>
+                        <span className="text-[#d6dff0]">{h}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Earnings & Econ Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-2 h-2 rounded-full bg-[#fb923c]" />
+                      <div className="font-mono text-[10px] tracking-[2px] text-[#fb923c]">EARNINGS TODAY</div>
+                    </div>
                     {brief.earnings_today?.length ? (
-                      brief.earnings_today.map((e, i) => (
-                        <div key={i} className="font-mono text-[11px] py-0.5">
-                          {e}
-                        </div>
-                      ))
+                      <div className="space-y-1.5">
+                        {brief.earnings_today.map((e, i) => (
+                          <div key={i} className="font-mono text-[12px] text-[#d6dff0] bg-[#090c14] rounded px-2.5 py-1.5">
+                            {e}
+                          </div>
+                        ))}
+                      </div>
                     ) : (
-                      <div className="font-mono text-[10px] text-[#3d4f6b]">none on watchlist</div>
+                      <div className="font-mono text-[11px] text-[#3d4f6b] italic">No earnings on watchlist today</div>
                     )}
                   </div>
-                  <div className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5">
-                    <div className="font-mono text-[9px] tracking-[2px] text-[#a78bfa] mb-2">ECON TODAY</div>
+                  <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-2 h-2 rounded-full bg-[#a78bfa]" />
+                      <div className="font-mono text-[10px] tracking-[2px] text-[#a78bfa]">ECONOMIC CALENDAR</div>
+                    </div>
                     {brief.econ_today?.length ? (
-                      brief.econ_today.map((e, i) => (
-                        <div key={i} className="font-mono text-[11px] py-0.5">
-                          {e}
-                        </div>
-                      ))
+                      <div className="space-y-1.5">
+                        {brief.econ_today.map((e, i) => (
+                          <div key={i} className="font-mono text-[12px] text-[#d6dff0] bg-[#090c14] rounded px-2.5 py-1.5">
+                            {e}
+                          </div>
+                        ))}
+                      </div>
                     ) : (
-                      <div className="font-mono text-[10px] text-[#3d4f6b]">quiet day</div>
+                      <div className="font-mono text-[11px] text-[#3d4f6b] italic">Quiet day on the calendar</div>
                     )}
                   </div>
                 </div>
 
-                <div className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5">
-                  <div className="font-mono text-[9px] tracking-[2px] text-[#00e5ff] mb-2">WATCHLIST READ</div>
-                  <div className="text-sm leading-relaxed">{brief.watchlist_take}</div>
+                {/* Watchlist Take */}
+                <div className="bg-gradient-to-r from-[#00e5ff08] to-[#0c1020] border border-[#00e5ff30] rounded-lg p-4">
+                  <div className="font-mono text-[10px] tracking-[2px] text-[#00e5ff] mb-3">WATCHLIST READ</div>
+                  <div className="text-[15px] leading-relaxed text-[#d6dff0]">{brief.watchlist_take}</div>
                 </div>
               </div>
             )}
