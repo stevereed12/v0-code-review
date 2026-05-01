@@ -68,7 +68,7 @@ function Tier1Card({
   signal: Tier1Signal
   onPromote: (ticker: string) => void 
 }) {
-  const { ticker, name, sector, score, signals, price, changePercent, catalyst, thesis, suggestedPlay } = signal
+  const { ticker, name, sector, score, signals, price, changePercent, catalyst, thesis, suggestedPlay, reasoning } = signal
   
   return (
     <Card className="bg-[#0c1020] border-[#131c2e] hover:border-[#00e5ff]/30 transition-colors">
@@ -96,6 +96,13 @@ function Tier1Card({
               </div>
             </div>
             
+            {/* Reasoning blurb - Why this ticker */}
+            {reasoning && (
+              <p className="text-[13px] text-[#d6dff0]/90 mb-3 leading-relaxed capitalize">
+                {reasoning}
+              </p>
+            )}
+            
             {/* Signal dots */}
             <div className="flex flex-wrap gap-3 mb-3">
               <SignalDot active={signals.nearCatalyst?.active} label="Catalyst" />
@@ -121,7 +128,7 @@ function Tier1Card({
               </div>
             )}
             
-            {/* Thesis */}
+            {/* Thesis (from Claude enrichment) */}
             {thesis && (
               <p className="text-sm text-[#d6dff0]/80 mb-2 leading-relaxed">{thesis}</p>
             )}

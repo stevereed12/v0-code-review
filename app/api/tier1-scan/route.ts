@@ -209,29 +209,33 @@ async function scanTicker(
     // Signal 1: Near Catalyst (we'll use Claude for this in a separate call)
     const nearCatalyst: SignalResult = { active: false, detail: "Pending catalyst scan" }
     
-    // Signal 2: Consolidating (low volatility) - lowered threshold for more matches
+    // Signal 2: Consolidating (low volatility) - relaxed threshold
     const consolidating: SignalResult = {
-      active: technicals.consolidationScore > 40,
+      active: technicals.consolidationScore > 30,
       value: technicals.consolidationScore,
       detail: `Consolidation score: ${technicals.consolidationScore.toFixed(0)}`,
     }
     
-    // Signal 3: Above 20-day SMA
+    // Signal 3: Above 20-day SMA (also consider "near" SMA as half-active)
     const aboveSma: SignalResult = {
-      active: technicals.priceVsSma > 0,
+      active: technicals.priceVsSma > -2, // Within 2% below counts too
       value: technicals.priceVsSma,
       detail: `${technicals.priceVsSma > 0 ? "+" : ""}${technicals.priceVsSma.toFixed(1)}% vs SMA20`,
     }
     
-    // Signal 4: Sector outperforming SPY
+    // Signal 4: Sector outperforming SPY (relaxed - flat is okay)
     const sectorStrong = await checkSectorStrength(sectorEtf, spyBars)
+    // Make sector signal more lenient
+    if (sectorStrong.value !== undefined && sectorStrong.value > -1) {
+      sectorStrong.active = true
+    }
     
     // Signal 5: Options heat (simplified - would need more API calls for full data)
     const optionsHeat: SignalResult = { active: false, detail: "Options data pending" }
     
-    // Signal 6: Volume building
+    // Signal 6: Volume building (relaxed threshold)
     const volumeBuilding: SignalResult = {
-      active: technicals.volumeRatio > 1.1,
+      active: technicals.volumeRatio > 0.95,
       value: technicals.volumeRatio,
       detail: `${(technicals.volumeRatio * 100).toFixed(0)}% of avg volume`,
     }
@@ -240,8 +244,21 @@ async function scanTicker(
     const signals = { nearCatalyst, consolidating, aboveSma, sectorStrong, optionsHeat, volumeBuilding }
     const score = Object.values(signals).filter(s => s.active).length
     
-    // Return if has at least 2 signals (filter in frontend based on minScore)
-    if (score < 2) return null
+    // Generate reasoning blurb based on active signals
+    const reasonParts: string[] = []
+    if (consolidating.active) reasonParts.push("tight consolidation pattern")
+    if (aboveSma.active && technicals.priceVsSma > 0) reasonParts.push("holding above key moving average")
+    else if (aboveSma.active) reasonParts.push("testing 20-day support")
+    if (sectorStrong.active && (sectorStrong.value || 0) > 1) reasonParts.push("sector showing relative strength")
+    if (volumeBuilding.active && technicals.volumeRatio > 1.2) reasonParts.push("volume accumulation evident")
+    else if (volumeBuilding.active) reasonParts.push("steady institutional interest")
+    
+    const reasoning = reasonParts.length > 0 
+      ? reasonParts.slice(0, 3).join(", ").replace(/,([^,]*)$/, " and$1") + "."
+      : "Technical setup developing."
+    
+    // Return if has at least 1 signal (filter in frontend based on minScore)
+    if (score < 1) return null
     
     const prevClose = bars[bars.length - 2]?.c || technicals.currentPrice
     const changePercent = ((technicals.currentPrice - prevClose) / prevClose) * 100
@@ -254,6 +271,7 @@ async function scanTicker(
       signals,
       price: technicals.currentPrice,
       changePercent,
+      reasoning,
     }
   } catch (err) {
     console.error(`Error scanning ${ticker}:`, err)

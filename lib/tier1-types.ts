@@ -23,6 +23,7 @@ export interface Tier1Signal {
   changePercent: number
   suggestedPlay?: string
   thesis?: string
+  reasoning?: string // Auto-generated blurb explaining why this ticker is flagged
 }
 
 export interface SignalResult {
