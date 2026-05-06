@@ -911,6 +911,21 @@ export function White80Dashboard() {
 
             {brief && (
               <div className="animate-in fade-in duration-300 space-y-4">
+                {/* Session Date Header */}
+                {brief.session_date && (
+                  <div className="font-mono text-center text-xs text-[#00e5ff] tracking-wider bg-[#00e5ff]/5 border border-[#00e5ff]/20 rounded py-2">
+                    BRIEF FOR: {brief.session_date.toUpperCase()}
+                  </div>
+                )}
+
+                {/* Today's Close (after-hours only) */}
+                {brief.todays_close && (
+                  <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
+                    <div className="font-mono text-[10px] tracking-[2px] text-[#fb923c] mb-2">TODAY&apos;S SESSION RECAP</div>
+                    <div className="text-[15px] leading-relaxed text-[#d6dff0]">{brief.todays_close}</div>
+                  </div>
+                )}
+
                 {/* Tone Banner */}
                 <div
                   className="rounded-lg p-4"
@@ -934,7 +949,9 @@ export function White80Dashboard() {
                       {brief.tone}
                     </div>
                   </div>
-                  <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2">OVERNIGHT FUTURES</div>
+                  <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2">
+                    {brief.todays_close ? "OVERNIGHT FUTURES" : "PRE-MARKET FUTURES"}
+                  </div>
                   <div className="text-[15px] leading-relaxed text-[#d6dff0]">{brief.futures}</div>
                 </div>
 

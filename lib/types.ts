@@ -29,6 +29,8 @@ export interface TickerNews {
 }
 
 export interface Brief {
+  session_date?: string
+  todays_close?: string // Only present in after-hours briefs
   futures: string
   headlines: string[]
   earnings_today: string[]

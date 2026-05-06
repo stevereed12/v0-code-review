@@ -148,22 +148,79 @@ RULES:
 }
 
 export function buildBriefPrompt(tickers: string[]): string {
-  return `You are White 80's pre-market brief generator. Today is ${new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}.
+  const now = new Date()
+  const etHour = parseInt(now.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", hour12: false }))
+  
+  // Determine if we're in after-hours (after 4pm ET) or pre-market (before 9:30am ET)
+  const isAfterHours = etHour >= 16 || etHour < 4 // 4pm-4am ET
+  const isPreMarket = etHour >= 4 && etHour < 9 // 4am-9:30am ET
+  
+  const todayStr = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "America/New_York" })
+  
+  // Calculate tomorrow's date
+  const tomorrow = new Date(now)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const tomorrowStr = tomorrow.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "America/New_York" })
+  
+  // After hours: brief is for TOMORROW, include today's recap
+  if (isAfterHours) {
+    return `You are White 80's market brief generator. 
+
+CURRENT TIME: ${now.toLocaleString("en-US", { timeZone: "America/New_York", weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })} ET
+BRIEF IS FOR: ${tomorrowStr} (tomorrow's session)
+
+The regular session has CLOSED. Generate a brief for TOMORROW's trading day.
+
+Use web search to find:
+
+TODAY'S RECAP (what happened):
+- How did the major indices close? (SPY, QQQ, IWM)
+- Any notable sector rotation or leadership changes
+- After-hours movers and earnings reactions
+- Key headlines from today's session
+
+TOMORROW'S SETUP:
+- Overnight futures direction (ES, NQ, RTY)
+- Tomorrow's earnings calendar (BMO = before open, AMC = after close)
+- Tomorrow's economic data releases (CPI, jobs, Fed speakers, etc.)
+- Any overnight news breaking now
+- Quick read on these names heading into tomorrow: ${tickers.join(", ")}
+
+Return JSON, no markdown, no backticks:
+
+{
+"session_date": "${tomorrowStr}",
+"todays_close": "2-3 sentences on how today's session ended - index closes, sector leaders/laggards",
+"futures": "1-2 sentence read on overnight futures direction",
+"headlines": ["headline 1", "headline 2", "headline 3", "headline 4"],
+"earnings_today": ["TICKER1 (BMO)", "TICKER2 (AMC)"],
+"econ_today": ["8:30 ET CPI", "2:00 ET FOMC minutes"],
+"watchlist_take": "2-3 sentences on what's setting up for tomorrow across the watchlist",
+"tone": "RISK-ON | RISK-OFF | NEUTRAL"
+}`
+  }
+  
+  // Pre-market or during regular hours: brief is for TODAY
+  return `You are White 80's pre-market brief generator.
+
+CURRENT TIME: ${now.toLocaleString("en-US", { timeZone: "America/New_York", weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })} ET
+BRIEF IS FOR: ${todayStr} (today's session)
 
 Use web search to find:
 
 - Overnight futures action (ES, NQ, RTY)
-- Top market-moving news
-- Today's earnings calendar
+- Top market-moving news from overnight/this morning
+- Today's earnings calendar (BMO = before open, AMC = after close)
 - Today's economic data releases (CPI, jobs, Fed speakers, etc.)
 - Quick read on these names: ${tickers.join(", ")}
 
 Return JSON, no markdown, no backticks:
 
 {
-"futures": "1-2 sentence read on overnight",
-"headlines": ["headline 1", "headline 2", "headline 3"],
-"earnings_today": ["TICKER1 (BMO/AMC)", "TICKER2 (BMO/AMC)"],
+"session_date": "${todayStr}",
+"futures": "1-2 sentence read on overnight/pre-market futures",
+"headlines": ["headline 1", "headline 2", "headline 3", "headline 4"],
+"earnings_today": ["TICKER1 (BMO)", "TICKER2 (AMC)"],
 "econ_today": ["8:30 ET CPI", "2:00 ET FOMC minutes"],
 "watchlist_take": "2-3 sentences on what's setting up across the watchlist",
 "tone": "RISK-ON | RISK-OFF | NEUTRAL"
