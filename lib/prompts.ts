@@ -3,10 +3,13 @@
 import type { LivePrice } from "./types"
 import { SCOUT_THEMES, CAP_TIERS, HORIZONS } from "./types"
 
+import type { OptionsChainSummary } from "./types"
+
 export function buildSignalPrompt(
   tickers: string[],
   newsContext: string | null = null,
-  livePrices: Record<string, LivePrice> | null = null
+  livePrices: Record<string, LivePrice> | null = null,
+  optionsData: Record<string, OptionsChainSummary | null> | null = null
 ): string {
   const newsBlock = newsContext
     ? `
@@ -57,6 +60,47 @@ The "session" tag (PRE/REGULAR/POST/LAST) tells you which session the price is f
 Tailor plays to current market state — e.g., during pre-market, suggest entries at the open or limit orders, not market orders.`
   }
 
+  // Build options data block if available
+  let optionsBlock = ""
+  if (optionsData && Object.keys(optionsData).length > 0) {
+    const optionsLines = tickers.map(t => {
+      const opts = optionsData[t]
+      if (!opts) return `${t}: No options data available`
+      
+      const hotCallStrikes = opts.hotStrikes
+        .filter(s => s.type === "call")
+        .slice(0, 3)
+        .map(s => `$${s.strike} (${s.expiration}, vol: ${s.volume})`)
+        .join(", ")
+      
+      const hotPutStrikes = opts.hotStrikes
+        .filter(s => s.type === "put")
+        .slice(0, 2)
+        .map(s => `$${s.strike} (${s.expiration}, vol: ${s.volume})`)
+        .join(", ")
+      
+      return `${t}: C/P ${opts.callPutRatio.toFixed(1)}x | ${opts.sentiment} | ATM skew: ${opts.atmSkew.toFixed(0)}%${opts.unusualActivity ? " | UNUSUAL ACTIVITY" : ""}
+    Hot calls: ${hotCallStrikes || "none"}
+    Hot puts: ${hotPutStrikes || "none"}
+    Summary: ${opts.summary}`
+    }).join("\n\n")
+
+    optionsBlock = `
+
+=== LIVE OPTIONS FLOW (from Polygon) ===
+Use this data to inform your options plays. Favor strikes with actual volume.
+
+${optionsLines}
+========================================
+
+When suggesting options plays:
+- PREFER strikes listed in "Hot calls/puts" above — these have real volume
+- Use the expiration dates shown — don't guess random Fridays
+- If a ticker shows UNUSUAL ACTIVITY or BULLISH sentiment, lean into call plays
+- If BEARISH sentiment, consider puts or smaller call positions
+- C/P ratio > 2x = bullish flow, < 0.7x = bearish flow`
+  }
+
   const todayStr = new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
   const timeStr = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", timeZoneName: "short" })
 
@@ -69,9 +113,9 @@ CRITICAL DATE VALIDATION:
 - If an earnings date or event has ALREADY PASSED, do NOT mention it as upcoming
 - Only reference catalysts that are ACTUALLY in the future from today's date
 - When in doubt about a date, search to confirm before including it
-${priceBlock}${newsBlock}
+${priceBlock}${optionsBlock}${newsBlock}
 
-For each ticker (${tickers.join(", ")}), generate a trading signal using the verified prices above. Use web search to:
+For each ticker (${tickers.join(", ")}), generate a trading signal using the verified prices and options data above. Use web search to:
 1. VERIFY that any catalyst dates mentioned are actually in the future
 2. Find recent technical setups and options unusual activity
 3. Get current thematic context

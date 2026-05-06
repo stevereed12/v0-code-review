@@ -237,6 +237,19 @@ export function White80Dashboard() {
         // Continue without prices
       }
 
+      // Fetch options data if Polygon key available
+      let optionsData: Record<string, import("@/lib/types").OptionsChainSummary | null> | null = null
+      try {
+        const priceMap: Record<string, number> = {}
+        for (const [ticker, p] of Object.entries(prices)) {
+          if (p?.price) priceMap[ticker] = p.price
+        }
+        const { fetchOptionsData } = await import("@/lib/api")
+        optionsData = await fetchOptionsData(watchlist, priceMap)
+      } catch {
+        // Continue without options data - Polygon key might not be set
+      }
+
       // Build news context
       let newsContext: string | null = null
       if (news.length > 0) {
@@ -253,8 +266,8 @@ export function White80Dashboard() {
         if (!newsContext.trim()) newsContext = null
       }
 
-      // Generate signals
-      const parsed = await askClaude<Signal[]>(buildSignalPrompt(watchlist, newsContext, prices))
+      // Generate signals with prices and options data
+      const parsed = await askClaude<Signal[]>(buildSignalPrompt(watchlist, newsContext, prices, optionsData))
 
       // Override with verified prices
       const withPrices = parsed.map((s) => {
@@ -856,7 +869,7 @@ export function White80Dashboard() {
             {pricesAt && Object.keys(livePrices).length > 0 && (
               <div className="font-mono bg-[#00ffaa]/5 border border-[#00ffaa]/40 p-2 rounded text-[10px] text-[#00ffaa] tracking-wide mb-3 flex justify-between items-center flex-wrap gap-1.5">
                 <span>
-                  * YAHOO - {Object.keys(livePrices).length}/{watchlist.length} TICKERS
+                  * PRICES + OPTIONS DATA - {Object.keys(livePrices).length}/{watchlist.length} TICKERS
                 </span>
                 <span className="text-[#3d4f6b]">fetched {pricesAt}</span>
               </div>

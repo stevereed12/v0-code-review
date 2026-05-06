@@ -1,6 +1,6 @@
 // ─── API CLIENT ─────────────────────────────────────────────────────────────
 
-import type { LivePrice, PriceHistory } from "./types"
+import type { LivePrice, PriceHistory, OptionsChainSummary } from "./types"
 
 const ANTHROPIC_KEY_STORAGE = "white80:anthropic_api_key"
 const POLYGON_KEY_STORAGE = "white80:polygon_api_key"
@@ -108,6 +108,34 @@ export async function fetchChartData(ticker: string): Promise<PriceHistory[]> {
     throw new Error(json.error || `Chart API error ${res.status}`)
   }
 
+  return json.data
+}
+
+// Options Data
+export async function fetchOptionsData(
+  tickers: string[], 
+  prices: Record<string, number>
+): Promise<Record<string, OptionsChainSummary | null>> {
+  if (!tickers || tickers.length === 0) return {}
+  
+  const polygonKey = getStoredPolygonKey()
+  if (!polygonKey) {
+    throw new PolygonKeyRequiredError()
+  }
+  
+  const url = `/api/options?symbols=${tickers.join(",")}&prices=${encodeURIComponent(JSON.stringify(prices))}&polygonKey=${encodeURIComponent(polygonKey)}`
+  
+  const res = await fetch(url)
+  const json = await res.json()
+  
+  if (json.error === "POLYGON_KEY_REQUIRED") {
+    throw new PolygonKeyRequiredError()
+  }
+  
+  if (!res.ok || json.error) {
+    throw new Error(json.error || `Options API error ${res.status}`)
+  }
+  
   return json.data
 }
 

@@ -107,6 +107,31 @@ export interface PriceHistory {
   close: number
 }
 
+export interface OptionsChainSummary {
+  ticker: string
+  currentPrice: number
+  callPutRatio: number
+  totalCallVolume: number
+  totalPutVolume: number
+  totalCallOI: number
+  totalPutOI: number
+  atmCallsVolume: number
+  atmPutsVolume: number
+  atmSkew: number
+  hotStrikes: Array<{
+    strike: number
+    expiration: string
+    type: "call" | "put"
+    volume: number
+    openInterest: number
+    unusual: boolean
+    reason: string
+  }>
+  unusualActivity: boolean
+  sentiment: "BULLISH" | "BEARISH" | "NEUTRAL"
+  summary: string
+}
+
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 
 export const SEED_WATCHLIST = ["NVDA", "SPY", "AMZN", "HOOD", "META", "PLTR", "MSTR", "TSM"]
