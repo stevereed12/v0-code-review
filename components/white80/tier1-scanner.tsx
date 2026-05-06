@@ -68,7 +68,7 @@ function Tier1Card({
   signal: Tier1Signal
   onPromote: (ticker: string) => void 
 }) {
-  const { ticker, name, sector, score, signals, price, changePercent, catalyst, thesis, suggestedPlay, reasoning } = signal
+  const { ticker, name, sector, score, signals, price, changePercent, catalyst, thesis, suggestedPlay, reasoning, optionsData } = signal
   
   return (
     <Card className="bg-[#0c1020] border-[#131c2e] hover:border-[#00e5ff]/30 transition-colors">
@@ -112,6 +112,26 @@ function Tier1Card({
               <SignalDot active={signals.optionsHeat?.active} label="Options" />
               <SignalDot active={signals.volumeBuilding?.active} label="Volume" />
             </div>
+            
+            {/* Options Heat Info */}
+            {optionsData && signals.optionsHeat?.active && (
+              <div 
+                className="mb-3 p-2 rounded text-xs flex items-center gap-4"
+                style={{ background: `${C.orange}10`, border: `1px solid ${C.orange}30` }}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[#fb923c] font-mono">C/P:</span>
+                  <span className="text-[#d6dff0] font-mono">{optionsData.callPutRatio.toFixed(1)}x</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[#fb923c] font-mono">ATM:</span>
+                  <span className="text-[#d6dff0] font-mono">{optionsData.atmCallSkew.toFixed(0)}%</span>
+                </div>
+                {optionsData.unusualCallActivity && (
+                  <span className="text-[#fb923c] text-[10px] font-mono uppercase tracking-wider">Unusual</span>
+                )}
+              </div>
+            )}
             
             {/* Catalyst info */}
             {catalyst && (

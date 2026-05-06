@@ -24,6 +24,11 @@ export interface Tier1Signal {
   suggestedPlay?: string
   thesis?: string
   reasoning?: string // Auto-generated blurb explaining why this ticker is flagged
+  optionsData?: {
+    callPutRatio: number
+    atmCallSkew: number
+    unusualCallActivity: boolean
+  }
 }
 
 export interface SignalResult {

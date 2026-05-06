@@ -122,6 +122,80 @@ async function getTickerDetails(ticker: string) {
   }
 }
 
+// ─── OPTIONS DATA ────────────────────────────────────────────────────────────
+
+interface OptionsData {
+  callVolume: number
+  putVolume: number
+  callPutRatio: number
+  nearTermCallOI: number
+  nearTermPutOI: number
+  unusualCallActivity: boolean
+  atmCallSkew: number // % of calls near the money
+}
+
+async function getOptionsFlow(ticker: string, currentPrice: number): Promise<OptionsData | null> {
+  try {
+    // Get options contracts expiring in next 30 days
+    const now = new Date()
+    const in30Days = new Date()
+    in30Days.setDate(now.getDate() + 30)
+    
+    const fromDate = now.toISOString().split("T")[0]
+    const toDate = in30Days.toISOString().split("T")[0]
+    
+    const data = await polygonFetch(
+      `/v3/reference/options/contracts?underlying_ticker=${ticker}&expiration_date.gte=${fromDate}&expiration_date.lte=${toDate}&limit=250`
+    ) as { 
+      results?: Array<{ 
+        contract_type: string
+        strike_price: number
+        expiration_date: string
+      }> 
+    }
+    
+    const contracts = data.results || []
+    if (contracts.length === 0) return null
+    
+    let callCount = 0
+    let putCount = 0
+    let atmCalls = 0 // Within 5% of current price
+    
+    const atmRange = currentPrice * 0.05
+    
+    for (const contract of contracts) {
+      if (contract.contract_type === "call") {
+        callCount++
+        if (Math.abs(contract.strike_price - currentPrice) <= atmRange) {
+          atmCalls++
+        }
+      } else if (contract.contract_type === "put") {
+        putCount++
+      }
+    }
+    
+    const callPutRatio = putCount > 0 ? callCount / putCount : callCount > 0 ? 5 : 1
+    const atmCallSkew = callCount > 0 ? (atmCalls / callCount) * 100 : 0
+    
+    // Unusual activity = high call/put ratio + concentration near ATM
+    const unusualCallActivity = callPutRatio > 1.5 && atmCallSkew > 20
+    
+    return {
+      callVolume: callCount,
+      putVolume: putCount,
+      callPutRatio,
+      nearTermCallOI: atmCalls,
+      nearTermPutOI: 0,
+      unusualCallActivity,
+      atmCallSkew,
+    }
+  } catch (err) {
+    // Options data might not be available for all tickers
+    console.error(`Options fetch failed for ${ticker}:`, err)
+    return null
+  }
+}
+
 // ─── SIGNAL CALCULATIONS ─────────────────────────────────────────────────────
 
 function calculateTechnicals(bars: Array<{ c: number; v: number; h: number; l: number }>) {
@@ -238,11 +312,30 @@ async function scanTicker(
       sectorStrong.active = true
     }
     
-    // Signal 5: Options heat - enable as proxy based on volume spike
-    const optionsHeat: SignalResult = { 
-      active: technicals.volumeRatio > 1.3, // Big volume = options activity likely
-      value: technicals.volumeRatio,
-      detail: technicals.volumeRatio > 1.3 ? "Elevated activity (volume proxy)" : "Normal flow"
+    // Signal 5: Real Options Heat from Polygon
+    let optionsHeat: SignalResult
+    const optionsData = await getOptionsFlow(ticker, technicals.currentPrice)
+    
+    if (optionsData) {
+      const { callPutRatio, unusualCallActivity, atmCallSkew } = optionsData
+      
+      // Active if: unusual call activity OR high call/put ratio OR concentrated ATM calls
+      const isHot = unusualCallActivity || callPutRatio > 2 || atmCallSkew > 30
+      
+      optionsHeat = {
+        active: isHot,
+        value: callPutRatio,
+        detail: isHot 
+          ? `C/P ratio ${callPutRatio.toFixed(1)}x, ${atmCallSkew.toFixed(0)}% ATM calls`
+          : `C/P ratio ${callPutRatio.toFixed(1)}x (normal)`,
+      }
+    } else {
+      // Fallback to volume proxy if options data unavailable
+      optionsHeat = { 
+        active: technicals.volumeRatio > 1.3,
+        value: technicals.volumeRatio,
+        detail: technicals.volumeRatio > 1.3 ? "Elevated volume (options N/A)" : "Normal flow"
+      }
     }
     
     // Signal 6: Volume building - any volume above 80% of normal
@@ -266,7 +359,13 @@ async function scanTicker(
     else if (aboveSma.active) reasonParts.push("testing 20-day level")
     if (sectorStrong.active && (sectorStrong.value || 0) > 2) reasonParts.push("sector leader")
     else if (sectorStrong.active && (sectorStrong.value || 0) > 0) reasonParts.push("sector tailwind")
-    if (optionsHeat.active) reasonParts.push("unusual volume activity")
+    if (optionsHeat.active && optionsData) {
+      if (optionsData.callPutRatio > 2.5) reasonParts.push("heavy call buying")
+      else if (optionsData.atmCallSkew > 30) reasonParts.push("options concentrated near the money")
+      else reasonParts.push("unusual options activity")
+    } else if (optionsHeat.active) {
+      reasonParts.push("elevated volume")
+    }
     if (volumeBuilding.active && technicals.volumeRatio > 1.2) reasonParts.push("accumulation underway")
     
     const reasoning = reasonParts.length > 0 
@@ -288,6 +387,11 @@ async function scanTicker(
       price: technicals.currentPrice,
       changePercent,
       reasoning,
+      optionsData: optionsData ? {
+        callPutRatio: optionsData.callPutRatio,
+        atmCallSkew: optionsData.atmCallSkew,
+        unusualCallActivity: optionsData.unusualCallActivity,
+      } : undefined,
     }
   } catch (err) {
     console.error(`Error scanning ${ticker}:`, err)
