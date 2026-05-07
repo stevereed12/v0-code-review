@@ -24,7 +24,7 @@ async function fetchFromPolygon(
     
     const res = await fetch(snapshotUrl, {
       headers: { Accept: "application/json" },
-      next: { revalidate: 15 }, // Cache for 15 seconds
+      cache: "no-store", // Always fetch fresh prices
     })
 
     if (!res.ok) {
@@ -101,7 +101,7 @@ async function fetchFromYahoo(symbol: string): Promise<Record<string, unknown> |
         Accept: "application/json",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
       },
-      next: { revalidate: 30 },
+      cache: "no-store", // Always fetch fresh prices
     })
 
     if (!res.ok) return null

@@ -83,7 +83,7 @@ export async function fetchLivePrices(tickers: string[]): Promise<Record<string,
     url += `&polygonKey=${encodeURIComponent(polygonKey)}`
   }
 
-  const res = await fetch(url)
+  const res = await fetch(url, { cache: "no-store" })
   const json = await res.json()
 
   if (!res.ok || json.error) {
@@ -101,7 +101,7 @@ export async function fetchChartData(ticker: string): Promise<PriceHistory[]> {
     url += `&polygonKey=${encodeURIComponent(polygonKey)}`
   }
 
-  const res = await fetch(url)
+  const res = await fetch(url, { cache: "no-store" })
   const json = await res.json()
 
   if (!res.ok || json.error) {
