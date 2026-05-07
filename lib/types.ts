@@ -29,14 +29,29 @@ export interface TickerNews {
 }
 
 export interface Brief {
-  session_date?: string
-  todays_close?: string // Only present in after-hours briefs
-  futures: string
-  headlines: string[]
-  earnings_today: string[]
-  econ_today: string[]
-  watchlist_take: string
-  tone: "RISK-ON" | "RISK-OFF" | "NEUTRAL"
+  session_date: string
+  session_label: string // "Pre-Open" or "Post-Close"
+  macro_pulse: {
+    spy: { price: number; change_pct: number; context: string }
+    qqq: { price: number; change_pct: number; context: string }
+    vix: { level: number; direction: string; context: string }
+    dxy: { level: number; context: string }
+    ten_year: { yield: number; context: string }
+    wti: { price: number; change_pct: number; context: string }
+    gold: { price: number; context: string }
+  }
+  catalysts: Array<{
+    title: string
+    body: string
+  }>
+  sector_rotation: {
+    leading: Array<{ sector: string; change_pct: number; detail: string }>
+    lagging: Array<{ sector: string; change_pct: number; detail: string }>
+  }
+  verdict: {
+    tone: "RISK-ON" | "RISK-OFF" | "NEUTRAL"
+    summary: string
+  }
 }
 
 export interface CuratorPromotion {

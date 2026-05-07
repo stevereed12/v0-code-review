@@ -153,106 +153,99 @@ export function buildBriefPrompt(tickers: string[]): string {
   
   // Determine if we're in after-hours (after 4pm ET) or pre-market (before 9:30am ET)
   const isAfterHours = etHour >= 16 || etHour < 4 // 4pm-4am ET
-  const isPreMarket = etHour >= 4 && etHour < 9 // 4am-9:30am ET
   
-  const todayStr = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "America/New_York" })
+  const todayStr = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "America/New_York" })
   
   // Calculate tomorrow's date
   const tomorrow = new Date(now)
   tomorrow.setDate(tomorrow.getDate() + 1)
-  const tomorrowStr = tomorrow.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "America/New_York" })
+  const tomorrowStr = tomorrow.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "America/New_York" })
   
-  // After hours: brief is for TOMORROW, include today's recap
-  if (isAfterHours) {
-    return `You are White 80, a professional trading desk briefing system.
+  const sessionDate = isAfterHours ? tomorrowStr : todayStr
+  const sessionLabel = isAfterHours ? "Post-Close" : "Pre-Open"
 
-CURRENT TIME: ${now.toLocaleString("en-US", { timeZone: "America/New_York", weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })} ET
-BRIEF IS FOR: ${tomorrowStr} (tomorrow's session)
-
-The regular session has CLOSED. Generate a comprehensive brief for TOMORROW.
-
-CRITICAL FORMATTING RULES:
-- Write in plain English - NO citations, NO "[cite-index]", NO reference markers
-- Be specific with numbers: "S&P closed up 0.4% at 5,250" not "indices were higher"
-- Name specific stocks when discussing movers
-- Include actual percentages, price levels, and data points
-- Write like a Bloomberg terminal brief - factual, dense, actionable
-
-Use web search to gather:
-
-TODAY'S SESSION RECAP:
-- Exact closing levels and % changes for SPY, QQQ, IWM
-- Which sectors led (XLK, XLF, XLE, etc.) and which lagged
-- Notable individual stock movers with % changes
-- Any after-hours earnings reactions with specific moves
-
-TOMORROW'S SETUP:
-- Current futures levels and direction (ES, NQ, RTY)  
-- Tomorrow's earnings: list actual tickers reporting BMO/AMC
-- Economic calendar: specific times and releases
-- Overnight developments from Asia/Europe if notable
-- Setup analysis for: ${tickers.join(", ")}
-
-Return JSON only. No markdown, no backticks, no citations:
-
-{
-"session_date": "${tomorrowStr}",
-"todays_close": "3-4 detailed sentences: SPY closed at X (+Y%), QQQ at X (+Y%). Tech led with semis up Z%, financials lagged. Notable movers: TICKER +X%, TICKER -Y%. After hours: TICKER earnings beat/miss, stock +/-X%.",
-"futures": "ES trading at X (+Y pts), NQ at X, indicating [gap up/down/flat] open. Overnight sentiment driven by [specific catalyst].",
-"headlines": ["Specific headline with details - not vague summaries", "Another concrete headline", "Third headline with actual news", "Fourth headline"],
-"earnings_today": ["AAPL (AMC) - expecting X EPS", "MSFT (BMO) - focus on cloud growth"],
-"econ_today": ["8:30 ET - Initial Jobless Claims (est: 220K)", "10:00 ET - Existing Home Sales"],
-"watchlist_take": "3-4 sentences analyzing YOUR watchlist tickers specifically. NVDA holding above X support, watching Y level. AAPL consolidating near highs ahead of earnings. META showing relative strength vs QQQ.",
-"tone": "RISK-ON"
-}
-
-TONE must be exactly one of: RISK-ON, RISK-OFF, NEUTRAL
-Base tone on: futures direction, VIX level, sector rotation, and overall sentiment.`
-  }
-  
-  // Pre-market or during regular hours: brief is for TODAY
   return `You are White 80, a professional trading desk briefing system.
 
-CURRENT TIME: ${now.toLocaleString("en-US", { timeZone: "America/New_York", weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })} ET
-BRIEF IS FOR: ${todayStr} (today's session)
+CURRENT TIME: ${now.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" })} ET
+GENERATING BRIEF FOR: ${sessionDate} | ${sessionLabel}
 
-CRITICAL FORMATTING RULES:
-- Write in plain English - NO citations, NO "[cite-index]", NO reference markers
-- Be specific with numbers: "ES up 12 points to 5,280" not "futures are higher"  
-- Name specific stocks and sectors when discussing movers
-- Include actual percentages, price levels, and times
-- Write like a Bloomberg terminal brief - factual, dense, actionable
+CRITICAL RULES:
+- NO citations, NO "[cite-index]", NO reference markers - EVER
+- Be specific with exact numbers, prices, and percentages
+- Write dense, factual prose like a Bloomberg terminal brief
+- Use web search to get CURRENT real-time data
 
-Use web search to gather:
+Use web search to gather ALL of the following:
 
-PRE-MARKET DATA:
-- Current futures levels: ES, NQ, RTY with points and %
-- VIX level and direction
-- Notable pre-market movers with specific % changes
-- Overnight action in Europe/Asia if significant
+MACRO PULSE DATA (get exact current levels):
+- SPY: current/pre-market price and % change from prior close
+- QQQ: current/pre-market price and % change
+- VIX: current level and direction
+- DXY (Dollar Index): current level
+- 10Y Treasury yield: current level
+- WTI Crude: current price and % change
+- Gold spot: current price
 
-TODAY'S CATALYSTS:
-- Earnings reporting today: actual ticker symbols, BMO vs AMC
-- Economic releases: exact times ET and what's expected
-- Fed speakers or other scheduled events
-- Any breaking news moving markets
+TOP CATALYSTS (the 2-4 biggest stories moving markets):
+- What is THE dominant narrative right now?
+- Major earnings that reported/are reporting
+- Economic data releases with times
+- Geopolitical or Fed-related developments
 
-WATCHLIST ANALYSIS for: ${tickers.join(", ")}
+SECTOR ROTATION:
+- Which sectors are LEADING and by how much
+- Which sectors are LAGGING and why
+- Notable individual stock movers with % changes
+
+VERDICT:
+- Overall market stance: RISK-ON, RISK-OFF, or NEUTRAL
+- 2-3 sentence explanation of WHY and what to watch
 
 Return JSON only. No markdown, no backticks, no citations:
 
 {
-"session_date": "${todayStr}",
-"futures": "ES at 5,280 (+15 pts, +0.3%), NQ +0.4%, RTY flat. VIX at 14.2, down from yesterday. Tone is [bullish/cautious/mixed] ahead of [specific catalyst].",
-"headlines": ["Specific headline - Company X beats earnings, guides higher", "Concrete news item with details", "Third headline with actual information", "Fourth headline"],
-"earnings_today": ["NVDA (AMC) - AI demand focus, est $5.50 EPS", "WMT (BMO) - consumer spending read"],
-"econ_today": ["8:30 ET - CPI m/m (est: +0.2%, prior: +0.3%)", "2:00 ET - FOMC Minutes"],
-"watchlist_take": "3-4 sentences on YOUR specific watchlist. AAPL gapping up 1.2% pre-market on supplier news, resistance at $185. NVDA flat ahead of earnings, key level is $900. TSLA weak, testing $170 support after downgrade.",
-"tone": "RISK-ON"
+  "session_date": "${sessionDate}",
+  "session_label": "${sessionLabel}",
+  "macro_pulse": {
+    "spy": { "price": 525.50, "change_pct": 0.45, "context": "closing Wednesday at $523.15" },
+    "qqq": { "price": 445.20, "change_pct": 0.62, "context": "off Wednesday close" },
+    "vix": { "level": 14.25, "direction": "down", "context": "trending lower as risk appetite returns" },
+    "dxy": { "level": 104.25, "context": "flat on session" },
+    "ten_year": { "yield": 4.35, "context": "holding steady, not climbing" },
+    "wti": { "price": 78.50, "change_pct": -2.1, "context": "down on supply news" },
+    "gold": { "price": 2350, "context": "catching bid on geopolitical uncertainty" }
+  },
+  "catalysts": [
+    {
+      "title": "FED MINUTES RELEASE",
+      "body": "2-4 sentences explaining this catalyst, what happened or is expected, and market reaction. Be specific with numbers and names."
+    },
+    {
+      "title": "NVDA EARNINGS BEAT",
+      "body": "Detailed explanation of the catalyst..."
+    }
+  ],
+  "sector_rotation": {
+    "leading": [
+      { "sector": "Technology", "change_pct": 1.8, "detail": "Semis leading with NVDA +4%, AMD +3%" },
+      { "sector": "Consumer Discretionary", "change_pct": 1.2, "detail": "AMZN, TSLA strength" }
+    ],
+    "lagging": [
+      { "sector": "Energy", "change_pct": -2.1, "detail": "Crude weakness dragging XOM, CVX" },
+      { "sector": "Utilities", "change_pct": -0.5, "detail": "Rate-sensitive names under pressure" }
+    ]
+  },
+  "verdict": {
+    "tone": "RISK-ON",
+    "summary": "2-3 sentences explaining the overall market stance. What's driving sentiment, what's the path of least resistance, what could change the picture. Be specific and actionable."
+  },
+  "watchlist_tickers": ${JSON.stringify(tickers)}
 }
 
-TONE must be exactly one of: RISK-ON, RISK-OFF, NEUTRAL
-Base tone on: futures direction, VIX level, breadth expectations, key catalysts.`
+IMPORTANT: 
+- "tone" must be exactly: "RISK-ON", "RISK-OFF", or "NEUTRAL"
+- All prices and percentages must be real numbers from your search, not placeholders
+- Catalysts should be the ACTUAL major stories moving markets today, not generic examples`
 }
 
 export function buildNewsPrompt(tickers: string[]): string {

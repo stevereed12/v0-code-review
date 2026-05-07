@@ -910,106 +910,151 @@ export function White80Dashboard() {
             )}
 
             {brief && (
-              <div className="animate-in fade-in duration-300 space-y-4">
-                {/* Session Date Header */}
-                {brief.session_date && (
-                  <div className="font-mono text-center text-xs text-[#00e5ff] tracking-wider bg-[#00e5ff]/5 border border-[#00e5ff]/20 rounded py-2">
-                    BRIEF FOR: {brief.session_date.toUpperCase()}
-                  </div>
-                )}
-
-                {/* Today's Close (after-hours only) */}
-                {brief.todays_close && (
-                  <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
-                    <div className="font-mono text-[10px] tracking-[2px] text-[#fb923c] mb-2">TODAY&apos;S SESSION RECAP</div>
-                    <div className="text-[15px] leading-relaxed text-[#d6dff0]">{brief.todays_close}</div>
-                  </div>
-                )}
-
-                {/* Tone Banner */}
-                <div
-                  className="rounded-lg p-4"
-                  style={{
-                    background: brief.tone === "RISK-ON" ? "linear-gradient(135deg, rgba(0,255,170,0.1) 0%, rgba(0,229,255,0.05) 100%)" 
-                      : brief.tone === "RISK-OFF" ? "linear-gradient(135deg, rgba(248,113,113,0.1) 0%, rgba(251,146,60,0.05) 100%)"
-                      : "linear-gradient(135deg, rgba(250,204,21,0.1) 0%, rgba(167,139,250,0.05) 100%)",
-                    border: `1px solid ${brief.tone === "RISK-ON" ? "#00ffaa40" : brief.tone === "RISK-OFF" ? "#f8717140" : "#facc1540"}`,
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="font-mono text-[10px] tracking-[2px] text-[#3d4f6b]">MARKET TONE</div>
-                    <div 
-                      className="font-mono text-xs font-semibold px-3 py-1 rounded"
-                      style={{ 
-                        color: brief.tone === "RISK-ON" ? "#00ffaa" : brief.tone === "RISK-OFF" ? "#f87171" : "#facc15",
-                        background: brief.tone === "RISK-ON" ? "#00ffaa15" : brief.tone === "RISK-OFF" ? "#f8717115" : "#facc1515",
-                        border: `1px solid ${brief.tone === "RISK-ON" ? "#00ffaa40" : brief.tone === "RISK-OFF" ? "#f8717140" : "#facc1540"}`,
-                      }}
-                    >
-                      {brief.tone}
-                    </div>
-                  </div>
-                  <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2">
-                    {brief.todays_close ? "OVERNIGHT FUTURES" : "PRE-MARKET FUTURES"}
-                  </div>
-                  <div className="text-[15px] leading-relaxed text-[#d6dff0]">{brief.futures}</div>
+              <div className="animate-in fade-in duration-300 space-y-5">
+                {/* Header */}
+                <div className="text-center border-b border-[#131c2e] pb-4">
+                  <div className="font-mono text-[10px] tracking-[3px] text-[#3d4f6b] mb-1">WHITE 80 PRE-MARKET BRIEF</div>
+                  <div className="font-mono text-sm text-[#d6dff0]">{brief.session_date} | {brief.session_label}</div>
                 </div>
 
-                {/* Headlines */}
+                {/* MACRO PULSE */}
                 <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
-                  <div className="font-mono text-[10px] tracking-[2px] text-[#3d4f6b] mb-3">TOP HEADLINES</div>
-                  <div className="space-y-2">
-                    {brief.headlines?.map((h, i) => (
-                      <div key={i} className="flex gap-3 text-[14px] leading-relaxed py-2 border-b border-[#131c2e] last:border-0">
-                        <span className="text-[#00e5ff] font-mono text-xs mt-0.5">{i + 1}</span>
-                        <span className="text-[#d6dff0]">{h}</span>
+                  <div className="font-mono text-[10px] tracking-[2px] text-[#00e5ff] mb-4 border-b border-[#131c2e] pb-2">MACRO PULSE</div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-[13px]">
+                    {/* SPY */}
+                    <div>
+                      <span className="text-[#3d4f6b] font-mono text-[10px]">SPY</span>
+                      <div className="text-[#d6dff0]">
+                        ${brief.macro_pulse?.spy?.price?.toFixed(2) || "—"}
+                        <span className={`ml-1 ${(brief.macro_pulse?.spy?.change_pct || 0) >= 0 ? "text-[#00ffaa]" : "text-[#f87171]"}`}>
+                          ({(brief.macro_pulse?.spy?.change_pct || 0) >= 0 ? "+" : ""}{brief.macro_pulse?.spy?.change_pct?.toFixed(2) || 0}%)
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-[#3d4f6b]">{brief.macro_pulse?.spy?.context}</div>
+                    </div>
+                    {/* QQQ */}
+                    <div>
+                      <span className="text-[#3d4f6b] font-mono text-[10px]">QQQ</span>
+                      <div className="text-[#d6dff0]">
+                        ${brief.macro_pulse?.qqq?.price?.toFixed(2) || "—"}
+                        <span className={`ml-1 ${(brief.macro_pulse?.qqq?.change_pct || 0) >= 0 ? "text-[#00ffaa]" : "text-[#f87171]"}`}>
+                          ({(brief.macro_pulse?.qqq?.change_pct || 0) >= 0 ? "+" : ""}{brief.macro_pulse?.qqq?.change_pct?.toFixed(2) || 0}%)
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-[#3d4f6b]">{brief.macro_pulse?.qqq?.context}</div>
+                    </div>
+                    {/* VIX */}
+                    <div>
+                      <span className="text-[#3d4f6b] font-mono text-[10px]">VIX</span>
+                      <div className="text-[#d6dff0]">{brief.macro_pulse?.vix?.level?.toFixed(2) || "—"}</div>
+                      <div className="text-[10px] text-[#3d4f6b]">{brief.macro_pulse?.vix?.context}</div>
+                    </div>
+                    {/* DXY */}
+                    <div>
+                      <span className="text-[#3d4f6b] font-mono text-[10px]">DXY</span>
+                      <div className="text-[#d6dff0]">{brief.macro_pulse?.dxy?.level?.toFixed(2) || "—"}</div>
+                      <div className="text-[10px] text-[#3d4f6b]">{brief.macro_pulse?.dxy?.context}</div>
+                    </div>
+                    {/* 10Y */}
+                    <div>
+                      <span className="text-[#3d4f6b] font-mono text-[10px]">10Y YIELD</span>
+                      <div className="text-[#d6dff0]">{brief.macro_pulse?.ten_year?.yield?.toFixed(2) || "—"}%</div>
+                      <div className="text-[10px] text-[#3d4f6b]">{brief.macro_pulse?.ten_year?.context}</div>
+                    </div>
+                    {/* WTI */}
+                    <div>
+                      <span className="text-[#3d4f6b] font-mono text-[10px]">WTI CRUDE</span>
+                      <div className="text-[#d6dff0]">
+                        ${brief.macro_pulse?.wti?.price?.toFixed(2) || "—"}
+                        <span className={`ml-1 ${(brief.macro_pulse?.wti?.change_pct || 0) >= 0 ? "text-[#00ffaa]" : "text-[#f87171]"}`}>
+                          ({(brief.macro_pulse?.wti?.change_pct || 0) >= 0 ? "+" : ""}{brief.macro_pulse?.wti?.change_pct?.toFixed(2) || 0}%)
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-[#3d4f6b]">{brief.macro_pulse?.wti?.context}</div>
+                    </div>
+                    {/* Gold */}
+                    <div>
+                      <span className="text-[#3d4f6b] font-mono text-[10px]">GOLD</span>
+                      <div className="text-[#d6dff0]">${brief.macro_pulse?.gold?.price?.toLocaleString() || "—"}</div>
+                      <div className="text-[10px] text-[#3d4f6b]">{brief.macro_pulse?.gold?.context}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* TOP CATALYSTS */}
+                <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
+                  <div className="font-mono text-[10px] tracking-[2px] text-[#fb923c] mb-4 border-b border-[#131c2e] pb-2">TOP CATALYSTS</div>
+                  <div className="space-y-4">
+                    {brief.catalysts?.map((c, i) => (
+                      <div key={i}>
+                        <div className="font-mono text-[12px] text-[#fb923c] mb-1">{i + 1}. {c.title}</div>
+                        <div className="text-[14px] leading-relaxed text-[#d6dff0] pl-4">{c.body}</div>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Earnings & Econ Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-2 h-2 rounded-full bg-[#fb923c]" />
-                      <div className="font-mono text-[10px] tracking-[2px] text-[#fb923c]">EARNINGS TODAY</div>
-                    </div>
-                    {brief.earnings_today?.length ? (
-                      <div className="space-y-1.5">
-                        {brief.earnings_today.map((e, i) => (
-                          <div key={i} className="font-mono text-[12px] text-[#d6dff0] bg-[#090c14] rounded px-2.5 py-1.5">
-                            {e}
+                {/* SECTOR ROTATION */}
+                <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
+                  <div className="font-mono text-[10px] tracking-[2px] text-[#a78bfa] mb-4 border-b border-[#131c2e] pb-2">SECTOR ROTATION</div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Leading */}
+                    <div>
+                      <div className="font-mono text-[10px] text-[#00ffaa] mb-2">LEADING</div>
+                      <div className="space-y-2">
+                        {brief.sector_rotation?.leading?.map((s, i) => (
+                          <div key={i} className="bg-[#090c14] rounded p-2">
+                            <div className="flex justify-between items-baseline">
+                              <span className="text-[13px] text-[#d6dff0]">{s.sector}</span>
+                              <span className="font-mono text-[12px] text-[#00ffaa]">+{s.change_pct?.toFixed(1)}%</span>
+                            </div>
+                            <div className="text-[11px] text-[#3d4f6b] mt-1">{s.detail}</div>
                           </div>
                         ))}
                       </div>
-                    ) : (
-                      <div className="font-mono text-[11px] text-[#3d4f6b] italic">No earnings on watchlist today</div>
-                    )}
-                  </div>
-                  <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-2 h-2 rounded-full bg-[#a78bfa]" />
-                      <div className="font-mono text-[10px] tracking-[2px] text-[#a78bfa]">ECONOMIC CALENDAR</div>
                     </div>
-                    {brief.econ_today?.length ? (
-                      <div className="space-y-1.5">
-                        {brief.econ_today.map((e, i) => (
-                          <div key={i} className="font-mono text-[12px] text-[#d6dff0] bg-[#090c14] rounded px-2.5 py-1.5">
-                            {e}
+                    {/* Lagging */}
+                    <div>
+                      <div className="font-mono text-[10px] text-[#f87171] mb-2">LAGGING</div>
+                      <div className="space-y-2">
+                        {brief.sector_rotation?.lagging?.map((s, i) => (
+                          <div key={i} className="bg-[#090c14] rounded p-2">
+                            <div className="flex justify-between items-baseline">
+                              <span className="text-[13px] text-[#d6dff0]">{s.sector}</span>
+                              <span className="font-mono text-[12px] text-[#f87171]">{s.change_pct?.toFixed(1)}%</span>
+                            </div>
+                            <div className="text-[11px] text-[#3d4f6b] mt-1">{s.detail}</div>
                           </div>
                         ))}
                       </div>
-                    ) : (
-                      <div className="font-mono text-[11px] text-[#3d4f6b] italic">Quiet day on the calendar</div>
-                    )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Watchlist Take */}
-                <div className="bg-gradient-to-r from-[#00e5ff08] to-[#0c1020] border border-[#00e5ff30] rounded-lg p-4">
-                  <div className="font-mono text-[10px] tracking-[2px] text-[#00e5ff] mb-3">WATCHLIST READ</div>
-                  <div className="text-[15px] leading-relaxed text-[#d6dff0]">{brief.watchlist_take}</div>
+                {/* VERDICT */}
+                <div
+                  className="rounded-lg p-4"
+                  style={{
+                    background: brief.verdict?.tone === "RISK-ON" ? "linear-gradient(135deg, rgba(0,255,170,0.1) 0%, rgba(0,229,255,0.05) 100%)" 
+                      : brief.verdict?.tone === "RISK-OFF" ? "linear-gradient(135deg, rgba(248,113,113,0.1) 0%, rgba(251,146,60,0.05) 100%)"
+                      : "linear-gradient(135deg, rgba(250,204,21,0.1) 0%, rgba(167,139,250,0.05) 100%)",
+                    border: `1px solid ${brief.verdict?.tone === "RISK-ON" ? "#00ffaa40" : brief.verdict?.tone === "RISK-OFF" ? "#f8717140" : "#facc1540"}`,
+                  }}
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="font-mono text-[10px] tracking-[2px] text-[#3d4f6b]">VERDICT</div>
+                    <div 
+                      className="font-mono text-xs font-semibold px-3 py-1 rounded"
+                      style={{ 
+                        color: brief.verdict?.tone === "RISK-ON" ? "#00ffaa" : brief.verdict?.tone === "RISK-OFF" ? "#f87171" : "#facc15",
+                        background: brief.verdict?.tone === "RISK-ON" ? "#00ffaa15" : brief.verdict?.tone === "RISK-OFF" ? "#f8717115" : "#facc1515",
+                        border: `1px solid ${brief.verdict?.tone === "RISK-ON" ? "#00ffaa40" : brief.verdict?.tone === "RISK-OFF" ? "#f8717140" : "#facc1540"}`,
+                      }}
+                    >
+                      {brief.verdict?.tone}
+                    </div>
+                  </div>
+                  <div className="text-[15px] leading-relaxed text-[#d6dff0]">{brief.verdict?.summary}</div>
                 </div>
               </div>
             )}
