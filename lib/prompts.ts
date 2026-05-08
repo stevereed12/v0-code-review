@@ -101,18 +101,57 @@ When suggesting options plays:
 - C/P ratio > 2x = bullish flow, < 0.7x = bearish flow`
   }
 
-  const todayStr = new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
-  const timeStr = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", timeZoneName: "short" })
+  const now = new Date()
+  const todayStr = now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+  const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", timeZoneName: "short" })
+
+  // Calculate valid options expiration dates (Fridays)
+  const getNextFridays = (count: number): string[] => {
+    const fridays: string[] = []
+    const d = new Date(now)
+    // Move to next day to avoid suggesting today if it's Friday afternoon
+    d.setDate(d.getDate() + 1)
+    while (fridays.length < count) {
+      if (d.getDay() === 5) { // Friday
+        fridays.push(d.toLocaleDateString("en-US", { month: "short", day: "numeric" }))
+      }
+      d.setDate(d.getDate() + 1)
+    }
+    return fridays
+  }
+  
+  // Get 3rd Friday of next 2 months for monthly expirations
+  const getMonthlyExpirations = (): string[] => {
+    const monthlies: string[] = []
+    for (let m = 0; m < 2; m++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + m, 1)
+      let fridayCount = 0
+      while (fridayCount < 3) {
+        if (d.getDay() === 5) fridayCount++
+        if (fridayCount < 3) d.setDate(d.getDate() + 1)
+      }
+      if (d > now) {
+        monthlies.push(d.toLocaleDateString("en-US", { month: "short", day: "numeric" }))
+      }
+    }
+    return monthlies
+  }
+  
+  const weeklyExps = getNextFridays(4) // Next 4 Fridays
+  const monthlyExps = getMonthlyExpirations()
 
   return `You are White 80, a daily trading signal engine. 
 
 TODAY IS: ${todayStr}, ${timeStr}
 
-CRITICAL DATE VALIDATION:
-- Use web search to verify CURRENT catalyst dates
-- If an earnings date or event has ALREADY PASSED, do NOT mention it as upcoming
-- Only reference catalysts that are ACTUALLY in the future from today's date
-- When in doubt about a date, search to confirm before including it
+VALID OPTIONS EXPIRATION DATES (use ONLY these):
+Weekly: ${weeklyExps.join(", ")}
+Monthly (3rd Friday): ${monthlyExps.join(", ")}
+
+CRITICAL RULES:
+- ONLY use expiration dates from the list above - these are real market dates
+- Use web search to verify catalyst dates are actually in the future
+- If an earnings date or event has ALREADY PASSED, do NOT mention it
 ${priceBlock}${optionsBlock}${newsBlock}
 
 For each ticker (${tickers.join(", ")}), generate a trading signal using the verified prices and options data above. Use web search to:
@@ -128,7 +167,7 @@ Return a JSON array. No markdown, no backticks, just raw JSON:
 "price": 123.45,
 "change_pct": 1.2,
 "signal": "BUY",
-"play": "Buy $130 calls exp this Friday",
+"play": "Buy $130 calls exp ${weeklyExps[0]}",
 "thesis": "2-sentence conviction note - only mention FUTURE catalysts, not past ones",
 "risk": "Medium",
 "catalyst": "Only include if verified as FUTURE date, otherwise use 'none' or 'technical setup'",
@@ -139,10 +178,11 @@ Return a JSON array. No markdown, no backticks, just raw JSON:
 ]
 
 RULES:
-- Set news_aware to true ONLY if your play directly factored in a verified recent news item
+- EXPIRATION DATES must be from the valid list above (${weeklyExps.join(", ")}, ${monthlyExps.join(", ")})
 - Signal must be one of: BUY, SELL, HOLD, WATCH, FADE
 - Risk must be one of: Low, Medium, High
 - Use the exact price/change_pct from the verified prices above
+- Set news_aware to true ONLY if your play directly factored in a verified recent news item
 - DO NOT reference past earnings or events as if they are upcoming
 - Return the array for all ${tickers.length} tickers`
 }
