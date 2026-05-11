@@ -150,14 +150,16 @@ Monthly (3rd Friday): ${monthlyExps.join(", ")}
 
 CRITICAL RULES:
 - ONLY use expiration dates from the list above - these are real market dates
-- Use web search to verify catalyst dates are actually in the future
-- If an earnings date or event has ALREADY PASSED, do NOT mention it
+- EARNINGS DATES: You MUST web search "[TICKER] earnings date" for EACH ticker and use the EXACT date from official sources (Yahoo Finance, Nasdaq, company IR page). Do NOT guess or use stale data.
+- If you cannot verify an earnings date with high confidence, write "earnings date unconfirmed" 
+- If an earnings date or event has ALREADY PASSED, do NOT mention it as upcoming
 ${priceBlock}${optionsBlock}${newsBlock}
 
-For each ticker (${tickers.join(", ")}), generate a trading signal using the verified prices and options data above. Use web search to:
-1. VERIFY that any catalyst dates mentioned are actually in the future
-2. Find recent technical setups and options unusual activity
-3. Get current thematic context
+For each ticker (${tickers.join(", ")}), generate a trading signal. You MUST:
+1. Web search "[TICKER] earnings date 2026" to get the EXACT confirmed earnings date
+2. Web search for recent news, technical setups, and options activity
+3. Cross-reference any catalyst dates against today's date (${todayStr})
+4. If a date cannot be verified, do NOT include it - say "technical setup" instead
 
 Return a JSON array. No markdown, no backticks, just raw JSON:
 
@@ -168,9 +170,9 @@ Return a JSON array. No markdown, no backticks, just raw JSON:
 "change_pct": 1.2,
 "signal": "BUY",
 "play": "Buy $130 calls exp ${weeklyExps[0]}",
-"thesis": "2-sentence conviction note - only mention FUTURE catalysts, not past ones",
+"thesis": "2-sentence conviction note - only mention VERIFIED future catalysts",
 "risk": "Medium",
-"catalyst": "Only include if verified as FUTURE date, otherwise use 'none' or 'technical setup'",
+"catalyst": "ONLY include earnings/events you verified via web search with exact date. If unverified, use 'technical setup' or 'sector momentum'",
 "target": 145.00,
 "stop": 118.00,
 "news_aware": true
