@@ -1106,6 +1106,59 @@ export function White80Dashboard() {
               </div>
             )}
 
+            {/* Export/Import Controls */}
+            <div className="flex gap-2 mb-4">
+              <button
+                onClick={() => {
+                  const data = JSON.stringify({ trackerLog, watchlist, exportedAt: new Date().toISOString() }, null, 2)
+                  const blob = new Blob([data], { type: "application/json" })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement("a")
+                  a.href = url
+                  a.download = `white80-backup-${new Date().toISOString().split("T")[0]}.json`
+                  a.click()
+                  URL.revokeObjectURL(url)
+                }}
+                className="font-mono text-[9px] tracking-wider px-3 py-1.5 rounded border border-[#00e5ff]/40 text-[#00e5ff] hover:bg-[#00e5ff]/10 transition-colors"
+              >
+                EXPORT BACKUP
+              </button>
+              <label className="font-mono text-[9px] tracking-wider px-3 py-1.5 rounded border border-[#00ffaa]/40 text-[#00ffaa] hover:bg-[#00ffaa]/10 transition-colors cursor-pointer">
+                IMPORT BACKUP
+                <input
+                  type="file"
+                  accept=".json"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const reader = new FileReader()
+                    reader.onload = (evt) => {
+                      try {
+                        const data = JSON.parse(evt.target?.result as string)
+                        if (data.trackerLog) {
+                          // Merge imported logs with existing (avoid duplicates by id)
+                          const existingIds = new Set(trackerLog.map(l => l.id))
+                          const newLogs = data.trackerLog.filter((l: { id: string }) => !existingIds.has(l.id))
+                          if (newLogs.length > 0) {
+                            const merged = [...trackerLog, ...newLogs]
+                            localStorage.setItem("white80_tracker", JSON.stringify(merged))
+                            window.location.reload()
+                          }
+                        }
+                        if (data.watchlist && Array.isArray(data.watchlist)) {
+                          localStorage.setItem("white80_watchlist", JSON.stringify(data.watchlist))
+                        }
+                      } catch {
+                        alert("Invalid backup file")
+                      }
+                    }
+                    reader.readAsText(file)
+                  }}
+                />
+              </label>
+            </div>
+
             {trackerLog.length > 0 && (
               <>
                 <div className="flex justify-between items-center mb-2.5">
