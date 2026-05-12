@@ -25,7 +25,9 @@ export default function PricingPage() {
     }
 
     if (result.url) {
-      window.location.href = result.url
+      // Open in new tab to avoid iframe restrictions in preview environments
+      window.open(result.url, "_blank")
+      setLoading(null)
     }
   }
 
