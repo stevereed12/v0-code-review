@@ -53,8 +53,15 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // If logged in and visiting root, redirect to dashboard
+  // If logged in and visiting root, redirect to dashboard (which will handle subscription checks)
   if (request.nextUrl.pathname === '/' && user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
+  }
+  
+  // If logged in and visiting auth pages, redirect to dashboard
+  if (request.nextUrl.pathname.startsWith('/auth/') && user && !request.nextUrl.pathname.includes('/callback')) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

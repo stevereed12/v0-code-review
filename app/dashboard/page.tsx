@@ -17,9 +17,21 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single()
 
-  // Check subscription status
+  // Check subscription status - must have active subscription to access dashboard
   const hasActiveSubscription = profile?.subscription_status === "active"
+  
+  if (!hasActiveSubscription) {
+    // No subscription - redirect to pricing
+    redirect("/pricing")
+  }
+
+  // Check if API keys are set up
   const hasApiKeys = profile?.polygon_api_key && profile?.anthropic_api_key
+  
+  if (!hasApiKeys) {
+    // Has subscription but no API keys - redirect to onboarding
+    redirect("/onboarding")
+  }
 
   return (
     <White80Dashboard 

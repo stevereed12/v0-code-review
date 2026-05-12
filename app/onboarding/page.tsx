@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import { verifyCheckoutSession } from "@/app/actions/verify-checkout"
 
 function OnboardingContent() {
   const [step, setStep] = useState(1)
@@ -38,9 +39,20 @@ function OnboardingContent() {
         return
       }
 
-      // If no active subscription and no session_id, send to pricing
+      // Check for checkout session ID from Stripe redirect
       const sessionId = searchParams.get("session_id")
-      if (profile?.subscription_status !== "active" && !sessionId) {
+      
+      // If there's a session_id, verify the payment and activate subscription
+      if (sessionId) {
+        const result = await verifyCheckoutSession(sessionId)
+        if (result.error) {
+          console.error("Checkout verification failed:", result.error)
+          router.push("/pricing")
+          return
+        }
+        // Payment verified, subscription is now active - continue to key setup
+      } else if (profile?.subscription_status !== "active") {
+        // No session_id and no active subscription - send to pricing
         router.push("/pricing")
         return
       }
