@@ -31,8 +31,9 @@ import { TrackerRow } from "./tracker-row"
 import { ActionButton } from "./action-button"
 import { SettingsPanel } from "./settings-panel"
 import { ExportModal } from "./export-modal"
-import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3, Crosshair } from "lucide-react"
+import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3, Crosshair, Search } from "lucide-react"
 import { Tier1Scanner } from "./tier1-scanner"
+import { QuickThesisSearch } from "./quick-thesis"
 
 export function White80Dashboard() {
   // Core state
@@ -531,6 +532,7 @@ export function White80Dashboard() {
         <Tabs defaultValue="watchlist" className="w-full">
           <TabsList className="w-full justify-start bg-transparent border-b border-[#131c2e] rounded-none p-0 h-auto mb-5">
 {[
+                { value: "thesis", label: "THESIS", icon: Search },
                 { value: "tier1", label: "TIER 1", icon: Crosshair },
                 { value: "watchlist", label: "WATCHLIST", icon: TrendingUp },
                 { value: "scout", label: "SCOUT", icon: Radar },
@@ -550,7 +552,20 @@ export function White80Dashboard() {
             ))}
           </TabsList>
 
-{/* TIER 1 SCANNER TAB */}
+{/* QUICK THESIS TAB */}
+              <TabsContent value="thesis" className="mt-0">
+                <QuickThesisSearch
+                  onAddToWatchlist={(ticker) => {
+                    if (!watchlist.includes(ticker)) {
+                      setWatchlist(w => [ticker, ...w])
+                      setPinnedTickers(p => p.includes(ticker) ? p : [...p, ticker])
+                    }
+                  }}
+                  onApiKeyRequired={() => setShowApiKeyModal(true)}
+                />
+              </TabsContent>
+
+              {/* TIER 1 SCANNER TAB */}
               <TabsContent value="tier1" className="mt-0">
                 <Tier1Scanner 
                   onPromoteToWatchlist={(ticker) => {

@@ -431,3 +431,132 @@ Schema:
 Theme must be one of: ai_compute, semis, crypto_adj, macro_proxy, other
 Regime must be one of: TRENDING, CHOPPY, ROTATIONAL, RISK-OFF`
 }
+
+// ─── QUICK THESIS ─────────────────────────────────────────────────────────────
+
+export interface QuickThesis {
+  ticker: string
+  name: string
+  price: number
+  sector: string
+  market_cap: string
+  thesis: string
+  bull_case: string
+  bear_case: string
+  catalysts: Array<{ event: string; date: string; impact: "HIGH" | "MEDIUM" | "LOW" }>
+  technicals: {
+    trend: "UPTREND" | "DOWNTREND" | "SIDEWAYS"
+    support: number
+    resistance: number
+    rsi_read: string
+  }
+  options_take: {
+    sentiment: "BULLISH" | "BEARISH" | "NEUTRAL"
+    suggested_play: string
+    reasoning: string
+  }
+  verdict: {
+    action: "BUY" | "SELL" | "HOLD" | "WATCH" | "AVOID"
+    conviction: "HIGH" | "MEDIUM" | "LOW"
+    timeframe: string
+    summary: string
+  }
+}
+
+export function buildQuickThesisPrompt(ticker: string, currentPrice?: number): string {
+  const now = new Date()
+  const todayStr = now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+
+  // Calculate valid expiration dates
+  const getNextFridays = (count: number): string[] => {
+    const fridays: string[] = []
+    const d = new Date(now)
+    d.setDate(d.getDate() + 1)
+    while (fridays.length < count) {
+      if (d.getDay() === 5) {
+        fridays.push(d.toLocaleDateString("en-US", { month: "short", day: "numeric" }))
+      }
+      d.setDate(d.getDate() + 1)
+    }
+    return fridays
+  }
+  const weeklyExps = getNextFridays(4)
+
+  const priceContext = currentPrice ? `Current price: $${currentPrice.toFixed(2)}` : "Look up current price via web search"
+
+  return `You are White 80's deep research engine. Generate a comprehensive thesis for ${ticker}.
+
+TODAY: ${todayStr}
+${priceContext}
+VALID OPTIONS EXPIRATIONS: ${weeklyExps.join(", ")}
+
+Use web search extensively to gather:
+
+1. COMPANY FUNDAMENTALS
+   - What does this company do? Revenue, growth rate, profitability
+   - Market cap, sector, competitive position
+   - Recent earnings results and guidance
+
+2. UPCOMING CATALYSTS
+   - Earnings date (VERIFY via web search - must be exact)
+   - Product launches, conferences, FDA dates, contract announcements
+   - Any macro events that affect this name
+
+3. TECHNICAL SETUP
+   - Current trend (use 20/50 day MAs as reference)
+   - Key support and resistance levels
+   - RSI/momentum read
+
+4. OPTIONS FLOW
+   - Is there unusual activity?
+   - What are smart money positioning toward?
+   - Suggested play using ONLY the valid expirations listed above
+
+5. BULL/BEAR CASES
+   - What goes right? What's the upside scenario?
+   - What goes wrong? What's the risk?
+
+6. VERDICT
+   - Should someone buy, sell, hold, watch, or avoid?
+   - What conviction level and timeframe?
+
+CRITICAL RULES:
+- Web search for EVERY data point - do not guess dates or prices
+- Be specific with numbers: "$185 support" not "support nearby"
+- Options plays MUST use expirations from: ${weeklyExps.join(", ")}
+- If you cannot verify a catalyst date, say "unconfirmed"
+
+Return JSON only. No markdown, no backticks:
+
+{
+  "ticker": "${ticker}",
+  "name": "Full Company Name",
+  "price": 123.45,
+  "sector": "Technology",
+  "market_cap": "$2.1T",
+  "thesis": "2-3 sentence core investment thesis - why this name matters now",
+  "bull_case": "2-3 sentences on upside scenario",
+  "bear_case": "2-3 sentences on downside risks",
+  "catalysts": [
+    { "event": "Q2 Earnings", "date": "May 28", "impact": "HIGH" },
+    { "event": "Product Launch", "date": "June 10", "impact": "MEDIUM" }
+  ],
+  "technicals": {
+    "trend": "UPTREND",
+    "support": 180.00,
+    "resistance": 195.00,
+    "rsi_read": "Neutral at 52, room to run"
+  },
+  "options_take": {
+    "sentiment": "BULLISH",
+    "suggested_play": "Buy $190 calls exp ${weeklyExps[1]}",
+    "reasoning": "1-2 sentences on why this play makes sense given the setup"
+  },
+  "verdict": {
+    "action": "BUY",
+    "conviction": "HIGH",
+    "timeframe": "2-4 weeks into earnings",
+    "summary": "2-3 sentences summarizing the overall take and what you'd do"
+  }
+}`
+}

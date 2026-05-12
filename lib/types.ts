@@ -151,7 +151,7 @@ export interface OptionsChainSummary {
 
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 
-export const SEED_WATCHLIST = ["NVDA", "SPY", "AMZN", "HOOD", "META", "PLTR", "MSTR", "TSM"]
+export const SEED_WATCHLIST: string[] = [] // Start empty - user builds their own watchlist
 
 export const THEMES = [
   { id: "ai_compute", label: "AI / Compute", weight: 1.0 },
