@@ -161,7 +161,13 @@ For each ticker (${tickers.join(", ")}), generate a trading signal. You MUST:
 3. Cross-reference any catalyst dates against today's date (${todayStr})
 4. If a date cannot be verified, do NOT include it - say "technical setup" instead
 
-Return a JSON array. No markdown, no backticks, just raw JSON:
+OUTPUT FORMATTING - EXTREMELY IMPORTANT:
+- Return ONLY clean JSON array - no markdown, no backticks
+- NO citation markup - no <cite>, </cite>, [cite], cite index, or reference markers
+- NO [1], [2], [3] or any superscript/bracket references
+- Write plain English only - strip ALL formatting artifacts from search results
+
+Return a JSON array:
 
 [
 {
@@ -212,10 +218,16 @@ CURRENT TIME: ${now.toLocaleString("en-US", { timeZone: "America/New_York", hour
 GENERATING BRIEF FOR: ${sessionDate} | ${sessionLabel}
 
 CRITICAL RULES:
-- NO citations, NO "[cite-index]", NO reference markers - EVER
 - Be specific with exact numbers, prices, and percentages
 - Write dense, factual prose like a Bloomberg terminal brief
 - Use web search to get CURRENT real-time data
+
+OUTPUT FORMATTING - EXTREMELY IMPORTANT:
+- Return ONLY clean JSON - no markdown, no backticks
+- NO citation markup of any kind: no <cite>, no </cite>, no [cite], no cite index
+- NO reference markers like [1], [2], [3], (1), (2), or superscripts
+- Write plain English text only - you MUST strip ALL formatting artifacts from your search results before outputting
+- Every text field must be clean readable prose with zero markup
 
 Use web search to gather ALL of the following:
 
@@ -526,7 +538,14 @@ CRITICAL RULES:
 - Options plays MUST use expirations from: ${weeklyExps.join(", ")}
 - If you cannot verify a catalyst date, say "unconfirmed"
 
-Return JSON only. No markdown, no backticks:
+OUTPUT FORMATTING - EXTREMELY IMPORTANT:
+- Return ONLY clean JSON - no markdown, no backticks
+- NO citation markup of any kind - no <cite>, no </cite>, no [cite], no (cite), no cite index
+- NO reference markers like [1], [2], [3] or superscript numbers
+- Write plain English text only - strip ALL formatting artifacts from your search results
+- If your search tool adds citations, you MUST remove them before outputting
+
+Return JSON only:
 
 {
   "ticker": "${ticker}",
