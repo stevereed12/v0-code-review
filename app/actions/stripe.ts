@@ -4,7 +4,7 @@ import { stripe } from "@/lib/stripe"
 import { getProduct } from "@/lib/products"
 import { createClient } from "@/lib/supabase/server"
 
-export async function createCheckoutSession(productId: string) {
+export async function createCheckoutSession(productId: string, origin: string) {
   const product = getProduct(productId)
   if (!product) {
     return { error: "Product not found" }
@@ -61,8 +61,8 @@ export async function createCheckoutSession(productId: string) {
       },
     ],
     mode: "subscription",
-    success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/pricing`,
+    success_url: `${origin}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/pricing`,
     metadata: {
       supabase_user_id: user.id,
       product_id: productId,

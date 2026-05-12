@@ -12,7 +12,7 @@ export default function PricingPage() {
 
   const handleSubscribe = async (productId: string) => {
     setLoading(productId)
-    const result = await createCheckoutSession(productId)
+    const result = await createCheckoutSession(productId, window.location.origin)
     
     if (result.error) {
       if (result.error === "Not authenticated") {
