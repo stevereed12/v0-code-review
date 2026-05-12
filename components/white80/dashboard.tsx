@@ -35,7 +35,19 @@ import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3, 
 import { Tier1Scanner } from "./tier1-scanner"
 import { QuickThesisSearch } from "./quick-thesis"
 
-export function White80Dashboard() {
+interface DashboardProps {
+  userEmail?: string
+  hasSubscription?: boolean
+  polygonKey?: string | null
+  anthropicKey?: string | null
+}
+
+export function White80Dashboard({ 
+  userEmail, 
+  hasSubscription = false,
+  polygonKey,
+  anthropicKey,
+}: DashboardProps) {
   // Core state
   const [watchlist, setWatchlist] = useState<string[]>(SEED_WATCHLIST)
   const [pinnedTickers, setPinnedTickers] = useState<string[]>([])
@@ -70,13 +82,25 @@ export function White80Dashboard() {
 
   // Check for API key and set date on mount (client-side only to avoid hydration mismatch)
   useEffect(() => {
-    setHasApiKey(!!getStoredApiKey())
+    // Use passed Anthropic key if available, otherwise check localStorage
+    const storedKey = getStoredApiKey()
+    const effectiveKey = anthropicKey || storedKey
+    setHasApiKey(!!effectiveKey)
+    
+    // Store the server-provided key locally if not already stored
+    if (anthropicKey && !storedKey) {
+      localStorage.setItem("white80_anthropic_key", anthropicKey)
+    }
+    if (polygonKey) {
+      localStorage.setItem("white80_polygon_key", polygonKey)
+    }
+    
     setCurrentDate(
       new Date()
         .toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
         .toUpperCase()
     )
-  }, [])
+  }, [anthropicKey, polygonKey])
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -475,7 +499,7 @@ export function White80Dashboard() {
 
         {/* Header */}
         <div className="mb-4">
-          <div className="flex justify-between items-baseline mb-1">
+          <div className="flex justify-between items-start mb-1">
             <div>
               <h1 className="text-4xl font-semibold tracking-tight">
                 White <span className="text-[#00e5ff]">80</span>
@@ -484,11 +508,29 @@ export function White80Dashboard() {
                 PERSONAL ALPHA SYSTEM - v1.0
               </div>
             </div>
-            <div className="font-mono text-[10px] text-[#3d4f6b] text-right">
-              {currentDate || "---"}
-              <div className="text-[9px] mt-0.5" style={{ color: curatorState?.regime ? "#00e5ff" : "#3d4f6b" }}>
-                {curatorState?.regime || "REGIME UNSET"}
+            <div className="text-right">
+              <div className="font-mono text-[10px] text-[#3d4f6b]">
+                {currentDate || "---"}
+                <div className="text-[9px] mt-0.5" style={{ color: curatorState?.regime ? "#00e5ff" : "#3d4f6b" }}>
+                  {curatorState?.regime || "REGIME UNSET"}
+                </div>
               </div>
+              {userEmail && (
+                <div className="mt-2 flex items-center gap-2 justify-end">
+                  <span className="font-mono text-[9px] text-[#3d4f6b]">{userEmail}</span>
+                  <button
+                    onClick={async () => {
+                      const { createClient } = await import("@/lib/supabase/client")
+                      const supabase = createClient()
+                      await supabase.auth.signOut()
+                      window.location.href = "/"
+                    }}
+                    className="font-mono text-[9px] text-[#f87171] hover:text-[#f87171]/80 transition-colors"
+                  >
+                    SIGN OUT
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
