@@ -4,11 +4,18 @@ import { stripe } from "@/lib/stripe"
 import { getProduct } from "@/lib/products"
 import { createClient } from "@/lib/supabase/server"
 
-export async function createCheckoutSession(productId: string, origin: string) {
+export async function createCheckoutSession(productId: string, clientOrigin?: string) {
   const product = getProduct(productId)
   if (!product) {
     return { error: "Product not found" }
   }
+
+  // Determine the base URL - prioritize server-side env vars
+  const baseUrl = process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}`
+    : process.env.NEXT_PUBLIC_VERCEL_URL
+    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+    : clientOrigin || "http://localhost:3000"
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -61,8 +68,8 @@ export async function createCheckoutSession(productId: string, origin: string) {
       },
     ],
     mode: "subscription",
-    success_url: `${origin}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/pricing`,
+    success_url: `${baseUrl}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${baseUrl}/pricing`,
     metadata: {
       supabase_user_id: user.id,
       product_id: productId,
