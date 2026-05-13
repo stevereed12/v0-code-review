@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -179,7 +179,7 @@ function Tier1Card({
   )
 }
 
-// ─── MAIN SCANNER COMPONENT ──────────────────────────────────────────────────
+// ─── MAIN SCANNER COMPONENT ──────────────────────────────────────────��───────
 
 interface Tier1ScannerProps {
   onPromoteToWatchlist: (ticker: string) => void
@@ -195,7 +195,27 @@ export function Tier1Scanner({ onPromoteToWatchlist }: Tier1ScannerProps) {
   const [minScore, setMinScore] = useState(2) // Start lower for wider net
   const [showPolygonKeyModal, setShowPolygonKeyModal] = useState(false)
   const [hasPolygonKey, setHasPolygonKey] = useState(() => !!getStoredPolygonKey())
-  
+
+  // Restore last scan from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("white80_last_tier1_scan")
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        setResults(parsed.results || [])
+        setLastScan(parsed.lastScan || null)
+        setScanStats(parsed.scanStats || null)
+      }
+    } catch {}
+  }, [])
+
+  // Save scan results to localStorage when they change
+  useEffect(() => {
+    if (results.length > 0) {
+      localStorage.setItem("white80_last_tier1_scan", JSON.stringify({ results, lastScan, scanStats }))
+    }
+  }, [results, lastScan, scanStats])
+
   const runScan = useCallback(async () => {
     setLoading(true)
     setError(null)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,6 +27,25 @@ export function QuickThesisSearch({ onAddToWatchlist, onApiKeyRequired }: QuickT
   const [loading, setLoading] = useState(false)
   const [thesis, setThesis] = useState<QuickThesis | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  // Restore last thesis from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("white80_last_thesis")
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        setThesis(parsed.thesis)
+        setTicker(parsed.ticker || "")
+      }
+    } catch {}
+  }, [])
+
+  // Save thesis to localStorage when it changes
+  useEffect(() => {
+    if (thesis) {
+      localStorage.setItem("white80_last_thesis", JSON.stringify({ thesis, ticker }))
+    }
+  }, [thesis, ticker])
 
   const runThesis = async () => {
     if (!ticker.trim()) return
