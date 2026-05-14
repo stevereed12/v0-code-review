@@ -594,8 +594,8 @@ export function White80Dashboard({
             ))}
           </TabsList>
 
-{/* QUICK THESIS TAB */}
-              <TabsContent value="thesis" className="mt-0">
+{/* QUICK THESIS TAB - forceMount keeps it alive when switching tabs */}
+              <TabsContent value="thesis" className="mt-0 data-[state=inactive]:hidden" forceMount>
                 <QuickThesisSearch
                   onAddToWatchlist={(ticker) => {
                     if (!watchlist.includes(ticker)) {
@@ -607,8 +607,8 @@ export function White80Dashboard({
                 />
               </TabsContent>
 
-              {/* TIER 1 SCANNER TAB */}
-              <TabsContent value="tier1" className="mt-0">
+              {/* TIER 1 SCANNER TAB - forceMount keeps scan running when switching tabs */}
+              <TabsContent value="tier1" className="mt-0 data-[state=inactive]:hidden" forceMount>
                 <Tier1Scanner 
                   onPromoteToWatchlist={(ticker) => {
                     if (!watchlist.includes(ticker)) {
