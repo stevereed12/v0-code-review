@@ -251,6 +251,14 @@ SECTOR ROTATION:
 - Which sectors are LAGGING and why
 - Notable individual stock movers with % changes
 
+WHITE 80 TOP PLAYS (5-10 highest conviction setups across the ENTIRE market):
+- Search for unusual options activity, technical breakouts, earnings setups, and catalyst-driven plays
+- These should NOT be limited to the user's watchlist - scan the whole market
+- Each play needs: ticker, direction (BUY/SELL/FADE), specific options play with valid expiration, conviction level, catalyst, and 1-sentence thesis
+- Prioritize: unusual options volume, earnings gap setups, technical breakouts at key levels, sector momentum leaders
+- Be specific: "$185 calls exp May 23" not "calls"
+- Only include plays where the risk/reward is clearly asymmetric
+
 VERDICT:
 - Overall market stance: RISK-ON, RISK-OFF, or NEUTRAL
 - 2-3 sentence explanation of WHY and what to watch
@@ -293,6 +301,24 @@ Return JSON only. No markdown, no backticks, no citations:
     "tone": "RISK-ON",
     "summary": "2-3 sentences explaining the overall market stance. What's driving sentiment, what's the path of least resistance, what could change the picture. Be specific and actionable."
   },
+  "top_plays": [
+    {
+      "ticker": "NVDA",
+      "action": "BUY",
+      "play": "Buy $135 calls exp May 23",
+      "conviction": "HIGH",
+      "catalyst": "Earnings momentum + AI capex cycle",
+      "thesis": "One sentence on why this is the play right now"
+    },
+    {
+      "ticker": "COIN",
+      "action": "FADE",
+      "play": "Buy $220 puts exp May 23",
+      "conviction": "MEDIUM",
+      "catalyst": "Crypto rotation fading",
+      "thesis": "One sentence thesis"
+    }
+  ],
   "watchlist_tickers": ${JSON.stringify(tickers)}
 }
 

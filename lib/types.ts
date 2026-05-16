@@ -52,6 +52,14 @@ export interface Brief {
     tone: "RISK-ON" | "RISK-OFF" | "NEUTRAL"
     summary: string
   }
+  top_plays: Array<{
+    ticker: string
+    action: "BUY" | "SELL" | "FADE"
+    play: string
+    conviction: "HIGH" | "MEDIUM" | "LOW"
+    catalyst: string
+    thesis: string
+  }>
 }
 
 export interface CuratorPromotion {

@@ -1114,6 +1114,42 @@ export function White80Dashboard({
                   </div>
                   <div className="text-[15px] leading-relaxed text-[#d6dff0]">{brief.verdict?.summary}</div>
                 </div>
+
+                {/* TOP PLAYS */}
+                {brief.top_plays && brief.top_plays.length > 0 && (
+                <div>
+                  <div className="font-mono text-[10px] tracking-[2px] text-[#fb923c] mb-3">WHITE 80 TOP PLAYS</div>
+                  <div className="space-y-3">
+                    {brief.top_plays.map((play, i) => (
+                      <div key={i} className="bg-[#0c1020] border border-[#131c2e] rounded p-3">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-sm font-bold text-white">{play.ticker}</span>
+                            <span className={`font-mono text-[9px] tracking-wider px-1.5 py-0.5 rounded ${
+                              play.action === "BUY" ? "bg-[#00ffaa]/15 text-[#00ffaa]" :
+                              play.action === "SELL" ? "bg-[#f87171]/15 text-[#f87171]" :
+                              "bg-[#fb923c]/15 text-[#fb923c]"
+                            }`}>
+                              {play.action}
+                            </span>
+                            <span className={`font-mono text-[9px] tracking-wider ${
+                              play.conviction === "HIGH" ? "text-[#00ffaa]" :
+                              play.conviction === "MEDIUM" ? "text-[#fbbf24]" :
+                              "text-[#3d4f6b]"
+                            }`}>
+                              {play.conviction}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="font-mono text-[11px] text-[#00e5ff] mb-1">{play.play}</div>
+                        <div className="text-[11px] text-[#d6dff0] mb-1">{play.thesis}</div>
+                        <div className="font-mono text-[9px] text-[#3d4f6b]">CATALYST: {play.catalyst}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                )}
+
               </div>
             )}
           </TabsContent>
