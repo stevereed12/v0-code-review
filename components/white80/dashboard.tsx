@@ -610,6 +610,7 @@ export function White80Dashboard({
               {/* TIER 1 SCANNER TAB - forceMount keeps scan running when switching tabs */}
               <TabsContent value="tier1" className="mt-0 data-[state=inactive]:hidden" forceMount>
                 <Tier1Scanner 
+                  polygonKey={polygonKey}
                   onPromoteToWatchlist={(ticker) => {
                     if (!watchlist.includes(ticker)) {
                       setWatchlist(w => [ticker, ...w])

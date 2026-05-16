@@ -181,11 +181,12 @@ function Tier1Card({
 
 // ─── MAIN SCANNER COMPONENT ──────────────────────────────────────────��───────
 
-interface Tier1ScannerProps {
+ interface Tier1ScannerProps {
+  polygonKey?: string | null
   onPromoteToWatchlist: (ticker: string) => void
-}
-
-export function Tier1Scanner({ onPromoteToWatchlist }: Tier1ScannerProps) {
+  }
+  
+  export function Tier1Scanner({ polygonKey, onPromoteToWatchlist }: Tier1ScannerProps) {
   const [results, setResults] = useState<Tier1Signal[]>([])
   const [loading, setLoading] = useState(false)
   const [loadingPhase, setLoadingPhase] = useState("")
@@ -194,7 +195,7 @@ export function Tier1Scanner({ onPromoteToWatchlist }: Tier1ScannerProps) {
   const [scanStats, setScanStats] = useState<{ total: number; matches: number } | null>(null)
   const [minScore, setMinScore] = useState(2) // Start lower for wider net
   const [showPolygonKeyModal, setShowPolygonKeyModal] = useState(false)
-  const [hasPolygonKey, setHasPolygonKey] = useState(() => !!getStoredPolygonKey())
+  const [hasPolygonKey, setHasPolygonKey] = useState(() => !!polygonKey || !!getStoredPolygonKey())
 
   // Restore last scan from localStorage on mount
   useEffect(() => {
@@ -223,7 +224,8 @@ export function Tier1Scanner({ onPromoteToWatchlist }: Tier1ScannerProps) {
     
     try {
       // Step 1: Run Polygon scan for technical signals
-      const clientPolygonKey = getStoredPolygonKey()
+      // Use prop key first (from Supabase profile), fallback to localStorage
+      const clientPolygonKey = polygonKey || getStoredPolygonKey()
       const scanRes = await fetch("/api/tier1-scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -324,7 +326,7 @@ export function Tier1Scanner({ onPromoteToWatchlist }: Tier1ScannerProps) {
       setLoading(false)
       setLoadingPhase("")
     }
-  }, [minScore])
+  }, [minScore, polygonKey])
   
   return (
     <div className="space-y-4">
