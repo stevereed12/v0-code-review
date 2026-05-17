@@ -605,3 +605,81 @@ Return JSON only:
   }
 }`
 }
+
+export function buildBuyHoldPrompt(): string {
+  const now = new Date()
+  const todayStr = now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+
+  return `You are White 80's long-term investment advisor. Generate a list of quality BUY AND HOLD opportunities for investors who want to own great businesses at good prices.
+
+TODAY: ${todayStr}
+
+This is NOT about options or swing trades. This is about identifying:
+1. Quality companies (mega-caps, blue chips, established leaders) at attractive entry points
+2. Growth stocks that have pulled back to reasonable valuations
+3. Funds/ETFs (like ARKK, DXYZ, sector ETFs) worth accumulating
+4. Dividend aristocrats or value plays with asymmetric risk/reward
+
+Use web search to find:
+
+1. PULLBACK OPPORTUNITIES
+   - Which quality names have pulled back 10%+ from recent highs?
+   - Any mega-caps (AAPL, MSFT, GOOGL, AMZN, NVDA) at attractive levels?
+   - Growth leaders that got oversold on earnings or macro?
+
+2. VALUATION SETUPS
+   - P/E compression in quality names
+   - Stocks trading below historical averages
+   - Names where bad news is priced in but fundamentals remain strong
+
+3. THEMATIC PLAYS
+   - AI infrastructure leaders worth accumulating
+   - Energy transition / nuclear plays for long-term holds
+   - Innovative funds like DXYZ, ARKK at interesting entry points
+
+4. INCOME/VALUE PLAYS
+   - Dividend growers with sustainable yields
+   - Undervalued industrials or financials
+
+For each pick, assess:
+- Current price vs fair value estimate
+- Entry zone (where to buy)
+- Risk level for a long-term holder
+- Time horizon (6mo, 12mo, multi-year)
+- Bull and bear cases
+
+AVOID:
+- Speculative micro-caps
+- Meme stocks
+- Pre-revenue companies (unless strong balance sheet)
+- Anything with serious balance sheet concerns
+
+OUTPUT FORMATTING - EXTREMELY IMPORTANT:
+- Return ONLY clean JSON array - no markdown, no backticks
+- NO citation markup - no <cite>, </cite>, [cite], cite index, or reference markers
+- NO [1], [2], [3] or any superscript/bracket references
+- Write plain English only - strip ALL formatting artifacts from search results
+
+Schema:
+[
+  {
+    "ticker": "AAPL",
+    "name": "Apple Inc",
+    "sector": "Technology",
+    "market_cap": "$2.8T",
+    "current_price": 185.50,
+    "why_now": "1-2 sentences on why this is an attractive entry point right now",
+    "entry_zone": { "low": 180, "high": 190 },
+    "fair_value": 220,
+    "risk_level": "LOW",
+    "time_horizon": "12-24 months",
+    "conviction": "HIGH",
+    "thesis": "2-3 sentence investment thesis",
+    "bull_case": "What drives upside",
+    "bear_case": "What could go wrong"
+  }
+]
+
+Return 8-12 picks sorted by conviction (HIGH first, then MEDIUM, then LOW).
+Include a mix of: mega-caps, growth stocks, funds/ETFs, and at least one value/dividend play.`
+}

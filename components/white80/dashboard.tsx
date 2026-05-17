@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { storage, STORAGE_KEYS } from "@/lib/storage"
 import { askClaude, fetchLivePrices, getStoredApiKey, ApiKeyRequiredError } from "@/lib/api"
 import { ApiKeyModal } from "./api-key-modal"
-import { buildSignalPrompt, buildBriefPrompt, buildNewsPrompt, buildScoutPrompt, buildCuratorPrompt } from "@/lib/prompts"
+import { buildSignalPrompt, buildBriefPrompt, buildNewsPrompt, buildScoutPrompt, buildCuratorPrompt, buildBuyHoldPrompt } from "@/lib/prompts"
 import { requestNotificationPermission, notifyOnComplete } from "@/lib/notifications"
 import {
   SEED_WATCHLIST,
@@ -18,6 +18,7 @@ import {
   type Brief,
   type CuratorState,
   type ScoutResult,
+  type BuyHoldPick,
   type TrackerLog,
   type LivePrice,
   type CapTier,
@@ -31,7 +32,7 @@ import { TrackerRow } from "./tracker-row"
 import { ActionButton } from "./action-button"
 import { SettingsPanel } from "./settings-panel"
 import { ExportModal } from "./export-modal"
-import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3, Crosshair, Search } from "lucide-react"
+import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3, Crosshair, Search, Briefcase } from "lucide-react"
 import { Tier1Scanner } from "./tier1-scanner"
 import { QuickThesisSearch } from "./quick-thesis"
 
@@ -58,6 +59,7 @@ export function White80Dashboard({
   const [news, setNews] = useState<TickerNews[]>([])
   const [trackerLog, setTrackerLog] = useState<TrackerLog[]>([])
   const [scoutResults, setScoutResults] = useState<ScoutResult[]>([])
+  const [buyHoldPicks, setBuyHoldPicks] = useState<BuyHoldPick[]>([])
   const [scoutThemes, setScoutThemes] = useState<string[]>(["ai_infra", "energy_transition"])
   const [scoutCapTier, setScoutCapTier] = useState<CapTier>("small")
   const [scoutHorizon, setScoutHorizon] = useState<Horizon>("6-12mo")
@@ -65,7 +67,7 @@ export function White80Dashboard({
   const [pricesAt, setPricesAt] = useState<string | null>(null)
 
   // UI state
-  const [loading, setLoading] = useState({ curator: false, signals: false, brief: false, news: false, scout: false })
+  const [loading, setLoading] = useState({ curator: false, signals: false, brief: false, news: false, scout: false, buyhold: false })
   const [errors, setErrors] = useState<Record<string, string | null>>({})
   const [generatedAt, setGeneratedAt] = useState<Record<string, string>>({})
   const [autoNewsRefresh, setAutoNewsRefresh] = useState(false)
@@ -422,6 +424,26 @@ export function White80Dashboard({
     }
   }, [scoutThemes, scoutCapTier, scoutHorizon, watchlist, soundEnabled, notificationsEnabled])
 
+  // Run Buy & Hold scan
+  const runBuyHold = useCallback(async () => {
+    setLoading((s) => ({ ...s, buyhold: true }))
+    setErrors((e) => ({ ...e, buyhold: null }))
+    try {
+      const parsed = await askClaude<BuyHoldPick[]>(buildBuyHoldPrompt())
+      setBuyHoldPicks(parsed)
+      setGeneratedAt((g) => ({ ...g, buyhold: new Date().toLocaleTimeString() }))
+      notifyOnComplete("buyhold", undefined, { soundEnabled, notificationsEnabled })
+    } catch (err) {
+      if (err instanceof ApiKeyRequiredError) {
+        setShowApiKeyModal(true)
+      } else {
+        setErrors((e) => ({ ...e, buyhold: (err as Error).message }))
+      }
+    } finally {
+      setLoading((s) => ({ ...s, buyhold: false }))
+    }
+  }, [soundEnabled, notificationsEnabled])
+  
   // Auto-refresh news
   useEffect(() => {
     if (!autoNewsRefresh) return
@@ -602,6 +624,7 @@ export function White80Dashboard({
                 { value: "tier1", label: "TIER 1", icon: Crosshair },
                 { value: "watchlist", label: "WATCHLIST", icon: TrendingUp },
                 { value: "scout", label: "SCOUT", icon: Radar },
+                { value: "buyhold", label: "BUY & HOLD", icon: Briefcase },
                 { value: "news", label: "NEWS", icon: Newspaper },
                 { value: "signals", label: "SIGNALS", icon: Activity },
                 { value: "brief", label: "PRE-MARKET", icon: FileText },
@@ -849,11 +872,143 @@ export function White80Dashboard({
                 result={r}
                 onWatchlist={watchlist.includes(r.ticker)}
                 onPromote={() => promoteScoutToWatchlist(r.ticker)}
-              />
-            ))}
-          </TabsContent>
+  />
+  ))}
+  </TabsContent>
 
-          {/* NEWS TAB */}
+  {/* BUY & HOLD TAB */}
+  <TabsContent value="buyhold" className="mt-0">
+    <div className="flex gap-2 mb-4">
+      <ActionButton
+        onClick={runBuyHold}
+        loading={loading.buyhold}
+        label="FIND OPPORTUNITIES"
+        loadingLabel="Scanning market..."
+      />
+      {generatedAt.buyhold && (
+        <span className="text-[10px] text-[#3d4f6b] font-mono self-center">
+          Updated {generatedAt.buyhold}
+        </span>
+      )}
+    </div>
+
+    {errors.buyhold && (
+      <div className="bg-[#f87171]/10 border border-[#f87171]/30 rounded p-3 mb-4">
+        <span className="text-[#f87171] font-mono text-xs">{errors.buyhold}</span>
+      </div>
+    )}
+
+    {buyHoldPicks.length === 0 && !loading.buyhold && (
+      <div className="text-center py-12">
+        <Briefcase className="w-10 h-10 text-[#3d4f6b] mx-auto mb-3" />
+        <p className="text-[#3d4f6b] font-mono text-sm">
+          Find quality stocks and funds at attractive entry points
+        </p>
+        <p className="text-[#3d4f6b]/60 font-mono text-xs mt-1">
+          Long-term holds, pullback opportunities, dividend plays
+        </p>
+      </div>
+    )}
+
+    {buyHoldPicks.length > 0 && (
+      <div className="space-y-4">
+        {buyHoldPicks.map((pick, i) => (
+          <div key={i} className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-lg font-bold text-white">{pick.ticker}</span>
+                <span className="text-[#3d4f6b] text-sm">{pick.name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`font-mono text-[9px] tracking-wider px-2 py-1 rounded ${
+                  pick.conviction === "HIGH" ? "bg-[#00ffaa]/15 text-[#00ffaa]" :
+                  pick.conviction === "MEDIUM" ? "bg-[#fbbf24]/15 text-[#fbbf24]" :
+                  "bg-[#3d4f6b]/15 text-[#3d4f6b]"
+                }`}>
+                  {pick.conviction} CONVICTION
+                </span>
+                <span className={`font-mono text-[9px] tracking-wider px-2 py-1 rounded ${
+                  pick.risk_level === "LOW" ? "bg-[#00ffaa]/15 text-[#00ffaa]" :
+                  pick.risk_level === "MEDIUM" ? "bg-[#fbbf24]/15 text-[#fbbf24]" :
+                  "bg-[#f87171]/15 text-[#f87171]"
+                }`}>
+                  {pick.risk_level} RISK
+                </span>
+              </div>
+            </div>
+
+            {/* Meta row */}
+            <div className="flex items-center gap-4 mb-3 text-[11px] font-mono">
+              <span className="text-[#00e5ff]">${pick.current_price?.toFixed(2) || "—"}</span>
+              <span className="text-[#3d4f6b]">{pick.sector}</span>
+              <span className="text-[#3d4f6b]">{pick.market_cap}</span>
+              <span className="text-[#3d4f6b]">{pick.time_horizon}</span>
+            </div>
+
+            {/* Why Now */}
+            <div className="mb-3">
+              <div className="font-mono text-[9px] tracking-wider text-[#fb923c] mb-1">WHY NOW</div>
+              <p className="text-[13px] text-[#d6dff0]">{pick.why_now}</p>
+            </div>
+
+            {/* Entry Zone & Fair Value */}
+            <div className="grid grid-cols-2 gap-4 mb-3">
+              <div>
+                <div className="font-mono text-[9px] tracking-wider text-[#3d4f6b] mb-1">ENTRY ZONE</div>
+                <span className="text-[#00e5ff] font-mono text-sm">
+                  ${pick.entry_zone?.low?.toFixed(2) || "—"} - ${pick.entry_zone?.high?.toFixed(2) || "—"}
+                </span>
+              </div>
+              <div>
+                <div className="font-mono text-[9px] tracking-wider text-[#3d4f6b] mb-1">FAIR VALUE</div>
+                <span className="text-[#00ffaa] font-mono text-sm">${pick.fair_value?.toFixed(2) || "—"}</span>
+              </div>
+            </div>
+
+            {/* Thesis */}
+            <div className="mb-3">
+              <div className="font-mono text-[9px] tracking-wider text-[#3d4f6b] mb-1">THESIS</div>
+              <p className="text-[12px] text-[#d6dff0]">{pick.thesis}</p>
+            </div>
+
+            {/* Bull/Bear Cases */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="font-mono text-[9px] tracking-wider text-[#00ffaa] mb-1">BULL CASE</div>
+                <p className="text-[11px] text-[#d6dff0]/80">{pick.bull_case}</p>
+              </div>
+              <div>
+                <div className="font-mono text-[9px] tracking-wider text-[#f87171] mb-1">BEAR CASE</div>
+                <p className="text-[11px] text-[#d6dff0]/80">{pick.bear_case}</p>
+              </div>
+            </div>
+
+            {/* Add to Watchlist button */}
+            <div className="mt-3 pt-3 border-t border-[#131c2e]">
+              <button
+                onClick={() => {
+                  if (!watchlist.includes(pick.ticker)) {
+                    setWatchlist(w => [pick.ticker, ...w])
+                  }
+                }}
+                disabled={watchlist.includes(pick.ticker)}
+                className={`font-mono text-[10px] tracking-wider px-3 py-1.5 rounded transition-colors ${
+                  watchlist.includes(pick.ticker)
+                    ? "bg-[#3d4f6b]/20 text-[#3d4f6b] cursor-not-allowed"
+                    : "bg-[#00e5ff]/10 text-[#00e5ff] hover:bg-[#00e5ff]/20"
+                }`}
+              >
+                {watchlist.includes(pick.ticker) ? "IN WATCHLIST" : "ADD TO WATCHLIST"}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </TabsContent>
+  
+  {/* NEWS TAB */}
           <TabsContent value="news" className="mt-0">
             <div className="flex gap-2 mb-4">
               <ActionButton

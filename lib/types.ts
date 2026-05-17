@@ -95,6 +95,23 @@ export interface ScoutResult {
   why_now: string
 }
 
+export interface BuyHoldPick {
+  ticker: string
+  name: string
+  sector: string
+  market_cap: string
+  current_price: number
+  why_now: string
+  entry_zone: { low: number; high: number }
+  fair_value: number
+  risk_level: "LOW" | "MEDIUM" | "HIGH"
+  time_horizon: string
+  conviction: "HIGH" | "MEDIUM" | "LOW"
+  thesis: string
+  bull_case: string
+  bear_case: string
+}
+
 export interface TrackerLog {
   id: string
   ts: string
