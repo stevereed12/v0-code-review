@@ -112,6 +112,20 @@ export interface BuyHoldPick {
   bear_case: string
 }
 
+export interface ExtractedTrade {
+  ticker: string
+  action: "BUY" | "SELL"
+  quantity: number
+  price: number
+  total: number
+  time?: string
+  date: string
+  contract?: string // For options: "AAPL $185 Call 5/23"
+  isOptions: boolean
+  matchStatus?: "SIGNAL" | "TOP_PLAY" | "OFF_SIGNAL" | "UNMATCHED"
+  matchedSignal?: string // Description of what it matched
+}
+
 export interface TrackerLog {
   id: string
   ts: string
