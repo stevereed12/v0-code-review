@@ -157,9 +157,9 @@ IMPORTANT FOR TOP PLAYS:
 - Use this data as your STARTING POINT for Top Plays, but DO NOT just list the top gainers/losers
 - Look for ASYMMETRIC setups: names with unusual volume + a catalyst + favorable technical setup
 - Cross-reference with web search for WHY these names are moving
-- Tier 1 Scanner picks based on pure technicals. YOUR Top Plays should be DIFFERENT:
-  Think catalyst-driven, flow-driven, event-driven plays that Tier 1 would miss
-- If a stock is up 8% on no news, that's NOT a Top Play. If it's up 3% on an FDA approval with calls sweeping, that IS.
+- Your Top Plays use a DIFFERENT LENS than Tier 1: think catalyst-driven, flow-driven, event-driven
+- A stock up 8% on no news is NOT a Top Play. A stock up 3% on an FDA approval with calls sweeping IS.
+- OVERLAP IS OK: If a ticker appears in both Tier 1 AND your Top Plays, that is CONVERGENCE - two independent methodologies agreeing is a stronger signal, not a duplicate. Do NOT suppress a play just because it might also show up in a technical scan.
 `
       } catch (polyErr) {
         console.error("Polygon data fetch failed, continuing with web search only:", polyErr)
