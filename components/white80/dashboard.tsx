@@ -617,18 +617,43 @@ export function White80Dashboard({
 
         {/* Main Tabs */}
         <Tabs defaultValue="watchlist" className="w-full">
-          <TabsList className="w-full justify-start bg-transparent border-b border-[#131c2e] rounded-none p-0 h-auto mb-5">
-{[
-                { value: "thesis", label: "THESIS", icon: Search },
-                { value: "tier1", label: "TIER 1", icon: Crosshair },
-                { value: "watchlist", label: "WATCHLIST", icon: TrendingUp },
-                { value: "scout", label: "SCOUT", icon: Radar },
-                { value: "buyhold", label: "BUY & HOLD", icon: Briefcase },
-                { value: "news", label: "NEWS", icon: Newspaper },
-                { value: "signals", label: "SIGNALS", icon: Activity },
-                { value: "brief", label: "PRE-MARKET", icon: FileText },
-                { value: "tracker", label: "TRACKER", icon: BarChart3 },
-              ].map((tab) => (
+          {/* Mobile: 3x3 grid of buttons */}
+          <TabsList className="md:hidden grid grid-cols-3 gap-1.5 bg-transparent p-0 h-auto mb-4">
+            {[
+              { value: "thesis", label: "THESIS", icon: Search },
+              { value: "tier1", label: "TIER 1", icon: Crosshair },
+              { value: "watchlist", label: "WATCHLIST", icon: TrendingUp },
+              { value: "scout", label: "SCOUT", icon: Radar },
+              { value: "buyhold", label: "BUY&HOLD", icon: Briefcase },
+              { value: "news", label: "NEWS", icon: Newspaper },
+              { value: "signals", label: "SIGNALS", icon: Activity },
+              { value: "brief", label: "PRE-MKT", icon: FileText },
+              { value: "tracker", label: "TRACKER", icon: BarChart3 },
+            ].map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="flex flex-col items-center justify-center gap-1 font-mono text-[9px] tracking-wider py-2.5 px-1 rounded-md bg-[#0c1020] border border-[#131c2e] data-[state=active]:border-[#00e5ff] data-[state=active]:bg-[#00e5ff]/10 data-[state=active]:text-[#00e5ff] text-[#3d4f6b]"
+              >
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          
+          {/* Desktop: horizontal tabs */}
+          <TabsList className="hidden md:flex w-full justify-start bg-transparent border-b border-[#131c2e] rounded-none p-0 h-auto mb-5">
+            {[
+              { value: "thesis", label: "THESIS", icon: Search },
+              { value: "tier1", label: "TIER 1", icon: Crosshair },
+              { value: "watchlist", label: "WATCHLIST", icon: TrendingUp },
+              { value: "scout", label: "SCOUT", icon: Radar },
+              { value: "buyhold", label: "BUY & HOLD", icon: Briefcase },
+              { value: "news", label: "NEWS", icon: Newspaper },
+              { value: "signals", label: "SIGNALS", icon: Activity },
+              { value: "brief", label: "PRE-MARKET", icon: FileText },
+              { value: "tracker", label: "TRACKER", icon: BarChart3 },
+            ].map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
