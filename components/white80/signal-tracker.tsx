@@ -49,6 +49,42 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
     setExpandedDates(new Set([today]))
   }, [])
 
+  // Auto-import Top Plays from brief when generated
+  useEffect(() => {
+    if (!brief?.top_plays || brief.top_plays.length === 0) return
+    
+    const today = new Date().toISOString().split("T")[0]
+    
+    setTrackedSignals(prev => {
+      // Check which top plays are already logged today (by ticker + date)
+      const existingToday = new Set(
+        prev
+          .filter(s => s.date === today && s.source === "TOP_PLAY")
+          .map(s => s.ticker)
+      )
+      
+      // Only add new ones
+      const newSignals: TrackedSignal[] = brief.top_plays
+        .filter(play => !existingToday.has(play.ticker))
+        .map(play => ({
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          date: today,
+          ticker: play.ticker,
+          source: "TOP_PLAY" as const,
+          signalType: play.action as "BUY" | "SELL" | "FADE",
+          play: play.play,
+          signalPrice: 0, // We don't have exact price from brief
+          conviction: play.conviction,
+          took: null,
+          outcome: null,
+          notes: play.thesis,
+        }))
+      
+      if (newSignals.length === 0) return prev
+      return [...newSignals, ...prev]
+    })
+  }, [brief?.top_plays])
+
   // Group signals by date
   const signalsByDate = useMemo(() => {
     const grouped: Record<string, TrackedSignal[]> = {}
