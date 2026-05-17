@@ -1541,8 +1541,8 @@ export function White80Dashboard({
                             risk: "Medium",
                             catalyst: t.matchedSignal || "Imported from transactions",
                             news_aware: false,
-                            status: t.matchStatus === "SIGNAL" || t.matchStatus === "TOP_PLAY" ? "APPROVED" : "PENDING",
-                            outcome: null,
+                            status: "EXECUTED", // Historical trades are already executed
+                            outcome: t.action === "SELL" ? "CLOSED" : "OPEN", // Sells are closed positions, buys are open
                             notes: `${t.matchStatus}: ${t.matchedSignal || "Manual import"} | Total: $${t.total.toFixed(2)}`,
                           }))
                           
