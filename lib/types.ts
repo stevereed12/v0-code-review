@@ -146,6 +146,32 @@ export interface ExecutedTrade {
   pnlPercent?: number
 }
 
+// Clean signal tracking model
+export interface TrackedSignal {
+  id: string
+  date: string // YYYY-MM-DD
+  ticker: string
+  source: "WATCHLIST" | "TOP_PLAY" | "TIER1" | "THESIS" | "BUY_HOLD" | "SCOUT" | "MANUAL"
+  signalType: "BUY" | "SELL" | "FADE"
+  play: string // e.g., "$185 calls exp 5/23" or "Buy shares"
+  signalPrice: number // Price when signal was given
+  conviction: "HIGH" | "MEDIUM" | "LOW"
+  // Execution tracking
+  took: boolean | null // null = not yet decided
+  entryPrice?: number
+  exitPrice?: number
+  quantity?: number
+  totalCost?: number
+  totalProceeds?: number
+  // Outcome
+  outcome: "WIN" | "LOSS" | "EVEN" | "MISSED_WIN" | "GOOD_PASS" | "OPEN" | null
+  pnlDollars?: number
+  pnlPercent?: number
+  // Meta
+  notes?: string
+  closedAt?: string
+}
+
 export interface TrackerLog {
   id: string
   ts: string

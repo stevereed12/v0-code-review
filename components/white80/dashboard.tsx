@@ -7,6 +7,7 @@ import { askClaude, fetchLivePrices, getStoredApiKey, ApiKeyRequiredError } from
 import { ApiKeyModal } from "./api-key-modal"
 import { buildSignalPrompt, buildBriefPrompt, buildNewsPrompt, buildScoutPrompt, buildCuratorPrompt, buildBuyHoldPrompt } from "@/lib/prompts"
 import { requestNotificationPermission, notifyOnComplete } from "@/lib/notifications"
+import { SignalTracker } from "./signal-tracker"
 import {
   SEED_WATCHLIST,
   THEMES,
@@ -21,10 +22,6 @@ import {
   type BuyHoldPick,
   type TrackerLog,
   type LivePrice,
-  type CapTier,
-  type Horizon,
-  type ExtractedTrade,
-  type ExecutedTrade,
 } from "@/lib/types"
 import { WatchlistHeader } from "./watchlist-header"
 import { SignalCard } from "./signal-card"
@@ -34,7 +31,7 @@ import { TrackerRow } from "./tracker-row"
 import { ActionButton } from "./action-button"
 import { SettingsPanel } from "./settings-panel"
 import { ExportModal } from "./export-modal"
-import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3, Crosshair, Search, Briefcase, Upload } from "lucide-react"
+import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3, Crosshair, Search, Briefcase } from "lucide-react"
 import { Tier1Scanner } from "./tier1-scanner"
 import { QuickThesisSearch } from "./quick-thesis"
 
@@ -62,9 +59,6 @@ export function White80Dashboard({
   const [trackerLog, setTrackerLog] = useState<TrackerLog[]>([])
   const [scoutResults, setScoutResults] = useState<ScoutResult[]>([])
   const [buyHoldPicks, setBuyHoldPicks] = useState<BuyHoldPick[]>([])
-  const [extractedTrades, setExtractedTrades] = useState<ExtractedTrade[]>([])
-  const [executedTrades, setExecutedTrades] = useState<ExecutedTrade[]>([])
-  const [extractingTrades, setExtractingTrades] = useState(false)
   const [scoutThemes, setScoutThemes] = useState<string[]>(["ai_infra", "energy_transition"])
   const [scoutCapTier, setScoutCapTier] = useState<CapTier>("small")
   const [scoutHorizon, setScoutHorizon] = useState<Horizon>("6-12mo")
@@ -123,7 +117,6 @@ export function White80Dashboard({
     const sh = storage.get<Horizon>(STORAGE_KEYS.SCOUT_HORIZON)
     const ne = storage.get<boolean>(STORAGE_KEYS.NOTIFICATIONS_ENABLED)
     const se = storage.get<boolean>(STORAGE_KEYS.SOUND_ENABLED)
-    const ex = localStorage.getItem("white80_executed_trades")
 
     if (wl) setWatchlist(wl)
     if (pn) setPinnedTickers(pn)
@@ -137,7 +130,6 @@ export function White80Dashboard({
     if (sh) setScoutHorizon(sh)
     if (ne !== null) setNotificationsEnabled(ne)
     if (se !== null) setSoundEnabled(se)
-    if (ex) setExecutedTrades(JSON.parse(ex))
 
     setStorageReady(true)
   }, [])
@@ -179,12 +171,7 @@ export function White80Dashboard({
   useEffect(() => {
     if (storageReady) storage.set(STORAGE_KEYS.SOUND_ENABLED, soundEnabled)
   }, [soundEnabled, storageReady])
-  useEffect(() => {
-    if (storageReady && executedTrades.length > 0) {
-      localStorage.setItem("white80_executed_trades", JSON.stringify(executedTrades))
-    }
-  }, [executedTrades, storageReady])
-
+  
   // Handle notification permission
   const handleNotificationsToggle = async (enabled: boolean) => {
     if (enabled) {
@@ -1347,415 +1334,7 @@ export function White80Dashboard({
 
           {/* TRACKER TAB */}
           <TabsContent value="tracker" className="mt-0">
-            {/* Stats grid */}
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4">
-              {[
-                { label: "TOTAL", value: trackerStats.total, color: "#d6dff0" },
-                { label: "PENDING", value: trackerStats.pending, color: "#facc15" },
-                { label: "APPROVAL", value: trackerStats.approvalRate === "-" ? "-" : `${trackerStats.approvalRate}%`, color: "#00e5ff" },
-                {
-                  label: "PRECISION",
-                  value: trackerStats.precision === "-" ? "-" : `${trackerStats.precision}%`,
-                  color:
-                    trackerStats.precision !== "-" && parseInt(trackerStats.precision) >= 65
-                      ? "#00ffaa"
-                      : trackerStats.precision !== "-" && parseInt(trackerStats.precision) < 50
-                        ? "#f87171"
-                        : "#facc15",
-                },
-                { label: "WINS", value: trackerStats.wins, color: "#00ffaa" },
-                { label: "LOSSES", value: trackerStats.losses, color: "#f87171" },
-              ].map((s, i) => (
-                <div key={i} className="bg-[#0c1020] border border-[#131c2e] rounded p-2.5">
-                  <div className="font-mono text-[8px] tracking-wider text-[#3d4f6b] mb-1">{s.label}</div>
-                  <div className="font-mono text-xl font-medium tracking-wide" style={{ color: s.color }}>
-                    {s.value}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Vision target */}
-            <div className="bg-[#a78bfa]/10 border border-[#a78bfa]/40 rounded p-2.5 mb-3.5">
-              <div className="font-mono text-[9px] text-[#a78bfa] tracking-wider mb-1">VISION TARGETS</div>
-              <div className="text-[13px] leading-snug">
-                Precision &gt;55% at 90 days - &gt;65% at 12 months - Beat SPY by 800bps risk-adjusted
-              </div>
-            </div>
-
-            {trackerLog.length === 0 && (
-              <div className="font-mono text-center py-10 text-[10px] text-[#3d4f6b] tracking-wider leading-relaxed">
-                Tracker auto-logs every signal fired.
-                <br />
-                Mark approve/pass and outcomes to compute precision over time.
-              </div>
-            )}
-
-            {/* Export/Import Controls */}
-            <div className="flex gap-2 mb-4">
-              <button
-                onClick={() => {
-                  const data = JSON.stringify({ trackerLog, watchlist, exportedAt: new Date().toISOString() }, null, 2)
-                  const blob = new Blob([data], { type: "application/json" })
-                  const url = URL.createObjectURL(blob)
-                  const a = document.createElement("a")
-                  a.href = url
-                  a.download = `white80-backup-${new Date().toISOString().split("T")[0]}.json`
-                  a.click()
-                  URL.revokeObjectURL(url)
-                }}
-                className="font-mono text-[9px] tracking-wider px-3 py-1.5 rounded border border-[#00e5ff]/40 text-[#00e5ff] hover:bg-[#00e5ff]/10 transition-colors"
-              >
-                EXPORT BACKUP
-              </button>
-              <label className="font-mono text-[9px] tracking-wider px-3 py-1.5 rounded border border-[#00ffaa]/40 text-[#00ffaa] hover:bg-[#00ffaa]/10 transition-colors cursor-pointer">
-                IMPORT BACKUP
-                <input
-                  type="file"
-                  accept=".json"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (!file) return
-                    const reader = new FileReader()
-                    reader.onload = (evt) => {
-                      try {
-                        const data = JSON.parse(evt.target?.result as string)
-                        if (data.trackerLog) {
-                          // Merge imported logs with existing (avoid duplicates by id)
-                          const existingIds = new Set(trackerLog.map(l => l.id))
-                          const newLogs = data.trackerLog.filter((l: { id: string }) => !existingIds.has(l.id))
-                          if (newLogs.length > 0) {
-                            const merged = [...trackerLog, ...newLogs]
-                            localStorage.setItem("white80_tracker", JSON.stringify(merged))
-                            window.location.reload()
-                          }
-                        }
-                        if (data.watchlist && Array.isArray(data.watchlist)) {
-                          localStorage.setItem("white80_watchlist", JSON.stringify(data.watchlist))
-                        }
-                      } catch {
-                        alert("Invalid backup file")
-                      }
-                    }
-                    reader.readAsText(file)
-                  }}
-                />
-              </label>
-            </div>
-
-            {/* Trade Upload Section */}
-            <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4 mb-4">
-              <div className="font-mono text-[10px] tracking-[2px] text-[#fb923c] mb-3">IMPORT TRADES</div>
-              <p className="text-[12px] text-[#3d4f6b] mb-3">
-                Upload a screenshot of your Robinhood transactions or drop in a CSV export to auto-reconcile against your signals.
-              </p>
-              
-              <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
-                extractingTrades 
-                  ? "border-[#fb923c]/50 bg-[#fb923c]/5" 
-                  : "border-[#3d4f6b]/50 hover:border-[#00e5ff]/50 hover:bg-[#00e5ff]/5"
-              }`}>
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  {extractingTrades ? (
-                    <>
-                      <div className="w-8 h-8 border-2 border-[#fb923c] border-t-transparent rounded-full animate-spin mb-2" />
-                      <p className="text-[11px] text-[#fb923c] font-mono">Extracting trades...</p>
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-8 h-8 text-[#3d4f6b] mb-2" />
-                      <p className="text-[11px] text-[#3d4f6b] font-mono">
-                        <span className="text-[#00e5ff]">Click to upload</span> or drag and drop
-                      </p>
-                      <p className="text-[9px] text-[#3d4f6b]/60 font-mono mt-1">
-                        PNG, JPG (screenshots) or CSV (Robinhood export)
-                      </p>
-                    </>
-                  )}
-                </div>
-                <input
-                  type="file"
-                  accept="image/*,.csv"
-                  className="hidden"
-                  disabled={extractingTrades}
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0]
-                    if (!file) return
-                    
-                    setExtractingTrades(true)
-                    setExtractedTrades([])
-                    
-                    try {
-                      const formData = new FormData()
-                      formData.append("file", file)
-                      formData.append("apiKey", getStoredApiKey() || "")
-                      formData.append("signals", JSON.stringify(signals))
-                      formData.append("topPlays", JSON.stringify(brief?.top_plays || []))
-                      
-                      const res = await fetch("/api/extract-trades", {
-                        method: "POST",
-                        body: formData,
-                      })
-                      
-                      if (!res.ok) {
-                        const err = await res.json()
-                        throw new Error(err.error || "Failed to extract trades")
-                      }
-                      
-                      const data = await res.json()
-                      setExtractedTrades(data.trades || [])
-                    } catch (err) {
-                      console.error("[v0] Trade extraction error:", err)
-                      alert(err instanceof Error ? err.message : "Failed to extract trades")
-                    } finally {
-                      setExtractingTrades(false)
-                      e.target.value = ""
-                    }
-                  }}
-                />
-              </label>
-              
-              {/* Extracted Trades Review */}
-              {extractedTrades.length > 0 && (
-                <div className="mt-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="font-mono text-[10px] text-[#3d4f6b] tracking-wider">
-                      EXTRACTED: {extractedTrades.length} TRADES
-                    </span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setExtractedTrades([])}
-                        className="font-mono text-[9px] tracking-wider px-2 py-1 rounded border border-[#3d4f6b]/40 text-[#3d4f6b] hover:bg-[#3d4f6b]/10"
-                      >
-                        CLEAR
-                      </button>
-                      <button
-                        onClick={() => {
-                          // Convert extracted trades to ExecutedTrade format
-                          const newTrades: ExecutedTrade[] = extractedTrades.map((t) => ({
-                            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                            ticker: t.ticker,
-                            action: t.action,
-                            quantity: t.quantity,
-                            price: t.price,
-                            total: t.total,
-                            date: t.date,
-                            time: t.time,
-                            isOptions: t.isOptions,
-                            contract: t.contract,
-                            matchStatus: t.matchStatus,
-                            matchedSignal: t.matchedSignal,
-                          }))
-                          
-                          // Merge with existing and sort by date (newest first)
-                          const merged = [...newTrades, ...executedTrades].sort((a, b) => 
-                            new Date(b.date).getTime() - new Date(a.date).getTime()
-                          )
-                          setExecutedTrades(merged)
-                          setExtractedTrades([])
-                        }}
-                        className="font-mono text-[9px] tracking-wider px-3 py-1 rounded bg-[#00ffaa]/20 border border-[#00ffaa]/40 text-[#00ffaa] hover:bg-[#00ffaa]/30"
-                      >
-                        IMPORT ALL
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                    {extractedTrades.map((trade, i) => (
-                      <div key={i} className="bg-[#090c14] border border-[#131c2e] rounded p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm font-bold text-white">{trade.ticker}</span>
-                            <span className={`font-mono text-[9px] tracking-wider px-1.5 py-0.5 rounded ${
-                              trade.action === "BUY" 
-                                ? "bg-[#00ffaa]/15 text-[#00ffaa]" 
-                                : "bg-[#f87171]/15 text-[#f87171]"
-                            }`}>
-                              {trade.action}
-                            </span>
-                            {trade.isOptions && (
-                              <span className="font-mono text-[9px] tracking-wider px-1.5 py-0.5 rounded bg-[#a78bfa]/15 text-[#a78bfa]">
-                                OPTIONS
-                              </span>
-                            )}
-                          </div>
-                          <span className={`font-mono text-[9px] tracking-wider px-2 py-0.5 rounded ${
-                            trade.matchStatus === "SIGNAL" ? "bg-[#00ffaa]/15 text-[#00ffaa]" :
-                            trade.matchStatus === "TOP_PLAY" ? "bg-[#00e5ff]/15 text-[#00e5ff]" :
-                            trade.matchStatus === "OFF_SIGNAL" ? "bg-[#fb923c]/15 text-[#fb923c]" :
-                            "bg-[#3d4f6b]/15 text-[#3d4f6b]"
-                          }`}>
-                            {trade.matchStatus?.replace("_", " ")}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-4 gap-2 text-[11px] font-mono">
-                          <div>
-                            <span className="text-[#3d4f6b]">QTY:</span>{" "}
-                            <span className="text-[#d6dff0]">{trade.quantity}</span>
-                          </div>
-                          <div>
-                            <span className="text-[#3d4f6b]">PRICE:</span>{" "}
-                            <span className="text-[#d6dff0]">${trade.price.toFixed(2)}</span>
-                          </div>
-                          <div>
-                            <span className="text-[#3d4f6b]">TOTAL:</span>{" "}
-                            <span className="text-[#00e5ff]">${trade.total.toFixed(2)}</span>
-                          </div>
-                          <div>
-                            <span className="text-[#3d4f6b]">DATE:</span>{" "}
-                            <span className="text-[#d6dff0]">{trade.date}</span>
-                          </div>
-                        </div>
-                        {trade.contract && (
-                          <div className="text-[10px] text-[#a78bfa] mt-1 font-mono">{trade.contract}</div>
-                        )}
-                        <div className="text-[10px] text-[#3d4f6b] mt-1">{trade.matchedSignal}</div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Match Summary */}
-                  <div className="mt-3 pt-3 border-t border-[#131c2e] grid grid-cols-4 gap-2">
-                    {[
-                      { label: "SIGNAL MATCH", count: extractedTrades.filter(t => t.matchStatus === "SIGNAL").length, color: "#00ffaa" },
-                      { label: "TOP PLAY", count: extractedTrades.filter(t => t.matchStatus === "TOP_PLAY").length, color: "#00e5ff" },
-                      { label: "OFF SIGNAL", count: extractedTrades.filter(t => t.matchStatus === "OFF_SIGNAL").length, color: "#fb923c" },
-                      { label: "UNMATCHED", count: extractedTrades.filter(t => t.matchStatus === "UNMATCHED").length, color: "#3d4f6b" },
-                    ].map((stat, i) => (
-                      <div key={i} className="text-center">
-                        <div className="font-mono text-lg font-bold" style={{ color: stat.color }}>{stat.count}</div>
-                        <div className="font-mono text-[8px] tracking-wider text-[#3d4f6b]">{stat.label}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* EXECUTED TRADES / P&L HISTORY */}
-            {executedTrades.length > 0 && (
-              <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4 mb-4">
-                <div className="flex justify-between items-center mb-3">
-                  <div className="font-mono text-[10px] tracking-[2px] text-[#00e5ff]">
-                    TRADE HISTORY ({executedTrades.length})
-                  </div>
-                  <div className="flex gap-3 items-center">
-                    {/* P/L Summary */}
-                    {(() => {
-                      const buys = executedTrades.filter(t => t.action === "BUY")
-                      const sells = executedTrades.filter(t => t.action === "SELL")
-                      const totalBought = buys.reduce((sum, t) => sum + t.total, 0)
-                      const totalSold = sells.reduce((sum, t) => sum + t.total, 0)
-                      const realizedPnL = totalSold - (totalBought * (sells.length / Math.max(buys.length, 1)))
-                      return (
-                        <div className="flex gap-4 font-mono text-[10px]">
-                          <span className="text-[#3d4f6b]">BOUGHT: <span className="text-[#f87171]">${totalBought.toFixed(2)}</span></span>
-                          <span className="text-[#3d4f6b]">SOLD: <span className="text-[#00ffaa]">${totalSold.toFixed(2)}</span></span>
-                        </div>
-                      )
-                    })()}
-                    <button
-                      onClick={() => {
-                        if (confirm("Clear all trade history?")) {
-                          setExecutedTrades([])
-                          localStorage.removeItem("white80_executed_trades")
-                        }
-                      }}
-                      className="font-mono text-[9px] tracking-wider px-2 py-1 rounded border border-[#f87171]/40 text-[#f87171] hover:bg-[#f87171]/10"
-                    >
-                      CLEAR
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                  {executedTrades.map((trade, i) => (
-                    <div key={trade.id || i} className="bg-[#090c14] border border-[#131c2e] rounded p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-sm font-bold text-white">{trade.ticker}</span>
-                          <span className={`font-mono text-[9px] tracking-wider px-1.5 py-0.5 rounded ${
-                            trade.action === "BUY" 
-                              ? "bg-[#00ffaa]/15 text-[#00ffaa]" 
-                              : "bg-[#f87171]/15 text-[#f87171]"
-                          }`}>
-                            {trade.action}
-                          </span>
-                          {trade.isOptions && (
-                            <span className="font-mono text-[9px] tracking-wider px-1.5 py-0.5 rounded bg-[#a78bfa]/15 text-[#a78bfa]">
-                              OPTIONS
-                            </span>
-                          )}
-                          {trade.matchStatus && (
-                            <span className={`font-mono text-[9px] tracking-wider px-1.5 py-0.5 rounded ${
-                              trade.matchStatus === "SIGNAL" ? "bg-[#00ffaa]/10 text-[#00ffaa]" :
-                              trade.matchStatus === "TOP_PLAY" ? "bg-[#00e5ff]/10 text-[#00e5ff]" :
-                              trade.matchStatus === "OFF_SIGNAL" ? "bg-[#fb923c]/10 text-[#fb923c]" :
-                              "bg-[#3d4f6b]/10 text-[#3d4f6b]"
-                            }`}>
-                              {trade.matchStatus?.replace("_", " ")}
-                            </span>
-                          )}
-                        </div>
-                        <span className="font-mono text-[10px] text-[#3d4f6b]">{trade.date}</span>
-                      </div>
-                      <div className="grid grid-cols-4 gap-2 text-[11px] font-mono">
-                        <div>
-                          <span className="text-[#3d4f6b]">QTY:</span>{" "}
-                          <span className="text-[#d6dff0]">{trade.quantity}</span>
-                        </div>
-                        <div>
-                          <span className="text-[#3d4f6b]">PRICE:</span>{" "}
-                          <span className="text-[#d6dff0]">${trade.price.toFixed(2)}</span>
-                        </div>
-                        <div>
-                          <span className="text-[#3d4f6b]">TOTAL:</span>{" "}
-                          <span className={trade.action === "BUY" ? "text-[#f87171]" : "text-[#00ffaa]"}>
-                            ${trade.total.toFixed(2)}
-                          </span>
-                        </div>
-                        <div>
-                          {trade.contract && (
-                            <span className="text-[#a78bfa] truncate block">{trade.contract}</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {trackerLog.length > 0 && (
-              <>
-                <div className="flex justify-between items-center mb-2.5">
-                  <span className="font-mono text-[9px] text-[#3d4f6b] tracking-wider">
-                    SIGNAL LOG - {trackerLog.length}
-                  </span>
-                  <button
-                    onClick={clearTracker}
-                    className={`font-mono text-[9px] tracking-wider px-2.5 py-1 rounded-sm border transition-all ${
-                      confirmClearTracker
-                        ? "bg-[#f87171]/20 border-[#f87171] text-[#f87171]"
-                        : "border-[#f87171]/40 text-[#f87171]"
-                    }`}
-                  >
-                    {confirmClearTracker ? "CONFIRM?" : "CLEAR ALL"}
-                  </button>
-                </div>
-
-                {trackerLog.map((log) => (
-                  <TrackerRow
-                    key={log.id}
-                    log={log}
-                    onUpdate={(patch) => updateLog(log.id, patch)}
-                    onDelete={() => deleteLog(log.id)}
-                  />
-                ))}
-              </>
-            )}
+            <SignalTracker signals={signals} brief={brief} />
           </TabsContent>
         </Tabs>
 
