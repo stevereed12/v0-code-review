@@ -1,11 +1,13 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, TrendingUp, TrendingDown, Check, X, ChevronDown, ChevronRight, Upload, Trash2 } from "lucide-react"
+import { Plus, TrendingUp, TrendingDown, Check, X, ChevronDown, ChevronRight, Upload, Trash2, Cloud, CloudOff } from "lucide-react"
 import type { TrackedSignal, ExtractedTrade, Signal, Brief } from "@/lib/types"
+import { createClient } from "@/lib/supabase/client"
+import type { User } from "@supabase/supabase-js"
 
 interface SignalTrackerProps {
   signals: Signal[]
@@ -19,6 +21,9 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
   const [trackedSignals, setTrackedSignals] = useState<TrackedSignal[]>([])
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set())
   const [showAddSignal, setShowAddSignal] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [syncing, setSyncing] = useState(false)
+  const [lastSynced, setLastSynced] = useState<string | null>(null)
   const [newSignal, setNewSignal] = useState({
     ticker: "",
     source: "MANUAL" as TrackedSignal["source"],
@@ -28,20 +33,117 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
     conviction: "MEDIUM" as TrackedSignal["conviction"],
   })
 
-  // Load from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("white80_tracked_signals")
-    if (saved) {
-      setTrackedSignals(JSON.parse(saved))
-    }
-  }, [])
+  const supabase = createClient()
 
-  // Save to localStorage
+  // Check auth state
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+    }
+    getUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [supabase.auth])
+
+  // Load signals - from Supabase if logged in, localStorage as fallback
+  useEffect(() => {
+    const loadSignals = async () => {
+      if (user) {
+        setSyncing(true)
+        const { data, error } = await supabase
+          .from("tracked_signals")
+          .select("*")
+          .order("date", { ascending: false })
+        
+        if (!error && data) {
+          const mapped: TrackedSignal[] = data.map(row => ({
+            id: row.id,
+            date: row.date,
+            ticker: row.ticker,
+            source: row.source,
+            signalType: row.signal_type,
+            play: row.play || "",
+            signalPrice: row.signal_price || 0,
+            conviction: row.conviction || "MEDIUM",
+            took: row.took,
+            entryPrice: row.entry_price,
+            exitPrice: row.exit_price,
+            quantity: row.quantity,
+            totalCost: row.total_cost,
+            totalProceeds: row.total_proceeds,
+            outcome: row.outcome,
+            pnlDollars: row.pnl_dollars,
+            pnlPercent: row.pnl_percent,
+            notes: row.notes,
+            closedAt: row.closed_at,
+          }))
+          setTrackedSignals(mapped)
+          setLastSynced(new Date().toLocaleTimeString())
+        }
+        setSyncing(false)
+      } else {
+        // Fallback to localStorage
+        const saved = localStorage.getItem("white80_tracked_signals")
+        if (saved) {
+          setTrackedSignals(JSON.parse(saved))
+        }
+      }
+    }
+    loadSignals()
+  }, [user, supabase])
+
+  // Save to localStorage as backup (always)
   useEffect(() => {
     if (trackedSignals.length > 0) {
       localStorage.setItem("white80_tracked_signals", JSON.stringify(trackedSignals))
     }
   }, [trackedSignals])
+
+  // Sync single signal to Supabase
+  const syncSignalToDb = useCallback(async (signal: TrackedSignal) => {
+    if (!user) return
+    
+    const { error } = await supabase
+      .from("tracked_signals")
+      .upsert({
+        id: signal.id,
+        user_id: user.id,
+        date: signal.date,
+        ticker: signal.ticker,
+        source: signal.source,
+        signal_type: signal.signalType,
+        play: signal.play,
+        signal_price: signal.signalPrice,
+        conviction: signal.conviction,
+        took: signal.took,
+        entry_price: signal.entryPrice,
+        exit_price: signal.exitPrice,
+        quantity: signal.quantity,
+        total_cost: signal.totalCost,
+        total_proceeds: signal.totalProceeds,
+        outcome: signal.outcome,
+        pnl_dollars: signal.pnlDollars,
+        pnl_percent: signal.pnlPercent,
+        notes: signal.notes,
+        closed_at: signal.closedAt,
+        updated_at: new Date().toISOString(),
+      })
+    
+    if (!error) {
+      setLastSynced(new Date().toLocaleTimeString())
+    }
+  }, [user, supabase])
+
+  // Delete signal from Supabase
+  const deleteSignalFromDb = useCallback(async (signalId: string) => {
+    if (!user) return
+    await supabase.from("tracked_signals").delete().eq("id", signalId)
+  }, [user, supabase])
 
   // Expand today's date by default
   useEffect(() => {
@@ -67,23 +169,28 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
       const newSignals: TrackedSignal[] = brief.top_plays
         .filter(play => !existingToday.has(play.ticker))
         .map(play => ({
-          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          id: crypto.randomUUID(),
           date: today,
           ticker: play.ticker,
           source: "TOP_PLAY" as const,
           signalType: play.action as "BUY" | "SELL" | "FADE",
           play: play.play,
-          signalPrice: 0, // We don't have exact price from brief
+          signalPrice: 0,
           conviction: play.conviction,
           took: null,
           outcome: null,
           notes: play.thesis,
         }))
       
+      // Sync new signals to Supabase
+      if (user && newSignals.length > 0) {
+        newSignals.forEach(sig => syncSignalToDb(sig))
+      }
+      
       if (newSignals.length === 0) return prev
       return [...newSignals, ...prev]
     })
-  }, [brief?.top_plays])
+  }, [brief?.top_plays, user, syncSignalToDb])
 
   // Group signals by date
   const signalsByDate = useMemo(() => {
@@ -134,7 +241,7 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
   const addSignal = () => {
     const today = new Date().toISOString().split("T")[0]
     const signal: TrackedSignal = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: crypto.randomUUID(),
       date: today,
       ticker: newSignal.ticker.toUpperCase(),
       source: newSignal.source,
@@ -146,6 +253,7 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
       outcome: null,
     }
     setTrackedSignals(prev => [signal, ...prev])
+    syncSignalToDb(signal)
     setNewSignal({
       ticker: "",
       source: "MANUAL",
@@ -158,11 +266,17 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
   }
 
   const updateSignal = (id: string, updates: Partial<TrackedSignal>) => {
-    setTrackedSignals(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s))
+    setTrackedSignals(prev => {
+      const updated = prev.map(s => s.id === id ? { ...s, ...updates } : s)
+      const updatedSignal = updated.find(s => s.id === id)
+      if (updatedSignal) syncSignalToDb(updatedSignal)
+      return updated
+    })
   }
 
   const deleteSignal = (id: string) => {
     setTrackedSignals(prev => prev.filter(s => s.id !== id))
+    deleteSignalFromDb(id)
   }
 
   const toggleDate = (date: string) => {
@@ -236,7 +350,7 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
         <Button
           variant="outline"
           size="sm"
@@ -265,6 +379,31 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
             <Upload className="w-3 h-3 mr-1" /> IMPORT TOP PLAYS ({brief.top_plays.length})
           </Button>
         )}
+        
+        {/* Sync Status Indicator */}
+        <div className="ml-auto flex items-center gap-2">
+          {user ? (
+            <div className="flex items-center gap-1.5 text-[10px] font-mono">
+              {syncing ? (
+                <>
+                  <div className="w-3 h-3 border border-[#00e5ff] border-t-transparent rounded-full animate-spin" />
+                  <span className="text-[#00e5ff]">Syncing...</span>
+                </>
+              ) : (
+                <>
+                  <Cloud className="w-3 h-3 text-[#00ffaa]" />
+                  <span className="text-[#00ffaa]">Synced</span>
+                  {lastSynced && <span className="text-[#3d4f6b]">({lastSynced})</span>}
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#fb923c]">
+              <CloudOff className="w-3 h-3" />
+              <span>Local only</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Add Signal Form */}
