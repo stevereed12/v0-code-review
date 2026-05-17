@@ -24,6 +24,7 @@ import {
   type CapTier,
   type Horizon,
   type ExtractedTrade,
+  type ExecutedTrade,
 } from "@/lib/types"
 import { WatchlistHeader } from "./watchlist-header"
 import { SignalCard } from "./signal-card"
@@ -62,6 +63,7 @@ export function White80Dashboard({
   const [scoutResults, setScoutResults] = useState<ScoutResult[]>([])
   const [buyHoldPicks, setBuyHoldPicks] = useState<BuyHoldPick[]>([])
   const [extractedTrades, setExtractedTrades] = useState<ExtractedTrade[]>([])
+  const [executedTrades, setExecutedTrades] = useState<ExecutedTrade[]>([])
   const [extractingTrades, setExtractingTrades] = useState(false)
   const [scoutThemes, setScoutThemes] = useState<string[]>(["ai_infra", "energy_transition"])
   const [scoutCapTier, setScoutCapTier] = useState<CapTier>("small")
@@ -121,6 +123,7 @@ export function White80Dashboard({
     const sh = storage.get<Horizon>(STORAGE_KEYS.SCOUT_HORIZON)
     const ne = storage.get<boolean>(STORAGE_KEYS.NOTIFICATIONS_ENABLED)
     const se = storage.get<boolean>(STORAGE_KEYS.SOUND_ENABLED)
+    const ex = localStorage.getItem("white80_executed_trades")
 
     if (wl) setWatchlist(wl)
     if (pn) setPinnedTickers(pn)
@@ -134,6 +137,7 @@ export function White80Dashboard({
     if (sh) setScoutHorizon(sh)
     if (ne !== null) setNotificationsEnabled(ne)
     if (se !== null) setSoundEnabled(se)
+    if (ex) setExecutedTrades(JSON.parse(ex))
 
     setStorageReady(true)
   }, [])
@@ -175,6 +179,11 @@ export function White80Dashboard({
   useEffect(() => {
     if (storageReady) storage.set(STORAGE_KEYS.SOUND_ENABLED, soundEnabled)
   }, [soundEnabled, storageReady])
+  useEffect(() => {
+    if (storageReady && executedTrades.length > 0) {
+      localStorage.setItem("white80_executed_trades", JSON.stringify(executedTrades))
+    }
+  }, [executedTrades, storageReady])
 
   // Handle notification permission
   const handleNotificationsToggle = async (enabled: boolean) => {
@@ -1474,7 +1483,6 @@ export function White80Dashboard({
                     const file = e.target.files?.[0]
                     if (!file) return
                     
-                    console.log("[v0] Starting trade extraction for file:", file.name, file.type)
                     setExtractingTrades(true)
                     setExtractedTrades([])
                     
@@ -1485,13 +1493,10 @@ export function White80Dashboard({
                       formData.append("signals", JSON.stringify(signals))
                       formData.append("topPlays", JSON.stringify(brief?.top_plays || []))
                       
-                      console.log("[v0] Sending request to /api/extract-trades")
                       const res = await fetch("/api/extract-trades", {
                         method: "POST",
                         body: formData,
                       })
-                      
-                      console.log("[v0] Response status:", res.status)
                       
                       if (!res.ok) {
                         const err = await res.json()
@@ -1499,7 +1504,6 @@ export function White80Dashboard({
                       }
                       
                       const data = await res.json()
-                      console.log("[v0] Extracted trades data:", data)
                       setExtractedTrades(data.trades || [])
                     } catch (err) {
                       console.error("[v0] Trade extraction error:", err)
@@ -1528,27 +1532,27 @@ export function White80Dashboard({
                       </button>
                       <button
                         onClick={() => {
-                          // Convert extracted trades to tracker logs
-                          const newLogs: TrackerLog[] = extractedTrades.map((t) => ({
+                          // Convert extracted trades to ExecutedTrade format
+                          const newTrades: ExecutedTrade[] = extractedTrades.map((t) => ({
                             id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                            ts: new Date().toISOString(),
                             ticker: t.ticker,
-                            signal: t.action,
-                            play: t.isOptions && t.contract ? t.contract : `${t.action} ${t.quantity} shares`,
-                            price_at_signal: t.price,
-                            target: 0,
-                            stop: 0,
-                            risk: "Medium",
-                            catalyst: t.matchedSignal || "Imported from transactions",
-                            news_aware: false,
-                            status: "EXECUTED", // Historical trades are already executed
-                            outcome: t.action === "SELL" ? "CLOSED" : "OPEN", // Sells are closed positions, buys are open
-                            notes: `${t.matchStatus}: ${t.matchedSignal || "Manual import"} | Total: $${t.total.toFixed(2)}`,
+                            action: t.action,
+                            quantity: t.quantity,
+                            price: t.price,
+                            total: t.total,
+                            date: t.date,
+                            time: t.time,
+                            isOptions: t.isOptions,
+                            contract: t.contract,
+                            matchStatus: t.matchStatus,
+                            matchedSignal: t.matchedSignal,
                           }))
                           
-                          const merged = [...newLogs, ...trackerLog]
-                          localStorage.setItem("white80_tracker", JSON.stringify(merged))
-                          setTrackerLog(merged)
+                          // Merge with existing and sort by date (newest first)
+                          const merged = [...newTrades, ...executedTrades].sort((a, b) => 
+                            new Date(b.date).getTime() - new Date(a.date).getTime()
+                          )
+                          setExecutedTrades(merged)
                           setExtractedTrades([])
                         }}
                         className="font-mono text-[9px] tracking-wider px-3 py-1 rounded bg-[#00ffaa]/20 border border-[#00ffaa]/40 text-[#00ffaa] hover:bg-[#00ffaa]/30"
@@ -1629,6 +1633,100 @@ export function White80Dashboard({
                 </div>
               )}
             </div>
+
+            {/* EXECUTED TRADES / P&L HISTORY */}
+            {executedTrades.length > 0 && (
+              <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4 mb-4">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="font-mono text-[10px] tracking-[2px] text-[#00e5ff]">
+                    TRADE HISTORY ({executedTrades.length})
+                  </div>
+                  <div className="flex gap-3 items-center">
+                    {/* P/L Summary */}
+                    {(() => {
+                      const buys = executedTrades.filter(t => t.action === "BUY")
+                      const sells = executedTrades.filter(t => t.action === "SELL")
+                      const totalBought = buys.reduce((sum, t) => sum + t.total, 0)
+                      const totalSold = sells.reduce((sum, t) => sum + t.total, 0)
+                      const realizedPnL = totalSold - (totalBought * (sells.length / Math.max(buys.length, 1)))
+                      return (
+                        <div className="flex gap-4 font-mono text-[10px]">
+                          <span className="text-[#3d4f6b]">BOUGHT: <span className="text-[#f87171]">${totalBought.toFixed(2)}</span></span>
+                          <span className="text-[#3d4f6b]">SOLD: <span className="text-[#00ffaa]">${totalSold.toFixed(2)}</span></span>
+                        </div>
+                      )
+                    })()}
+                    <button
+                      onClick={() => {
+                        if (confirm("Clear all trade history?")) {
+                          setExecutedTrades([])
+                          localStorage.removeItem("white80_executed_trades")
+                        }
+                      }}
+                      className="font-mono text-[9px] tracking-wider px-2 py-1 rounded border border-[#f87171]/40 text-[#f87171] hover:bg-[#f87171]/10"
+                    >
+                      CLEAR
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  {executedTrades.map((trade, i) => (
+                    <div key={trade.id || i} className="bg-[#090c14] border border-[#131c2e] rounded p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-sm font-bold text-white">{trade.ticker}</span>
+                          <span className={`font-mono text-[9px] tracking-wider px-1.5 py-0.5 rounded ${
+                            trade.action === "BUY" 
+                              ? "bg-[#00ffaa]/15 text-[#00ffaa]" 
+                              : "bg-[#f87171]/15 text-[#f87171]"
+                          }`}>
+                            {trade.action}
+                          </span>
+                          {trade.isOptions && (
+                            <span className="font-mono text-[9px] tracking-wider px-1.5 py-0.5 rounded bg-[#a78bfa]/15 text-[#a78bfa]">
+                              OPTIONS
+                            </span>
+                          )}
+                          {trade.matchStatus && (
+                            <span className={`font-mono text-[9px] tracking-wider px-1.5 py-0.5 rounded ${
+                              trade.matchStatus === "SIGNAL" ? "bg-[#00ffaa]/10 text-[#00ffaa]" :
+                              trade.matchStatus === "TOP_PLAY" ? "bg-[#00e5ff]/10 text-[#00e5ff]" :
+                              trade.matchStatus === "OFF_SIGNAL" ? "bg-[#fb923c]/10 text-[#fb923c]" :
+                              "bg-[#3d4f6b]/10 text-[#3d4f6b]"
+                            }`}>
+                              {trade.matchStatus?.replace("_", " ")}
+                            </span>
+                          )}
+                        </div>
+                        <span className="font-mono text-[10px] text-[#3d4f6b]">{trade.date}</span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2 text-[11px] font-mono">
+                        <div>
+                          <span className="text-[#3d4f6b]">QTY:</span>{" "}
+                          <span className="text-[#d6dff0]">{trade.quantity}</span>
+                        </div>
+                        <div>
+                          <span className="text-[#3d4f6b]">PRICE:</span>{" "}
+                          <span className="text-[#d6dff0]">${trade.price.toFixed(2)}</span>
+                        </div>
+                        <div>
+                          <span className="text-[#3d4f6b]">TOTAL:</span>{" "}
+                          <span className={trade.action === "BUY" ? "text-[#f87171]" : "text-[#00ffaa]"}>
+                            ${trade.total.toFixed(2)}
+                          </span>
+                        </div>
+                        <div>
+                          {trade.contract && (
+                            <span className="text-[#a78bfa] truncate block">{trade.contract}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {trackerLog.length > 0 && (
               <>

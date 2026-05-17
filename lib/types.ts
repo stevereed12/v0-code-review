@@ -126,6 +126,26 @@ export interface ExtractedTrade {
   matchedSignal?: string // Description of what it matched
 }
 
+// Executed trade for P/L tracking
+export interface ExecutedTrade {
+  id: string
+  ticker: string
+  action: "BUY" | "SELL"
+  quantity: number
+  price: number
+  total: number
+  date: string
+  time?: string
+  isOptions: boolean
+  contract?: string
+  matchStatus?: "SIGNAL" | "TOP_PLAY" | "OFF_SIGNAL" | "UNMATCHED"
+  matchedSignal?: string
+  // P/L tracking (for closed positions)
+  linkedTradeId?: string // Links buy to sell
+  realizedPnL?: number
+  pnlPercent?: number
+}
+
 export interface TrackerLog {
   id: string
   ts: string
