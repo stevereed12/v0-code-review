@@ -360,7 +360,31 @@ export function White80Dashboard({
     setLoading((s) => ({ ...s, brief: true }))
     setErrors((e) => ({ ...e, brief: null }))
     try {
-      const parsed = await askClaude<Brief>(buildBriefPrompt(watchlist))
+      const clientApiKey = getStoredApiKey()
+      if (!clientApiKey) {
+        setShowApiKeyModal(true)
+        setLoading((s) => ({ ...s, brief: false }))
+        return
+      }
+      
+      const clientPolygonKey = polygonKey || localStorage.getItem("white80_polygon_key") || undefined
+      
+      const res = await fetch("/api/brief", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tickers: watchlist,
+          apiKey: clientApiKey,
+          polygonKey: clientPolygonKey,
+        }),
+      })
+      
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: "Brief generation failed" }))
+        throw new Error(errData.error || "Brief generation failed")
+      }
+      
+      const parsed = await res.json()
       setBrief(parsed)
       setGeneratedAt((g) => ({ ...g, brief: new Date().toLocaleTimeString() }))
       notifyOnComplete("brief", undefined, { soundEnabled, notificationsEnabled })
@@ -373,7 +397,7 @@ export function White80Dashboard({
     } finally {
       setLoading((s) => ({ ...s, brief: false }))
     }
-  }, [watchlist, soundEnabled, notificationsEnabled])
+  }, [watchlist, polygonKey, soundEnabled, notificationsEnabled])
 
   const runScout = useCallback(async () => {
     if (scoutThemes.length === 0) {
