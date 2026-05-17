@@ -1474,6 +1474,7 @@ export function White80Dashboard({
                     const file = e.target.files?.[0]
                     if (!file) return
                     
+                    console.log("[v0] Starting trade extraction for file:", file.name, file.type)
                     setExtractingTrades(true)
                     setExtractedTrades([])
                     
@@ -1484,10 +1485,13 @@ export function White80Dashboard({
                       formData.append("signals", JSON.stringify(signals))
                       formData.append("topPlays", JSON.stringify(brief?.top_plays || []))
                       
+                      console.log("[v0] Sending request to /api/extract-trades")
                       const res = await fetch("/api/extract-trades", {
                         method: "POST",
                         body: formData,
                       })
+                      
+                      console.log("[v0] Response status:", res.status)
                       
                       if (!res.ok) {
                         const err = await res.json()
@@ -1495,8 +1499,10 @@ export function White80Dashboard({
                       }
                       
                       const data = await res.json()
+                      console.log("[v0] Extracted trades data:", data)
                       setExtractedTrades(data.trades || [])
                     } catch (err) {
+                      console.error("[v0] Trade extraction error:", err)
                       alert(err instanceof Error ? err.message : "Failed to extract trades")
                     } finally {
                       setExtractingTrades(false)
