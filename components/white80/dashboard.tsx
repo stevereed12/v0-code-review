@@ -34,6 +34,7 @@ import { ExportModal } from "./export-modal"
 import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3, Crosshair, Search, Briefcase } from "lucide-react"
 import { Tier1Scanner } from "./tier1-scanner"
 import { QuickThesisSearch } from "./quick-thesis"
+import { DisclaimerModal } from "./disclaimer-modal"
 
 interface DashboardProps {
   userEmail?: string
@@ -515,9 +516,11 @@ export function White80Dashboard({
   }
 
   return (
-    <div
-      className="font-serif text-[#d6dff0] min-h-screen p-6 pb-16"
-      style={{ background: "radial-gradient(ellipse at top, #151e30, #05070e 70%)" }}
+    <>
+      <DisclaimerModal />
+      <div
+        className="font-serif text-[#d6dff0] min-h-screen p-6 pb-16"
+        style={{ background: "radial-gradient(ellipse at top, #151e30, #05070e 70%)" }}
     >
       {/* API Key Modal */}
       {showApiKeyModal && (
@@ -1392,5 +1395,6 @@ export function White80Dashboard({
         onImport={handleImport}
       />
     </div>
+    </>
   )
 }
