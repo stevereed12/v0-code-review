@@ -56,53 +56,102 @@ Example output:
 If no trades can be extracted, return an empty array: []`
 
 function parseCSV(csvContent: string): ExtractedTrade[] {
+  // Handle CSV with quoted fields that may contain commas/newlines
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = []
+    let current = ""
+    let inQuotes = false
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i]
+      if (char === '"') {
+        inQuotes = !inQuotes
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim())
+        current = ""
+      } else {
+        current += char
+      }
+    }
+    result.push(current.trim())
+    return result
+  }
+  
   const lines = csvContent.split("\n").filter(line => line.trim())
   if (lines.length < 2) return []
   
   const trades: ExtractedTrade[] = []
-  const headers = lines[0].toLowerCase().split(",").map(h => h.trim())
+  const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/"/g, ""))
   
-  // Find column indices (Robinhood CSV format)
-  const symbolIdx = headers.findIndex(h => h.includes("symbol") || h.includes("ticker"))
-  const sideIdx = headers.findIndex(h => h.includes("side") || h.includes("type") || h.includes("action"))
-  const qtyIdx = headers.findIndex(h => h.includes("quantity") || h.includes("qty") || h.includes("shares"))
-  const priceIdx = headers.findIndex(h => h.includes("price") || h.includes("avg"))
-  const dateIdx = headers.findIndex(h => h.includes("date") || h.includes("time"))
-  const totalIdx = headers.findIndex(h => h.includes("total") || h.includes("amount"))
+  // Robinhood specific column indices
+  const dateIdx = headers.findIndex(h => h.includes("activity date"))
+  const instrumentIdx = headers.findIndex(h => h === "instrument")
+  const descriptionIdx = headers.findIndex(h => h === "description")
+  const transCodeIdx = headers.findIndex(h => h.includes("trans code"))
+  const qtyIdx = headers.findIndex(h => h === "quantity")
+  const priceIdx = headers.findIndex(h => h === "price")
+  const amountIdx = headers.findIndex(h => h === "amount")
+  
+  // Skip if we can't find essential columns
+  if (instrumentIdx < 0 && transCodeIdx < 0) {
+    console.log("[v0] Could not find Robinhood columns, headers:", headers)
+    return []
+  }
   
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(",").map(v => v.trim().replace(/"/g, ""))
-    if (values.length < 3) continue
+    const values = parseCSVLine(lines[i]).map(v => v.replace(/"/g, ""))
+    if (values.length < 5) continue
     
-    const ticker = symbolIdx >= 0 ? values[symbolIdx]?.toUpperCase() : ""
+    const transCode = transCodeIdx >= 0 ? values[transCodeIdx]?.toUpperCase() : ""
+    
+    // Only process actual trades: BTO (Buy to Open), STC (Sell to Close), Buy, Sell
+    const validTradeCodes = ["BTO", "STC", "BUY", "SELL"]
+    if (!validTradeCodes.includes(transCode)) continue
+    
+    const ticker = instrumentIdx >= 0 ? values[instrumentIdx]?.toUpperCase() : ""
     if (!ticker) continue
     
-    const sideRaw = sideIdx >= 0 ? values[sideIdx]?.toLowerCase() : ""
-    const action = sideRaw.includes("buy") ? "BUY" : sideRaw.includes("sell") ? "SELL" : null
-    if (!action) continue
+    const description = descriptionIdx >= 0 ? values[descriptionIdx] : ""
     
-    const quantity = qtyIdx >= 0 ? parseFloat(values[qtyIdx]) : 0
-    const price = priceIdx >= 0 ? parseFloat(values[priceIdx]?.replace("$", "")) : 0
-    const total = totalIdx >= 0 ? parseFloat(values[totalIdx]?.replace("$", "")) : quantity * price
+    // Determine action: BTO/Buy = BUY, STC/Sell = SELL
+    const action: "BUY" | "SELL" = (transCode === "BTO" || transCode === "BUY") ? "BUY" : "SELL"
+    
+    // Parse quantity (remove any trailing letters like "S" for shares)
+    const qtyRaw = qtyIdx >= 0 ? values[qtyIdx]?.replace(/[^\d.]/g, "") : "0"
+    const quantity = parseFloat(qtyRaw) || 1
+    
+    // Parse price (remove $ and commas)
+    const priceRaw = priceIdx >= 0 ? values[priceIdx]?.replace(/[$,]/g, "") : "0"
+    const price = parseFloat(priceRaw) || 0
+    
+    // Parse amount (remove $, commas, and parentheses for negative)
+    const amountRaw = amountIdx >= 0 ? values[amountIdx]?.replace(/[$,()]/g, "") : "0"
+    const total = Math.abs(parseFloat(amountRaw) || 0)
+    
+    // Get date
     const dateStr = dateIdx >= 0 ? values[dateIdx] : new Date().toISOString().split("T")[0]
     
-    // Check if options (ticker format like AAPL240119C00185000 or has "call"/"put")
-    const isOptions = /\d{6}[CP]\d{8}/.test(ticker) || 
-      ticker.toLowerCase().includes("call") || 
-      ticker.toLowerCase().includes("put")
+    // Check if options based on description containing Call/Put
+    const isOptions = description.toLowerCase().includes("call") || 
+                      description.toLowerCase().includes("put") ||
+                      transCode === "BTO" || transCode === "STC"
+    
+    // Extract contract details from description (e.g., "NVDA 5/15/2026 Call $210.00")
+    const contract = isOptions ? description : undefined
     
     trades.push({
-      ticker: ticker.replace(/\d{6}[CP]\d{8}.*/, "").substring(0, 5), // Clean ticker
+      ticker,
       action,
       quantity,
       price,
       total,
       date: dateStr,
       isOptions,
-      contract: isOptions ? ticker : undefined,
+      contract,
     })
   }
   
+  console.log("[v0] Parsed", trades.length, "trades from CSV")
   return trades
 }
 
