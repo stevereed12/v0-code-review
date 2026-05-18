@@ -36,9 +36,9 @@ export default function LandingPage() {
             <span className="font-mono text-xs text-[#00e5ff]">AI-POWERED TRADING INTELLIGENCE</span>
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-            Trade Smarter,<br />
-            <span className="text-[#00e5ff]">Not Harder</span>
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+            The AI Trading System<br />
+            <span className="text-[#00e5ff]">Serious Traders Actually Use</span>
           </h1>
           
           <p className="text-lg text-[#3d4f6b] mb-10 max-w-2xl mx-auto">
