@@ -250,7 +250,12 @@ function OnboardingContent() {
               </div>
             </div>
 
+            {/* Why you need this */}
             <div className="bg-[#090c14] border border-[#131c2e] rounded p-4 mb-4">
+              <h4 className="text-[#00e5ff] font-mono text-xs tracking-wider mb-2">WHY POLYGON?</h4>
+              <p className="text-[#d6dff0] text-sm mb-3">
+                Polygon provides the market data that powers White 80 - live prices, options chains, and historical data. Their free tier includes everything you need.
+              </p>
               <ol className="space-y-3 text-sm text-[#d6dff0]">
                 <li className="flex gap-3">
                   <span className="w-6 h-6 rounded-full bg-[#00e5ff]/15 text-[#00e5ff] font-mono text-xs flex items-center justify-center flex-shrink-0">1</span>
@@ -258,16 +263,17 @@ function OnboardingContent() {
                     Go to{" "}
                     <a href="https://polygon.io" target="_blank" rel="noopener noreferrer" className="text-[#00e5ff] hover:underline inline-flex items-center gap-1">
                       polygon.io <ExternalLink className="w-3 h-3" />
-                    </a>
+                    </a>{" "}
+                    and click &quot;Get your Free API Key&quot;
                   </span>
                 </li>
                 <li className="flex gap-3">
                   <span className="w-6 h-6 rounded-full bg-[#00e5ff]/15 text-[#00e5ff] font-mono text-xs flex items-center justify-center flex-shrink-0">2</span>
-                  <span>Create a free account (free tier works great)</span>
+                  <span>Sign up with email or Google (takes 30 seconds)</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="w-6 h-6 rounded-full bg-[#00e5ff]/15 text-[#00e5ff] font-mono text-xs flex items-center justify-center flex-shrink-0">3</span>
-                  <span>Copy your API key from the dashboard</span>
+                  <span>Your API key appears on the dashboard - copy it</span>
                 </li>
               </ol>
             </div>
@@ -277,8 +283,20 @@ function OnboardingContent() {
               value={polygonKey}
               onChange={(e) => setPolygonKey(e.target.value)}
               className="w-full bg-[#090c14] border border-[#131c2e] rounded px-3 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#00e5ff]/50 mb-4"
-              placeholder="Paste your Polygon API key"
+              placeholder="Paste your Polygon API key here"
             />
+
+            {/* Privacy note */}
+            <div className="bg-[#00ffaa]/5 border border-[#00ffaa]/20 rounded p-3 mb-4">
+              <div className="flex gap-2 items-start">
+                <div className="w-4 h-4 rounded-full bg-[#00ffaa]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-2.5 h-2.5 text-[#00ffaa]" />
+                </div>
+                <p className="text-[#00ffaa]/80 text-xs">
+                  <span className="font-semibold">Your key, your account.</span> This is YOUR Polygon account. Your API key is encrypted and stored securely. We never share your keys or access your Polygon account for any other purpose.
+                </p>
+              </div>
+            </div>
 
             <div className="flex gap-3">
               <button
@@ -307,14 +325,19 @@ function OnboardingContent() {
               </div>
               <div>
                 <h2 className="font-mono text-lg text-white">Anthropic API Key</h2>
-                <p className="text-[#3d4f6b] text-sm">Powers all AI features (signals, briefs, thesis)</p>
+                <p className="text-[#3d4f6b] text-sm">Powers all AI analysis and signal generation</p>
               </div>
             </div>
 
+            {/* Why you need this */}
             <div className="bg-[#090c14] border border-[#131c2e] rounded p-4 mb-4">
+              <h4 className="text-[#a78bfa] font-mono text-xs tracking-wider mb-2">WHY ANTHROPIC?</h4>
+              <p className="text-[#d6dff0] text-sm mb-3">
+                Anthropic&apos;s Claude AI generates your signals, briefs, and thesis analysis. Using your own key means direct access with no middleman - faster, more reliable, and you control your usage.
+              </p>
               <ol className="space-y-3 text-sm text-[#d6dff0]">
                 <li className="flex gap-3">
-                  <span className="w-6 h-6 rounded-full bg-[#00e5ff]/15 text-[#00e5ff] font-mono text-xs flex items-center justify-center flex-shrink-0">1</span>
+                  <span className="w-6 h-6 rounded-full bg-[#a78bfa]/15 text-[#a78bfa] font-mono text-xs flex items-center justify-center flex-shrink-0">1</span>
                   <span>
                     Go to{" "}
                     <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" className="text-[#00e5ff] hover:underline inline-flex items-center gap-1">
@@ -323,12 +346,12 @@ function OnboardingContent() {
                   </span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="w-6 h-6 rounded-full bg-[#00e5ff]/15 text-[#00e5ff] font-mono text-xs flex items-center justify-center flex-shrink-0">2</span>
-                  <span>Create an account and add billing ($5-10 credit recommended)</span>
+                  <span className="w-6 h-6 rounded-full bg-[#a78bfa]/15 text-[#a78bfa] font-mono text-xs flex items-center justify-center flex-shrink-0">2</span>
+                  <span>Create an account and add billing (most users spend $5-15/month)</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="w-6 h-6 rounded-full bg-[#00e5ff]/15 text-[#00e5ff] font-mono text-xs flex items-center justify-center flex-shrink-0">3</span>
-                  <span>Generate an API key under Settings → API Keys</span>
+                  <span className="w-6 h-6 rounded-full bg-[#a78bfa]/15 text-[#a78bfa] font-mono text-xs flex items-center justify-center flex-shrink-0">3</span>
+                  <span>Go to Settings → API Keys → Create Key</span>
                 </li>
               </ol>
             </div>
@@ -338,8 +361,25 @@ function OnboardingContent() {
               value={anthropicKey}
               onChange={(e) => setAnthropicKey(e.target.value)}
               className="w-full bg-[#090c14] border border-[#131c2e] rounded px-3 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#00e5ff]/50 mb-4"
-              placeholder="Paste your Anthropic API key"
+              placeholder="Paste your Anthropic API key here (starts with sk-ant-)"
             />
+
+            {/* Privacy note */}
+            <div className="bg-[#a78bfa]/5 border border-[#a78bfa]/20 rounded p-3 mb-4">
+              <div className="flex gap-2 items-start">
+                <div className="w-4 h-4 rounded-full bg-[#a78bfa]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-2.5 h-2.5 text-[#a78bfa]" />
+                </div>
+                <div className="text-[#a78bfa]/80 text-xs">
+                  <p className="mb-1">
+                    <span className="font-semibold">100% private and secure.</span> Your API key is encrypted at rest and only used to make AI requests on your behalf.
+                  </p>
+                  <p>
+                    You have full visibility into your Anthropic usage at any time through their console. Set spending limits there if you want cost controls.
+                  </p>
+                </div>
+              </div>
+            </div>
 
             {error && (
               <div className="bg-[#f87171]/10 border border-[#f87171]/30 rounded px-3 py-2 text-[#f87171] font-mono text-xs mb-4">
