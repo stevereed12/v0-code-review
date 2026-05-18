@@ -63,6 +63,66 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* What is White 80 */}
+      <section className="py-20 px-4 border-t border-[#131c2e]">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white mb-4">What is White 80?</h2>
+            <p className="text-[#3d4f6b]">Information intelligence for the self-directed trader</p>
+          </div>
+
+          <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-8">
+            <p className="text-[#d6dff0] text-lg leading-relaxed mb-6">
+              White 80 is an AI-powered research and signal platform built for traders who want to make informed decisions without spending hours on analysis. Think of it as your personal trading analyst that never sleeps.
+            </p>
+            
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+              <div className="bg-[#090c14] border border-[#131c2e] rounded p-4">
+                <h4 className="font-mono text-[#00e5ff] text-sm mb-2">WHAT IT IS</h4>
+                <ul className="text-sm text-[#d6dff0] space-y-2">
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 bg-[#00ffaa] rounded-full mt-1.5 flex-shrink-0" />
+                    An information intelligence platform that aggregates market data, news, and technical analysis
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 bg-[#00ffaa] rounded-full mt-1.5 flex-shrink-0" />
+                    AI-generated signals and thesis research to help you spot opportunities
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 bg-[#00ffaa] rounded-full mt-1.5 flex-shrink-0" />
+                    A tool to enhance your own research process, not replace your judgment
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="bg-[#090c14] border border-[#131c2e] rounded p-4">
+                <h4 className="font-mono text-[#fb923c] text-sm mb-2">WHAT IT ISN&apos;T</h4>
+                <ul className="text-sm text-[#d6dff0] space-y-2">
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 bg-[#f87171] rounded-full mt-1.5 flex-shrink-0" />
+                    Not a financial advisor or investment service
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 bg-[#f87171] rounded-full mt-1.5 flex-shrink-0" />
+                    Not a guarantee of profits or trading success
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 bg-[#f87171] rounded-full mt-1.5 flex-shrink-0" />
+                    Not a replacement for your own due diligence
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="bg-[#00e5ff]/5 border border-[#00e5ff]/20 rounded p-4">
+              <p className="text-sm text-[#d6dff0]">
+                <span className="text-[#00e5ff] font-semibold">The name:</span> In football, &quot;White 80&quot; is the audible call - the signal that changes the play at the line of scrimmage when you see something the defense doesn&apos;t. That&apos;s what this platform does: gives you the information edge to call your own plays.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features */}
       <section id="features" className="py-20 px-4 border-t border-[#131c2e]">
         <div className="max-w-6xl mx-auto">
