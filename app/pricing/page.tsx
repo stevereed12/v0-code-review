@@ -41,12 +41,15 @@ export default function PricingPage() {
             <span className="font-mono text-xl tracking-wider text-white">WHITE 80</span>
           </Link>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Trading Intelligence, Simplified
+            Start Your 7-Day Free Trial
           </h1>
-          <p className="text-[#3d4f6b] font-mono text-sm max-w-md mx-auto">
-            AI-powered signals, pre-market briefs, options flow analysis. 
-            Everything you need to trade smarter.
+          <p className="text-[#3d4f6b] font-mono text-sm max-w-md mx-auto mb-4">
+            Full access to all features. No charge until your trial ends.
           </p>
+          <div className="inline-flex items-center gap-2 bg-[#00ffaa]/10 border border-[#00ffaa]/20 rounded-full px-4 py-1.5">
+            <span className="w-2 h-2 bg-[#00ffaa] rounded-full" />
+            <span className="font-mono text-xs text-[#00ffaa]">CANCEL ANYTIME</span>
+          </div>
         </div>
 
         {/* Pricing Cards */}
@@ -112,16 +115,19 @@ export default function PricingPage() {
                     : "bg-[#131c2e] hover:bg-[#1a2438] text-white border border-[#00e5ff]/30"
                 }`}
               >
-                {loading === product.id ? "LOADING..." : "SUBSCRIBE"}
+                {loading === product.id ? "LOADING..." : "START FREE TRIAL"}
               </button>
             </div>
           ))}
         </div>
 
         {/* Footer */}
-        <div className="mt-12 text-center">
+        <div className="mt-12 text-center space-y-2">
+          <p className="text-[#d6dff0] font-mono text-sm">
+            7 days free, then your subscription begins. Cancel anytime.
+          </p>
           <p className="text-[#3d4f6b] font-mono text-xs">
-            Cancel anytime. Requires your own Polygon and Anthropic API keys.
+            Requires your own Polygon (free) and Anthropic (pay-as-you-go) API keys.
           </p>
         </div>
       </div>

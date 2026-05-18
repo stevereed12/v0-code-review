@@ -68,6 +68,9 @@ export async function createCheckoutSession(productId: string, clientOrigin?: st
       },
     ],
     mode: "subscription",
+    subscription_data: {
+      trial_period_days: 7,
+    },
     success_url: `${baseUrl}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/pricing`,
     metadata: {

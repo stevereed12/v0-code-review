@@ -51,7 +51,7 @@ export default function LandingPage() {
               href="/pricing"
               className="font-mono text-sm bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10] px-8 py-3 rounded transition-colors"
             >
-              START FREE TRIAL
+              START 7-DAY FREE TRIAL
             </Link>
             <Link
               href="#features"
@@ -60,6 +60,9 @@ export default function LandingPage() {
               SEE FEATURES
             </Link>
           </div>
+          <p className="text-sm text-[#3d4f6b] mt-4">
+            No charge for 7 days. Then $49/month. Cancel anytime.
+          </p>
         </div>
       </section>
 
@@ -374,8 +377,11 @@ export default function LandingPage() {
             href="/pricing"
             className="inline-block font-mono text-sm bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10] px-8 py-3 rounded transition-colors"
           >
-            GET STARTED NOW
+            START 7-DAY FREE TRIAL
           </Link>
+          <p className="text-sm text-[#3d4f6b] mt-4">
+            No credit card charged until trial ends. Cancel anytime.
+          </p>
         </div>
       </section>
 
