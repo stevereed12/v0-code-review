@@ -32,8 +32,11 @@ async function getSnapshots(tickers: string[], apiKey: string): Promise<MarketSn
       ticker: string
       todaysChange: number
       todaysChangePerc: number
-      day?: { c: number; v: number }
+      day?: { c: number; v: number; o: number; h: number; l: number }
       prevDay?: { c: number }
+      lastTrade?: { p: number; t: number }
+      lastQuote?: { P: number; p: number }
+      min?: { c: number }
     }>
   }
   
@@ -41,12 +44,17 @@ async function getSnapshots(tickers: string[], apiKey: string): Promise<MarketSn
     const tickerSet = new Set(tickers.map(t => t.toUpperCase()))
     for (const t of data.tickers) {
       if (tickerSet.has(t.ticker)) {
+        // Priority: lastTrade > lastQuote > min.c > day.c > prevDay.c
+        const livePrice = t.lastTrade?.p || t.lastQuote?.P || t.lastQuote?.p || t.min?.c || t.day?.c || t.prevDay?.c || 0
+        const prevClose = t.prevDay?.c || 0
+        const changePct = prevClose > 0 ? ((livePrice - prevClose) / prevClose) * 100 : t.todaysChangePerc || 0
+        
         results.push({
           ticker: t.ticker,
-          price: t.day?.c || t.prevDay?.c || 0,
-          change_pct: t.todaysChangePerc || 0,
+          price: livePrice,
+          change_pct: changePct,
           volume: t.day?.v || 0,
-          prev_close: t.prevDay?.c || 0,
+          prev_close: prevClose,
         })
       }
     }
@@ -65,15 +73,21 @@ async function getTopMovers(apiKey: string): Promise<{ gainers: MarketSnapshot[]
     const d = data as { tickers?: Array<{
       ticker: string; todaysChangePerc: number
       day?: { c: number; v: number }; prevDay?: { c: number }
+      lastTrade?: { p: number }; lastQuote?: { P: number; p: number }; min?: { c: number }
     }> }
     if (!d?.tickers) return []
-    return d.tickers.slice(0, 10).map(t => ({
-      ticker: t.ticker,
-      price: t.day?.c || t.prevDay?.c || 0,
-      change_pct: t.todaysChangePerc || 0,
-      volume: t.day?.v || 0,
-      prev_close: t.prevDay?.c || 0,
-    }))
+    return d.tickers.slice(0, 10).map(t => {
+      const livePrice = t.lastTrade?.p || t.lastQuote?.P || t.lastQuote?.p || t.min?.c || t.day?.c || t.prevDay?.c || 0
+      const prevClose = t.prevDay?.c || 0
+      const changePct = prevClose > 0 ? ((livePrice - prevClose) / prevClose) * 100 : t.todaysChangePerc || 0
+      return {
+        ticker: t.ticker,
+        price: livePrice,
+        change_pct: changePct,
+        volume: t.day?.v || 0,
+        prev_close: prevClose,
+      }
+    })
   }
   
   return {
@@ -88,6 +102,7 @@ async function getMostActive(apiKey: string): Promise<MarketSnapshot[]> {
     tickers?: Array<{
       ticker: string; todaysChangePerc: number
       day?: { c: number; v: number }; prevDay?: { c: number }
+      lastTrade?: { p: number }; lastQuote?: { P: number; p: number }; min?: { c: number }
     }>
   }
   
@@ -97,13 +112,18 @@ async function getMostActive(apiKey: string): Promise<MarketSnapshot[]> {
     .filter(t => t.day?.v && t.day.v > 0)
     .sort((a, b) => (b.day?.v || 0) - (a.day?.v || 0))
     .slice(0, 20)
-    .map(t => ({
-      ticker: t.ticker,
-      price: t.day?.c || t.prevDay?.c || 0,
-      change_pct: t.todaysChangePerc || 0,
-      volume: t.day?.v || 0,
-      prev_close: t.prevDay?.c || 0,
-    }))
+    .map(t => {
+      const livePrice = t.lastTrade?.p || t.lastQuote?.P || t.lastQuote?.p || t.min?.c || t.day?.c || t.prevDay?.c || 0
+      const prevClose = t.prevDay?.c || 0
+      const changePct = prevClose > 0 ? ((livePrice - prevClose) / prevClose) * 100 : t.todaysChangePerc || 0
+      return {
+        ticker: t.ticker,
+        price: livePrice,
+        change_pct: changePct,
+        volume: t.day?.v || 0,
+        prev_close: prevClose,
+      }
+    })
 }
 
 // ─── ROUTE HANDLER ───────────────────────────────────────────────────────────
