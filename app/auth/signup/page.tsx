@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 
 export default function SignUpPage() {
@@ -13,6 +13,8 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get("redirect") || "/pricing"
   const supabase = createClient()
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -47,9 +49,9 @@ export default function SignUpPage() {
     }
     
     // If email confirmation is disabled, user is auto-confirmed and we have a session
-    // Redirect directly to onboarding
+    // Redirect to the original destination (pricing) or default to pricing
     if (data.session) {
-      router.push("/onboarding?from=signup")
+      router.push(redirectTo)
       return
     }
     

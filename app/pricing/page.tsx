@@ -16,7 +16,7 @@ export default function PricingPage() {
     
     if (result.error) {
       if (result.error === "Not authenticated") {
-        router.push("/auth/login")
+        router.push("/auth/signup?redirect=/pricing")
       } else {
         alert(result.error)
       }
