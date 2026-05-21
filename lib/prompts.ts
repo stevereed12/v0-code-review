@@ -197,17 +197,34 @@ RULES:
 
 export function buildBriefPrompt(tickers: string[]): string {
   const now = new Date()
-  const etHour = parseInt(now.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", hour12: false }))
+  
+  // Get current ET time components
+  const etFormatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "numeric",
+    hour12: false
+  })
+  const etParts = etFormatter.formatToParts(now)
+  const etHour = parseInt(etParts.find(p => p.type === "hour")?.value || "0")
+  const etYear = parseInt(etParts.find(p => p.type === "year")?.value || "2024")
+  const etMonth = parseInt(etParts.find(p => p.type === "month")?.value || "1") - 1
+  const etDay = parseInt(etParts.find(p => p.type === "day")?.value || "1")
+  
+  // Create a date object representing "today" in ET
+  const todayET = new Date(etYear, etMonth, etDay)
   
   // Determine if we're in after-hours (after 4pm ET) or pre-market (before 9:30am ET)
   const isAfterHours = etHour >= 16 || etHour < 4 // 4pm-4am ET
   
-  const todayStr = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "America/New_York" })
+  const todayStr = todayET.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
   
-  // Calculate tomorrow's date
-  const tomorrow = new Date(now)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  const tomorrowStr = tomorrow.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "America/New_York" })
+  // Calculate tomorrow's date in ET
+  const tomorrowET = new Date(todayET)
+  tomorrowET.setDate(tomorrowET.getDate() + 1)
+  const tomorrowStr = tomorrowET.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
   
   const sessionDate = isAfterHours ? tomorrowStr : todayStr
   const sessionLabel = isAfterHours ? "Post-Close" : "Pre-Open"
