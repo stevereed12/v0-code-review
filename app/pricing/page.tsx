@@ -1,17 +1,36 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { PRODUCTS } from "@/lib/products"
 import { createCheckoutSession } from "@/app/actions/stripe"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase/client"
 
 export default function PricingPage() {
   const [loading, setLoading] = useState<string | null>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const router = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setIsAuthenticated(!!user)
+    }
+    checkAuth()
+  }, [supabase.auth])
 
   const handleSubscribe = async (productId: string) => {
     setLoading(productId)
+    
+    // Check auth client-side first
+    if (isAuthenticated === false) {
+      router.push("/auth/signup?redirect=/pricing")
+      setLoading(null)
+      return
+    }
+    
     const result = await createCheckoutSession(productId, window.location.origin)
     
     if (result.error) {
@@ -25,10 +44,10 @@ export default function PricingPage() {
     }
 
     if (result.url) {
-      // Open in new tab to avoid iframe restrictions in preview environments
-      window.open(result.url, "_blank")
-      setLoading(null)
+      // Open Stripe checkout
+      window.location.href = result.url
     }
+    setLoading(null)
   }
 
   return (
