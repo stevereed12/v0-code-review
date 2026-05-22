@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, Crosshair, Radar, FileText, Plus, Activity, Search, BarChart3, ChevronRight, Sparkles } from "lucide-react"
+import { X, Crosshair, Radar, FileText, Plus, Activity, Search, BarChart3, ChevronRight, Sparkles, HelpCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface GettingStartedGuideProps {
@@ -15,9 +15,9 @@ const WORKFLOW_STEPS = [
     title: "Find Trading Ideas",
     description: "Start by discovering interesting tickers using our AI-powered scanners.",
     tools: [
-      { name: "Tier 1 Scanner", icon: Crosshair, tab: "tier1", desc: "See unusual options activity and smart money flow" },
-      { name: "Scout Mode", icon: Radar, tab: "scout", desc: "Find plays around themes you care about (AI, Energy, etc.)" },
-      { name: "Pre-Market Brief", icon: FileText, tab: "brief", desc: "Get today's top opportunities before market open" },
+      { name: "Tier 1 Scanner", icon: Crosshair, tab: "tier1", desc: "See unusual options activity and smart money flow", details: "Tier 1 scans for unusual options activity - large block trades, sweeps, and smart money positioning. It highlights tickers where institutional players are making big bets." },
+      { name: "Scout Mode", icon: Radar, tab: "scout", desc: "Find plays around themes you care about (AI, Energy, etc.)", details: "Scout Mode lets you search by theme or sector. Type 'AI stocks' or 'clean energy' and get AI-generated ticker ideas with analysis." },
+      { name: "Pre-Market Brief", icon: FileText, tab: "brief", desc: "Get today's top opportunities before market open", details: "The Pre-Market Brief runs every morning and gives you a summary of market conditions, top movers, and AI-selected plays for the day." },
     ],
     color: "#00e5ff",
   },
@@ -26,7 +26,7 @@ const WORKFLOW_STEPS = [
     title: "Build Your Watchlist",
     description: "Add tickers you like to your Watchlist. This becomes your personal universe.",
     tools: [
-      { name: "Watchlist", icon: Plus, tab: "watchlist", desc: "Your hub - add tickers from any discovery tool with the + button" },
+      { name: "Watchlist", icon: Plus, tab: "watchlist", desc: "Your hub - add tickers from any discovery tool with the + button", details: "Your Watchlist is the central hub. When you find a ticker in any discovery tool, click the + button to add it. All your analysis runs against this list." },
     ],
     color: "#00ffaa",
   },
@@ -35,8 +35,8 @@ const WORKFLOW_STEPS = [
     title: "Go Deeper",
     description: "Run AI analysis on your watchlist to get actionable signals.",
     tools: [
-      { name: "AI Signals", icon: Activity, tab: "signals", desc: "Get BUY/SELL/HOLD recommendations with conviction levels" },
-      { name: "Deep Thesis", icon: Search, tab: "thesis", desc: "Full research report on any ticker" },
+      { name: "AI Signals", icon: Activity, tab: "signals", desc: "Get BUY/SELL/HOLD recommendations with conviction levels", details: "AI Signals analyzes your watchlist and gives each ticker a BUY, SELL, or HOLD rating with a conviction level (0-100). It considers technicals, sentiment, and market conditions." },
+      { name: "Deep Thesis", icon: Search, tab: "thesis", desc: "Full research report on any ticker", details: "Deep Thesis generates a comprehensive research report on any ticker - bull case, bear case, catalysts, risks, and suggested options strategies." },
     ],
     color: "#a78bfa",
   },
@@ -45,7 +45,7 @@ const WORKFLOW_STEPS = [
     title: "Measure Results",
     description: "Log your trades and track performance over time.",
     tools: [
-      { name: "Signal Tracker", icon: BarChart3, tab: "tracker", desc: "Track wins, losses, and missed opportunities" },
+      { name: "Signal Tracker", icon: BarChart3, tab: "tracker", desc: "Track wins, losses, and missed opportunities", details: "Signal Tracker lets you log which plays you took. Track your P/L, win rate, and see which types of plays work best for you." },
     ],
     color: "#fb923c",
   },
@@ -54,6 +54,7 @@ const WORKFLOW_STEPS = [
 export function GettingStartedGuide({ onClose, onNavigate }: GettingStartedGuideProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [dismissed, setDismissed] = useState(false)
+  const [expandedTool, setExpandedTool] = useState<string | null>(null)
 
   useEffect(() => {
     const hasSeen = localStorage.getItem("white80_seen_guide")
@@ -67,7 +68,7 @@ export function GettingStartedGuide({ onClose, onNavigate }: GettingStartedGuide
     onClose()
   }
 
-  const handleGetStarted = (tab: string) => {
+  const handleGoToTool = (tab: string) => {
     localStorage.setItem("white80_seen_guide", "true")
     onNavigate(tab)
     onClose()
@@ -101,7 +102,7 @@ export function GettingStartedGuide({ onClose, onNavigate }: GettingStartedGuide
           {WORKFLOW_STEPS.map((s, i) => (
             <button
               key={s.phase}
-              onClick={() => setCurrentStep(i)}
+              onClick={() => { setCurrentStep(i); setExpandedTool(null); }}
               className={`flex-1 h-1 rounded-full transition-colors ${
                 i === currentStep ? "bg-[#00e5ff]" : i < currentStep ? "bg-[#00e5ff]/50" : "bg-[#131c2e]"
               }`}
@@ -126,23 +127,38 @@ export function GettingStartedGuide({ onClose, onNavigate }: GettingStartedGuide
           {/* Tools for this step */}
           <div className="space-y-3">
             {step.tools.map((tool) => (
-              <button
-                key={tool.name}
-                onClick={() => handleGetStarted(tool.tab)}
-                className="w-full flex items-center gap-4 p-4 bg-[#0c1020] border border-[#131c2e] rounded-lg hover:border-[#00e5ff]/50 transition-colors text-left group"
-              >
-                <div 
-                  className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${step.color}15` }}
+              <div key={tool.name} className="bg-[#0c1020] border border-[#131c2e] rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setExpandedTool(expandedTool === tool.name ? null : tool.name)}
+                  className="w-full flex items-center gap-4 p-4 hover:bg-[#131c2e]/50 transition-colors text-left group"
                 >
-                  <tool.icon className="w-5 h-5" style={{ color: step.color }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-mono text-sm text-white tracking-wider">{tool.name}</div>
-                  <div className="text-[#3d4f6b] text-xs mt-0.5">{tool.desc}</div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-[#3d4f6b] group-hover:text-[#00e5ff] transition-colors" />
-              </button>
+                  <div 
+                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: `${step.color}15` }}
+                  >
+                    <tool.icon className="w-5 h-5" style={{ color: step.color }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-mono text-sm text-white tracking-wider">{tool.name}</div>
+                    <div className="text-[#3d4f6b] text-xs mt-0.5">{tool.desc}</div>
+                  </div>
+                  <HelpCircle className={`w-4 h-4 transition-colors ${expandedTool === tool.name ? 'text-[#00e5ff]' : 'text-[#3d4f6b] group-hover:text-[#00e5ff]'}`} />
+                </button>
+                
+                {/* Expanded details */}
+                {expandedTool === tool.name && (
+                  <div className="px-4 pb-4 border-t border-[#131c2e]">
+                    <p className="text-[#d6dff0] text-sm py-3">{tool.details}</p>
+                    <button
+                      onClick={() => handleGoToTool(tool.tab)}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10] font-mono text-xs tracking-wider rounded transition-colors"
+                    >
+                      GO TO {tool.name.toUpperCase()}
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -150,7 +166,7 @@ export function GettingStartedGuide({ onClose, onNavigate }: GettingStartedGuide
         {/* Footer navigation */}
         <div className="flex items-center justify-between p-4 border-t border-[#131c2e]">
           <button
-            onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+            onClick={() => { setCurrentStep(Math.max(0, currentStep - 1)); setExpandedTool(null); }}
             disabled={currentStep === 0}
             className="font-mono text-xs text-[#3d4f6b] hover:text-white transition-colors disabled:opacity-30"
           >
@@ -166,14 +182,14 @@ export function GettingStartedGuide({ onClose, onNavigate }: GettingStartedGuide
             </button>
             {currentStep < WORKFLOW_STEPS.length - 1 ? (
               <Button
-                onClick={() => setCurrentStep(currentStep + 1)}
+                onClick={() => { setCurrentStep(currentStep + 1); setExpandedTool(null); }}
                 className="bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10] font-mono text-xs tracking-wider"
               >
                 NEXT STEP
               </Button>
             ) : (
               <Button
-                onClick={() => handleGetStarted("tier1")}
+                onClick={() => handleGoToTool("tier1")}
                 className="bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10] font-mono text-xs tracking-wider"
               >
                 START DISCOVERING
