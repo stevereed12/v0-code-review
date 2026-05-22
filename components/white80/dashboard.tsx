@@ -32,6 +32,7 @@ import { ActionButton } from "./action-button"
 import { SettingsPanel } from "./settings-panel"
 import { ExportModal } from "./export-modal"
 import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3, Crosshair, Search, Briefcase } from "lucide-react"
+import { stripCitations } from "@/lib/utils"
 import { Tier1Scanner } from "./tier1-scanner"
 import { QuickThesisSearch } from "./quick-thesis"
 import { DisclaimerModal } from "./disclaimer-modal"
@@ -743,8 +744,8 @@ export function White80Dashboard({
               <div className="animate-in fade-in duration-300">
                 {/* Summary */}
                 <div className="bg-[#0c1020] border border-[#131c2e] rounded p-4 mb-4">
-                  <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2">CURATOR SUMMARY</div>
-                  <div className="text-base leading-relaxed">{curatorState.summary}</div>
+                <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2">CURATOR SUMMARY</div>
+                <div className="text-base leading-relaxed">{stripCitations(curatorState.summary)}</div>
                   {curatorState.regime && (
                     <div className="mt-2.5 inline-block px-2 py-0.5 border border-[#00e5ff]/40 rounded-sm">
                       <span className="font-mono text-[9px] text-[#00e5ff] tracking-wider">
@@ -774,7 +775,7 @@ export function White80Dashboard({
                               {p.theme?.toUpperCase()}
                             </span>
                           </div>
-                          <div className="text-[13px] leading-snug">{p.reason}</div>
+                          <div className="text-[13px] leading-snug">{stripCitations(p.reason)}</div>
                         </div>
                       ))
                     )}
@@ -792,8 +793,8 @@ export function White80Dashboard({
                           key={i}
                           className="pb-2.5 mb-2.5 border-b border-[#131c2e] last:border-0 last:pb-0 last:mb-0"
                         >
-                          <div className="font-mono text-[13px] text-[#fb923c] font-medium mb-0.5">{d.ticker}</div>
-                          <div className="text-[13px] leading-snug">{d.reason}</div>
+                <div className="font-mono text-[13px] text-[#fb923c] font-medium mb-0.5">{d.ticker}</div>
+                <div className="text-[13px] leading-snug">{stripCitations(d.reason)}</div>
                         </div>
                       ))
                     )}
@@ -1018,7 +1019,7 @@ export function White80Dashboard({
             {/* Thesis */}
             <div className="mb-3">
               <div className="font-mono text-[9px] tracking-wider text-[#3d4f6b] mb-1">THESIS</div>
-              <p className="text-[12px] text-[#d6dff0]">{pick.thesis}</p>
+                <p className="text-[12px] text-[#d6dff0]">{stripCitations(pick.thesis)}</p>
             </div>
 
             {/* Bull/Bear Cases */}
@@ -1273,8 +1274,8 @@ export function White80Dashboard({
                   <div className="space-y-4">
                     {brief.catalysts?.map((c, i) => (
                       <div key={i}>
-                        <div className="font-mono text-[12px] text-[#fb923c] mb-1">{i + 1}. {c.title}</div>
-                        <div className="text-[14px] leading-relaxed text-[#d6dff0] pl-4">{c.body}</div>
+                <div className="font-mono text-[12px] text-[#fb923c] mb-1">{i + 1}. {stripCitations(c.title)}</div>
+                <div className="text-[14px] leading-relaxed text-[#d6dff0] pl-4">{stripCitations(c.body)}</div>
                       </div>
                     ))}
                   </div>
@@ -1340,7 +1341,7 @@ export function White80Dashboard({
                       {brief.verdict?.tone}
                     </div>
                   </div>
-                  <div className="text-[15px] leading-relaxed text-[#d6dff0]">{brief.verdict?.summary}</div>
+                  <div className="text-[15px] leading-relaxed text-[#d6dff0]">{stripCitations(brief.verdict?.summary || "")}</div>
                 </div>
 
                 {/* TOP PLAYS */}
@@ -1369,9 +1370,9 @@ export function White80Dashboard({
                             </span>
                           </div>
                         </div>
-                        <div className="font-mono text-[11px] text-[#00e5ff] mb-1">{play.play}</div>
-                        <div className="text-[11px] text-[#d6dff0] mb-1">{play.thesis}</div>
-                        <div className="font-mono text-[9px] text-[#3d4f6b]">CATALYST: {play.catalyst}</div>
+                <div className="font-mono text-[11px] text-[#00e5ff] mb-1">{stripCitations(play.play)}</div>
+                <div className="text-[11px] text-[#d6dff0] mb-1">{stripCitations(play.thesis)}</div>
+                <div className="font-mono text-[9px] text-[#3d4f6b]">CATALYST: {stripCitations(play.catalyst)}</div>
                       </div>
                     ))}
                   </div>
