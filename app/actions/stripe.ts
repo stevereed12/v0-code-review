@@ -10,12 +10,11 @@ export async function createCheckoutSession(productId: string, clientOrigin?: st
     return { error: "Product not found" }
   }
 
-  // Determine the base URL - prioritize server-side env vars
-  const baseUrl = process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}`
-    : process.env.NEXT_PUBLIC_VERCEL_URL
-    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-    : clientOrigin || "http://localhost:3000"
+  // Use client origin (the actual domain user is on) - this ensures
+  // users on white80.io get redirected back to white80.io, not a preview URL
+  const baseUrl = clientOrigin || 
+    (process.env.NEXT_PUBLIC_SITE_URL) ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -71,7 +70,7 @@ export async function createCheckoutSession(productId: string, clientOrigin?: st
     subscription_data: {
       trial_period_days: 7,
     },
-    success_url: `${baseUrl}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/pricing`,
     metadata: {
       supabase_user_id: user.id,
