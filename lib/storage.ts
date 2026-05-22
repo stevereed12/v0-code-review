@@ -42,6 +42,48 @@ export const storage = {
   },
 }
 
+// ─── DAILY DATA CLEARING ─────────────────────────────────────────────────────
+
+// Keys that should persist across days (user preferences, watchlist, tracker history)
+const PERSISTENT_KEYS = [
+  "watchlist",
+  "pinned", 
+  "blocked",
+  "tracker",
+  "scout_themes",
+  "scout_cap",
+  "scout_horizon",
+  "notifications_enabled",
+  "sound_enabled",
+]
+
+// Keys that should be cleared daily (queries, results, briefs)
+const DAILY_KEYS = [
+  "news_last",
+  "curator_last",
+  "scout_last",
+]
+
+export function clearDailyDataIfNewDay(): boolean {
+  if (typeof window === "undefined") return false
+  
+  const today = new Date().toISOString().split("T")[0] // YYYY-MM-DD
+  const lastActiveDate = localStorage.getItem(STORAGE_PREFIX + "last_active_date")
+  
+  if (lastActiveDate !== today) {
+    // New day - clear daily data
+    DAILY_KEYS.forEach(key => {
+      storage.remove(key)
+    })
+    
+    // Update last active date
+    localStorage.setItem(STORAGE_PREFIX + "last_active_date", today)
+    return true // Data was cleared
+  }
+  
+  return false // Same day, no clearing needed
+}
+
 // ─── STORAGE KEYS ────────────────────────────────────────────────────────────
 
 export const STORAGE_KEYS = {

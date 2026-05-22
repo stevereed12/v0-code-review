@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { storage, STORAGE_KEYS } from "@/lib/storage"
+import { storage, STORAGE_KEYS, clearDailyDataIfNewDay } from "@/lib/storage"
 import { askClaude, fetchLivePrices, getStoredApiKey, ApiKeyRequiredError } from "@/lib/api"
 import { ApiKeyModal } from "./api-key-modal"
 import { buildSignalPrompt, buildBriefPrompt, buildNewsPrompt, buildScoutPrompt, buildCuratorPrompt, buildBuyHoldPrompt } from "@/lib/prompts"
@@ -109,6 +109,9 @@ export function White80Dashboard({
 
  // Load from localStorage on mount
   useEffect(() => {
+    // Clear stale daily data if it's a new day
+    clearDailyDataIfNewDay()
+    
     // Check if first visit - show guide
     const hasSeen = localStorage.getItem("white80_seen_guide")
     if (!hasSeen) {
