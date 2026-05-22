@@ -197,7 +197,7 @@ IMPORTANT FOR TOP PLAYS:
       `Use web search to get CURRENT real-time data\n\n${marketContext}`
     )
 
-    // ── Step 3: Call Claude ──
+    // ── Step 3: Call Claude with system prompt for strict JSON ──
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -208,6 +208,7 @@ IMPORTANT FOR TOP PLAYS:
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: 8000,
+        system: "You are a JSON API. You MUST respond with valid JSON only. No prose, no explanations, no markdown. Your entire response must be parseable JSON starting with { and ending with }. Never start with phrases like 'Based on' or 'Here is' - output raw JSON immediately.",
         tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 10 }],
         messages: [{ role: "user", content: fullPrompt }],
       }),
@@ -230,6 +231,16 @@ IMPORTANT FOR TOP PLAYS:
     text = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
     // Strip citation markup
     text = text.replace(/<\/?cite[^>]*>/g, "").replace(/\[\d+\]/g, "")
+    // Remove any prose prefix before JSON (e.g., "Based on my search, here is the data:")
+    const jsonStart = text.indexOf("{")
+    if (jsonStart > 0) {
+      text = text.slice(jsonStart)
+    }
+    // Remove any prose suffix after JSON
+    const jsonEnd = text.lastIndexOf("}")
+    if (jsonEnd !== -1 && jsonEnd < text.length - 1) {
+      text = text.slice(0, jsonEnd + 1)
+    }
     
     const parsed = JSON.parse(text)
     
