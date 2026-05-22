@@ -17,8 +17,8 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single()
 
-  // Check subscription status - must have active subscription to access dashboard
-  const hasActiveSubscription = profile?.subscription_status === "active"
+  // Check subscription status - must have active or trialing subscription to access dashboard
+  const hasActiveSubscription = profile?.subscription_status === "active" || profile?.subscription_status === "trialing"
   
   if (!hasActiveSubscription) {
     // No subscription - redirect to pricing
