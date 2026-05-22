@@ -229,15 +229,55 @@ export function buildBriefPrompt(tickers: string[]): string {
   const sessionDate = isAfterHours ? tomorrowStr : todayStr
   const sessionLabel = isAfterHours ? "Post-Close" : "Pre-Open"
 
+  // Calculate valid options expiration dates (Fridays)
+  const getNextFridays = (count: number): string[] => {
+    const fridays: string[] = []
+    const d = new Date(todayET)
+    d.setDate(d.getDate() + 1)
+    while (fridays.length < count) {
+      if (d.getDay() === 5) {
+        fridays.push(d.toLocaleDateString("en-US", { month: "short", day: "numeric" }))
+      }
+      d.setDate(d.getDate() + 1)
+    }
+    return fridays
+  }
+
+  // Get 3rd Friday of current and next month for monthly expirations
+  const getMonthlyExpirations = (): string[] => {
+    const monthlies: string[] = []
+    for (let m = 0; m < 2; m++) {
+      const d = new Date(etYear, etMonth + m, 1)
+      let fridayCount = 0
+      while (fridayCount < 3) {
+        if (d.getDay() === 5) fridayCount++
+        if (fridayCount < 3) d.setDate(d.getDate() + 1)
+      }
+      if (d > todayET) {
+        monthlies.push(d.toLocaleDateString("en-US", { month: "short", day: "numeric" }))
+      }
+    }
+    return monthlies
+  }
+
+  const weeklyExps = getNextFridays(4)
+  const monthlyExps = getMonthlyExpirations()
+
   return `You are White 80, a professional trading desk briefing system.
 
 CURRENT TIME: ${now.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" })} ET
 GENERATING BRIEF FOR: ${sessionDate} | ${sessionLabel}
 
+VALID OPTIONS EXPIRATION DATES (use ONLY these for any options plays):
+Weekly: ${weeklyExps.join(", ")}
+Monthly (3rd Friday): ${monthlyExps.join(", ")}
+
 CRITICAL RULES:
 - Be specific with exact numbers, prices, and percentages
 - Write dense, factual prose like a Bloomberg terminal brief
 - Use web search to get CURRENT real-time data
+- For options plays, you MUST use one of the expiration dates listed above - these are real market expiration dates
+- DO NOT make up expiration dates - options only expire on Fridays
 
 OUTPUT FORMATTING - EXTREMELY IMPORTANT:
 - Return ONLY clean JSON - no markdown, no backticks
@@ -273,7 +313,8 @@ WHITE 80 TOP PLAYS (5-10 highest conviction setups across the ENTIRE market):
 - These should NOT be limited to the user's watchlist - scan the whole market
 - Each play needs: ticker, direction (BUY/SELL/FADE), specific options play with valid expiration, conviction level, catalyst, and 1-sentence thesis
 - Prioritize: unusual options volume, earnings gap setups, technical breakouts at key levels, sector momentum leaders
-- Be specific: "$185 calls exp May 23" not "calls"
+- EXPIRATION DATES: Use ONLY from this list: ${weeklyExps.join(", ")} (weekly) or ${monthlyExps.join(", ")} (monthly)
+- Be specific: "$185 calls exp ${weeklyExps[0]}" not "calls" - pick the appropriate Friday
 - Only include plays where the risk/reward is clearly asymmetric
 
 VERDICT:
