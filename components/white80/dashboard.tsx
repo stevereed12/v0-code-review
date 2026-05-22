@@ -35,6 +35,7 @@ import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3, 
 import { Tier1Scanner } from "./tier1-scanner"
 import { QuickThesisSearch } from "./quick-thesis"
 import { DisclaimerModal } from "./disclaimer-modal"
+import { GettingStartedGuide } from "./getting-started-guide"
 
 interface DashboardProps {
   userEmail?: string
@@ -72,6 +73,8 @@ export function White80Dashboard({
   const [generatedAt, setGeneratedAt] = useState<Record<string, string>>({})
   const [autoNewsRefresh, setAutoNewsRefresh] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showGuide, setShowGuide] = useState(false)
+  const [activeTab, setActiveTab] = useState("watchlist")
   const [showExport, setShowExport] = useState(false)
   const [confirmReset, setConfirmReset] = useState(false)
   const [confirmClearTracker, setConfirmClearTracker] = useState(false)
@@ -104,9 +107,15 @@ export function White80Dashboard({
     )
   }, [anthropicKey, polygonKey])
 
-  // Load from localStorage on mount
+ // Load from localStorage on mount
   useEffect(() => {
-    const wl = storage.get<string[]>(STORAGE_KEYS.WATCHLIST)
+    // Check if first visit - show guide
+    const hasSeen = localStorage.getItem("white80_seen_guide")
+    if (!hasSeen) {
+      setShowGuide(true)
+    }
+    
+  const wl = storage.get<string[]>(STORAGE_KEYS.WATCHLIST)
     const pn = storage.get<string[]>(STORAGE_KEYS.PINNED)
     const bl = storage.get<string[]>(STORAGE_KEYS.BLOCKED)
     const tr = storage.get<TrackerLog[]>(STORAGE_KEYS.TRACKER)
@@ -518,6 +527,12 @@ export function White80Dashboard({
   return (
     <>
       <DisclaimerModal />
+      {showGuide && (
+        <GettingStartedGuide 
+          onClose={() => setShowGuide(false)} 
+          onNavigate={(tab) => setActiveTab(tab)} 
+        />
+      )}
       <div
         className="font-serif text-[#d6dff0] min-h-screen p-6 pb-16"
         style={{ background: "radial-gradient(ellipse at top, #151e30, #05070e 70%)" }}
@@ -614,12 +629,16 @@ export function White80Dashboard({
             onNotificationsToggle={handleNotificationsToggle}
             onOpenExport={() => setShowExport(true)}
             onResetAll={resetAllData}
+            onShowGuide={() => {
+              localStorage.removeItem("white80_seen_guide")
+              setShowGuide(true)
+            }}
             confirmReset={confirmReset}
           />
         )}
 
         {/* Main Tabs */}
-        <Tabs defaultValue="watchlist" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* Mobile: 3x3 grid of buttons */}
           <TabsList className="md:hidden grid grid-cols-3 gap-1.5 bg-transparent p-0 h-auto mb-4">
             {[

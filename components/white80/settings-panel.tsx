@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, Volume2, Download, RotateCcw } from "lucide-react"
+import { Bell, Volume2, Download, RotateCcw, HelpCircle } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 
 interface SettingsPanelProps {
@@ -10,6 +10,7 @@ interface SettingsPanelProps {
   onNotificationsToggle: (enabled: boolean) => void
   onOpenExport: () => void
   onResetAll: () => void
+  onShowGuide: () => void
   confirmReset: boolean
 }
 
@@ -20,6 +21,7 @@ export function SettingsPanel({
   onNotificationsToggle,
   onOpenExport,
   onResetAll,
+  onShowGuide,
   confirmReset,
 }: SettingsPanelProps) {
   return (
@@ -44,6 +46,13 @@ export function SettingsPanel({
         </div>
 
         <div className="flex gap-2 pt-2 border-t border-[#131c2e]">
+          <button
+            onClick={onShowGuide}
+            className="flex items-center justify-center gap-2 py-2 px-3 bg-[#a78bfa]/10 border border-[#a78bfa]/50 text-[#a78bfa] text-[10px] font-mono tracking-wider rounded transition-all hover:bg-[#a78bfa]/20 hover:border-[#a78bfa]"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            GUIDE
+          </button>
           <button
             onClick={onOpenExport}
             className="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-[#00e5ff]/10 border border-[#00e5ff] text-[#00e5ff] text-[10px] font-mono tracking-wider rounded transition-all hover:bg-[#00e5ff]/20"
