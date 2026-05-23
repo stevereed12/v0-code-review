@@ -25,6 +25,7 @@ import {
 } from "@/lib/types"
 import { WatchlistHeader } from "./watchlist-header"
 import { SignalCard } from "./signal-card"
+import { SpreadCard } from "./spread-card"
 import { NewsCard } from "./news-card"
 import { ScoutCard } from "./scout-card"
 import { TrackerRow } from "./tracker-row"
@@ -76,6 +77,7 @@ export function White80Dashboard({
   const [showSettings, setShowSettings] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
   const [activeTab, setActiveTab] = useState("watchlist")
+  const [signalView, setSignalView] = useState<"signals" | "spreads">("signals")
   const [showExport, setShowExport] = useState(false)
   const [confirmReset, setConfirmReset] = useState(false)
   const [confirmClearTracker, setConfirmClearTracker] = useState(false)
@@ -1138,14 +1140,39 @@ export function White80Dashboard({
 
           {/* SIGNALS TAB */}
           <TabsContent value="signals" className="mt-0">
-            <ActionButton
-              onClick={runSignals}
-              loading={loading.signals}
-              label="RUN SIGNALS"
-              loadingLabel="SCANNING..."
-              color="#00ffaa"
-              className="mb-4"
-            />
+            {/* View Toggle */}
+            <div className="flex items-center justify-between mb-4">
+              <ActionButton
+                onClick={runSignals}
+                loading={loading.signals}
+                label="RUN SIGNALS"
+                loadingLabel="SCANNING..."
+                color="#00ffaa"
+                className="flex-1 mr-3"
+              />
+              <div className="flex bg-[#060a10] border border-[#131c2e] rounded-lg p-1">
+                <button
+                  onClick={() => setSignalView("signals")}
+                  className={`font-mono text-[10px] px-3 py-1.5 rounded tracking-wider transition-colors ${
+                    signalView === "signals"
+                      ? "bg-[#00ffaa]/20 text-[#00ffaa] border border-[#00ffaa]/50"
+                      : "text-[#3d4f6b] hover:text-[#d6dff0]"
+                  }`}
+                >
+                  SIGNALS
+                </button>
+                <button
+                  onClick={() => setSignalView("spreads")}
+                  className={`font-mono text-[10px] px-3 py-1.5 rounded tracking-wider transition-colors ${
+                    signalView === "spreads"
+                      ? "bg-[#a78bfa]/20 text-[#a78bfa] border border-[#a78bfa]/50"
+                      : "text-[#3d4f6b] hover:text-[#d6dff0]"
+                  }`}
+                >
+                  SPREADS
+                </button>
+              </div>
+            </div>
 
             {errors.signals && (
               <div className="font-mono bg-[#f87171]/10 border border-[#f87171]/40 p-2.5 rounded text-[10px] text-[#f87171] mb-4">
@@ -1168,9 +1195,17 @@ export function White80Dashboard({
               </div>
             )}
 
-            {signals.map((s, i) => (
-              <SignalCard key={i} signal={s} />
-            ))}
+            {/* Spread View Info Banner */}
+            {signalView === "spreads" && signals.length > 0 && (
+              <div className="font-mono bg-[#a78bfa]/10 border border-[#a78bfa]/30 p-2.5 rounded text-[10px] text-[#a78bfa] mb-4 tracking-wide">
+                SPREAD VIEW: Converting single-leg options into defined-risk spread strategies. Strikes are calculated based on signal direction and targets.
+              </div>
+            )}
+
+            {signalView === "signals" 
+              ? signals.map((s, i) => <SignalCard key={i} signal={s} />)
+              : signals.map((s, i) => <SpreadCard key={i} signal={s} />)
+            }
           </TabsContent>
 
           {/* PRE-MARKET BRIEF TAB */}
