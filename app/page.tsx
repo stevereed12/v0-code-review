@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { TrendingUp, Radar, FileText, Search, BarChart3, Crosshair, Shield, Key, Zap } from "lucide-react"
+import { MobileMenu } from "@/components/white80/mobile-menu"
 
 export default function LandingPage() {
   return (
@@ -14,16 +15,17 @@ export default function LandingPage() {
           <div className="flex items-center gap-4">
             <Link
               href="/auth/login"
-              className="font-mono text-sm text-[#3d4f6b] hover:text-white transition-colors"
+              className="hidden sm:block font-mono text-sm text-[#3d4f6b] hover:text-white transition-colors"
             >
               Sign In
             </Link>
             <Link
               href="/pricing"
-              className="font-mono text-sm bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10] px-4 py-2 rounded transition-colors"
+              className="hidden sm:block font-mono text-sm bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10] px-4 py-2 rounded transition-colors"
             >
               Get Started
             </Link>
+            <MobileMenu isLoggedIn={false} currentPath="/" />
           </div>
         </div>
       </header>

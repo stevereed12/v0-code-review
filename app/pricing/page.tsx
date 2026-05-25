@@ -6,6 +6,7 @@ import { createCheckoutSession } from "@/app/actions/stripe"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
+import { MobileMenu } from "@/components/white80/mobile-menu"
 
 export default function PricingPage() {
   const [loading, setLoading] = useState<string | null>(null)
@@ -51,25 +52,41 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#060a10] py-20 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
+    <div className="min-h-screen bg-[#060a10]">
+      {/* Header */}
+      <header className="border-b border-[#131c2e]">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
             <div className="w-3 h-3 bg-[#00e5ff] rounded-full animate-pulse" />
-            <span className="font-mono text-xl tracking-wider text-white">WHITE 80</span>
+            <span className="font-mono text-lg tracking-wider text-white">WHITE 80</span>
           </Link>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Start Your 7-Day Free Trial
-          </h1>
-          <p className="text-[#3d4f6b] font-mono text-sm max-w-md mx-auto mb-4">
-            Full access to all features. No charge until your trial ends.
-          </p>
-          <div className="inline-flex items-center gap-2 bg-[#00ffaa]/10 border border-[#00ffaa]/20 rounded-full px-4 py-1.5">
-            <span className="w-2 h-2 bg-[#00ffaa] rounded-full" />
-            <span className="font-mono text-xs text-[#00ffaa]">CANCEL ANYTIME</span>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/auth/login"
+              className="hidden sm:block font-mono text-sm text-[#3d4f6b] hover:text-white transition-colors"
+            >
+              Sign In
+            </Link>
+            <MobileMenu isLoggedIn={isAuthenticated || false} currentPath="/pricing" />
           </div>
         </div>
+      </header>
+
+      <div className="py-20 px-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Start Your 7-Day Free Trial
+            </h1>
+            <p className="text-[#3d4f6b] font-mono text-sm max-w-md mx-auto mb-4">
+              Full access to all features. No charge until your trial ends.
+            </p>
+            <div className="inline-flex items-center gap-2 bg-[#00ffaa]/10 border border-[#00ffaa]/20 rounded-full px-4 py-1.5">
+              <span className="w-2 h-2 bg-[#00ffaa] rounded-full" />
+              <span className="font-mono text-xs text-[#00ffaa]">CANCEL ANYTIME</span>
+            </div>
+          </div>
 
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-2 gap-6">
@@ -151,5 +168,6 @@ export default function PricingPage() {
         </div>
       </div>
     </div>
+  </div>
   )
 }
