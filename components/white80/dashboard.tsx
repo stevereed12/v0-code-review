@@ -31,6 +31,7 @@ import { ScoutCard } from "./scout-card"
 import { TrackerRow } from "./tracker-row"
 import { ActionButton } from "./action-button"
 import { SettingsPanel } from "./settings-panel"
+import { ApiKeysManager } from "./api-keys-manager"
 import { ExportModal } from "./export-modal"
 import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3, Crosshair, Search, Briefcase } from "lucide-react"
 import { stripCitations } from "@/lib/utils"
@@ -40,6 +41,7 @@ import { DisclaimerModal } from "./disclaimer-modal"
 import { GettingStartedGuide } from "./getting-started-guide"
 
 interface DashboardProps {
+  userId?: string
   userEmail?: string
   hasSubscription?: boolean
   polygonKey?: string | null
@@ -47,6 +49,7 @@ interface DashboardProps {
 }
 
 export function White80Dashboard({ 
+  userId,
   userEmail, 
   hasSubscription = false,
   polygonKey,
@@ -639,9 +642,10 @@ export function White80Dashboard({
               localStorage.removeItem("white80_seen_guide")
               setShowGuide(true)
             }}
-            confirmReset={confirmReset}
-          />
-        )}
+  confirmReset={confirmReset}
+  />
+  {userId && <ApiKeysManager userId={userId} />}
+  )}
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

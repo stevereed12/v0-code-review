@@ -35,6 +35,7 @@ export default async function DashboardPage() {
 
   return (
     <White80Dashboard 
+      userId={user.id}
       userEmail={user.email}
       hasSubscription={hasActiveSubscription}
       polygonKey={profile?.polygon_api_key}
