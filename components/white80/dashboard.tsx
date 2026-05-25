@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { storage, STORAGE_KEYS, clearDailyDataIfNewDay } from "@/lib/storage"
+import { storage, STORAGE_KEYS, clearDailyDataIfNewDay, clearUserData, clearDataIfUserChanged } from "@/lib/storage"
 import { askClaude, fetchLivePrices, getStoredApiKey, ApiKeyRequiredError } from "@/lib/api"
 import { ApiKeyModal } from "./api-key-modal"
 import { buildSignalPrompt, buildBriefPrompt, buildNewsPrompt, buildScoutPrompt, buildCuratorPrompt, buildBuyHoldPrompt } from "@/lib/prompts"
@@ -115,6 +115,11 @@ export function White80Dashboard({
 
  // Load from localStorage on mount
   useEffect(() => {
+    // Check if a different user logged in - if so, clear previous user's data
+    if (userId) {
+      clearDataIfUserChanged(userId)
+    }
+    
     // Clear stale daily data if it's a new day
     clearDailyDataIfNewDay()
     
@@ -590,17 +595,19 @@ export function White80Dashboard({
               {userEmail && (
                 <div className="mt-2 flex items-center gap-2 justify-end">
                   <span className="font-mono text-[9px] text-[#3d4f6b]">{userEmail}</span>
-                  <button
-                    onClick={async () => {
-                      const { createClient } = await import("@/lib/supabase/client")
-                      const supabase = createClient()
-                      await supabase.auth.signOut()
-                      window.location.href = "/"
-                    }}
-                    className="font-mono text-[9px] text-[#f87171] hover:text-[#f87171]/80 transition-colors"
-                  >
-                    SIGN OUT
-                  </button>
+                <button
+                  onClick={async () => {
+                    // Clear all user data before signing out
+                    clearUserData()
+                    const { createClient } = await import("@/lib/supabase/client")
+                    const supabase = createClient()
+                    await supabase.auth.signOut()
+                    window.location.href = "/"
+                  }}
+                  className="font-mono text-[9px] text-[#f87171] hover:text-[#f87171]/80 transition-colors"
+                >
+                  SIGN OUT
+                </button>
                 </div>
               )}
             </div>

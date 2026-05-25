@@ -84,6 +84,41 @@ export function clearDailyDataIfNewDay(): boolean {
   return false // Same day, no clearing needed
 }
 
+// ─── USER SESSION MANAGEMENT ─────────────────────────────────────────────────
+
+/**
+ * Clear all user-specific data on logout
+ * This ensures no data leaks between users on shared devices
+ */
+export function clearUserData(): void {
+  if (typeof window === "undefined") return
+  storage.clear()
+  // Also clear the seen guide flag so new user sees onboarding
+  localStorage.removeItem("white80_seen_guide")
+}
+
+/**
+ * Check if a different user logged in and clear previous user's data
+ * Call this on dashboard mount with the current user's ID
+ */
+export function clearDataIfUserChanged(userId: string): boolean {
+  if (typeof window === "undefined") return false
+  
+  const lastUserId = localStorage.getItem(STORAGE_PREFIX + "last_user_id")
+  
+  if (lastUserId && lastUserId !== userId) {
+    // Different user - clear all previous user's data
+    storage.clear()
+    localStorage.removeItem("white80_seen_guide")
+    localStorage.setItem(STORAGE_PREFIX + "last_user_id", userId)
+    return true // Data was cleared
+  }
+  
+  // Same user or first login - just store the user ID
+  localStorage.setItem(STORAGE_PREFIX + "last_user_id", userId)
+  return false
+}
+
 // ─── STORAGE KEYS ────────────────────────────────────────────────────────────
 
 export const STORAGE_KEYS = {
