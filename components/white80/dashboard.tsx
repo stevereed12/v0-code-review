@@ -649,10 +649,11 @@ export function White80Dashboard({
               localStorage.removeItem("white80_seen_guide")
               setShowGuide(true)
             }}
-  confirmReset={confirmReset}
-  />
-  {userId && <ApiKeysManager userId={userId} />}
-  )}
+            confirmReset={confirmReset}
+          />
+        )}
+        
+        {userId && <ApiKeysManager userId={userId} />}
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
