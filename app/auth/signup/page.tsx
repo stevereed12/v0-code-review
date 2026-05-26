@@ -4,6 +4,7 @@ import { useState, Suspense } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import dynamic from "next/dynamic"
 
 function SignUpForm() {
   const [email, setEmail] = useState("")
@@ -167,7 +168,7 @@ function SignUpForm() {
   )
 }
 
-export default function SignUpPage() {
+function SignUpPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-[#060a10] flex items-center justify-center">
@@ -178,3 +179,5 @@ export default function SignUpPage() {
     </Suspense>
   )
 }
+
+export default dynamic(() => Promise.resolve(SignUpPage), { ssr: false })

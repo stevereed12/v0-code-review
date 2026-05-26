@@ -7,8 +7,9 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { MobileMenu } from "@/components/white80/mobile-menu"
+import dynamic from "next/dynamic"
 
-export default function PricingPage() {
+function PricingPageContent() {
   const [loading, setLoading] = useState<string | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const router = useRouter()
@@ -171,3 +172,5 @@ export default function PricingPage() {
   </div>
   )
 }
+
+export default dynamic(() => Promise.resolve(PricingPageContent), { ssr: false })

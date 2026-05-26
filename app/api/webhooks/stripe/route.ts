@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from "next/server"
-import { stripe } from "@/lib/stripe"
+import { getStripe } from "@/lib/stripe"
 import { createClient } from "@supabase/supabase-js"
 import Stripe from "stripe"
 
-// Use service role for webhook (bypasses RLS)
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 export async function POST(req: NextRequest) {
+  // Initialize Stripe lazily at runtime
+  const stripe = getStripe()
+  
+  // Initialize Supabase admin client lazily
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return NextResponse.json({ error: "Missing Supabase config" }, { status: 500 })
+  }
+  
+  const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
+  
   const body = await req.text()
   const signature = req.headers.get("stripe-signature")
 

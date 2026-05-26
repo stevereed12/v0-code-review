@@ -4,8 +4,9 @@ import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import dynamic from "next/dynamic"
 
-export default function LoginPage() {
+function LoginPageContent() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
@@ -105,3 +106,6 @@ export default function LoginPage() {
     </div>
   )
 }
+
+// Export with dynamic to prevent prerendering
+export default dynamic(() => Promise.resolve(LoginPageContent), { ssr: false })
