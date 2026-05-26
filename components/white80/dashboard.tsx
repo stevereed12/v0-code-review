@@ -31,7 +31,6 @@ import { ScoutCard } from "./scout-card"
 import { TrackerRow } from "./tracker-row"
 import { ActionButton } from "./action-button"
 import { SettingsPanel } from "./settings-panel"
-import { ApiKeysManager } from "./api-keys-manager"
 import { ExportModal } from "./export-modal"
 import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3, Crosshair, Search, Briefcase } from "lucide-react"
 import { stripCitations } from "@/lib/utils"
@@ -639,6 +638,7 @@ export function White80Dashboard({
 
         {showSettings && (
           <SettingsPanel
+            userId={userId}
             soundEnabled={soundEnabled}
             notificationsEnabled={notificationsEnabled}
             onSoundToggle={setSoundEnabled}
@@ -652,8 +652,6 @@ export function White80Dashboard({
             confirmReset={confirmReset}
           />
         )}
-        
-        {userId && <ApiKeysManager userId={userId} />}
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
