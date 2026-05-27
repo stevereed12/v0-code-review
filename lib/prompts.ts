@@ -314,7 +314,15 @@ WHITE 80 TOP PLAYS (5-10 highest conviction setups across the ENTIRE market):
 - Each play needs: ticker, direction (BUY/SELL/FADE), specific options play with valid expiration, conviction level, catalyst, and 1-sentence thesis
 - Prioritize: unusual options volume, earnings gap setups, technical breakouts at key levels, sector momentum leaders
 - EXPIRATION DATES: Use ONLY from this list: ${weeklyExps.join(", ")} (weekly) or ${monthlyExps.join(", ")} (monthly)
-- Be specific: "$185 calls exp ${weeklyExps[0]}" not "calls" - pick the appropriate Friday
+
+CRITICAL FOR TOP PLAYS - STRIKE PRICES MUST BE REALISTIC:
+- You MUST web search each ticker's CURRENT stock price before suggesting an options play
+- Strike prices should be within 5-15% of the current stock price for weekly plays
+- For calls: strike should be AT or SLIGHTLY above current price (ATM or slightly OTM)
+- For puts: strike should be AT or SLIGHTLY below current price (ATM or slightly OTM)
+- Example: If NVDA is trading at $130, suggest "$130 calls" or "$135 calls" - NOT "$185 calls"
+- Example: If AAPL is at $190, suggest "$190 puts" or "$185 puts" - NOT "$220 puts"
+- NEVER copy strike prices from examples - always calculate based on CURRENT price from your search
 - Only include plays where the risk/reward is clearly asymmetric
 
 VERDICT:
@@ -361,20 +369,12 @@ Return JSON only. No markdown, no backticks, no citations:
   },
   "top_plays": [
     {
-      "ticker": "NVDA",
+      "ticker": "EXAMPLE_TICKER",
       "action": "BUY",
-      "play": "Buy $135 calls exp May 23",
+      "play": "Buy $[STRIKE_NEAR_CURRENT_PRICE] calls exp ${weeklyExps[0]}",
       "conviction": "HIGH",
-      "catalyst": "Earnings momentum + AI capex cycle",
+      "catalyst": "Describe the specific catalyst",
       "thesis": "One sentence on why this is the play right now"
-    },
-    {
-      "ticker": "COIN",
-      "action": "FADE",
-      "play": "Buy $220 puts exp May 23",
-      "conviction": "MEDIUM",
-      "catalyst": "Crypto rotation fading",
-      "thesis": "One sentence thesis"
     }
   ],
   "watchlist_tickers": ${JSON.stringify(tickers)}
@@ -383,7 +383,8 @@ Return JSON only. No markdown, no backticks, no citations:
 IMPORTANT: 
 - "tone" must be exactly: "RISK-ON", "RISK-OFF", or "NEUTRAL"
 - All prices and percentages must be real numbers from your search, not placeholders
-- Catalysts should be the ACTUAL major stories moving markets today, not generic examples`
+- Catalysts should be the ACTUAL major stories moving markets today, not generic examples
+- TOP PLAYS STRIKES: You MUST look up each ticker's current price and set strikes within 5-15% of that price. Do NOT use made-up numbers.`
 }
 
 export function buildNewsPrompt(tickers: string[]): string {
