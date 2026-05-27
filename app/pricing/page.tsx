@@ -26,10 +26,17 @@ function PricingPageContent() {
   const handleSubscribe = async (productId: string) => {
     console.log("[v0] handleSubscribe called with productId:", productId)
     console.log("[v0] isAuthenticated:", isAuthenticated)
+    
+    // Wait for auth check to complete
+    if (isAuthenticated === null) {
+      console.log("[v0] Auth check still pending, waiting...")
+      return
+    }
+    
     setLoading(productId)
     
-    // Check auth client-side first
-    if (isAuthenticated === false) {
+    // Check auth client-side first - redirect to signup if not logged in
+    if (!isAuthenticated) {
       console.log("[v0] User not authenticated, redirecting to signup")
       router.push("/auth/signup?redirect=/pricing")
       setLoading(null)
@@ -156,14 +163,14 @@ function PricingPageContent() {
 
               <button
                 onClick={() => handleSubscribe(product.id)}
-                disabled={loading === product.id}
+                disabled={loading === product.id || isAuthenticated === null}
                 className={`w-full font-mono text-sm tracking-wider py-3 rounded transition-colors disabled:opacity-50 ${
                   product.interval === "year"
                     ? "bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10]"
                     : "bg-[#131c2e] hover:bg-[#1a2438] text-white border border-[#00e5ff]/30"
                 }`}
               >
-                {loading === product.id ? "LOADING..." : "START FREE TRIAL"}
+                {loading === product.id ? "LOADING..." : isAuthenticated === null ? "CHECKING..." : "START FREE TRIAL"}
               </button>
             </div>
           ))}
