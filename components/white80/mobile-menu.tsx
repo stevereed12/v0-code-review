@@ -154,14 +154,14 @@ export function MobileMenu({ isLoggedIn = false, currentPath = "/" }: MobileMenu
                 <Link
                   href="/auth/login"
                   onClick={() => setIsOpen(false)}
-                  className="flex-1 text-center font-mono text-sm text-[#3d4f6b] hover:text-white py-2 transition-colors"
+                  className="flex-1 text-center font-mono text-sm text-[#d6dff0] hover:text-white py-2 transition-colors border border-[#131c2e] rounded-lg"
                 >
-                  Log In
+                  Sign In
                 </Link>
                 <Link
-                  href="/auth/signup"
+                  href="/pricing"
                   onClick={() => setIsOpen(false)}
-                  className="flex-1 text-center font-mono text-sm text-[#00e5ff] hover:text-[#00e5ff]/80 py-2 transition-colors"
+                  className="flex-1 text-center font-mono text-sm text-[#00e5ff] hover:text-[#00e5ff]/80 py-2 transition-colors border border-[#00e5ff]/30 rounded-lg"
                 >
                   Sign Up
                 </Link>
