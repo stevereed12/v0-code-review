@@ -12,10 +12,10 @@ export default function LandingPage() {
             <div className="w-3 h-3 bg-[#00e5ff] rounded-full animate-pulse" />
             <span className="font-mono text-lg tracking-wider text-white">WHITE 80</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Link
               href="/auth/login"
-              className="hidden sm:block font-mono text-sm text-[#3d4f6b] hover:text-white transition-colors"
+              className="font-mono text-xs sm:text-sm text-[#3d4f6b] hover:text-white transition-colors"
             >
               Sign In
             </Link>
