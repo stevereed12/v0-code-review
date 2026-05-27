@@ -1,6 +1,6 @@
 "use server"
 
-import { stripe } from "@/lib/stripe"
+import { getStripe } from "@/lib/stripe"
 import { getProduct } from "@/lib/products"
 import { createClient } from "@/lib/supabase/server"
 
@@ -22,6 +22,9 @@ export async function createCheckoutSession(productId: string, clientOrigin?: st
   if (!user) {
     return { error: "Not authenticated" }
   }
+
+  // Get Stripe instance (lazy init)
+  const stripe = getStripe()
 
   // Check if user already has a Stripe customer ID
   const { data: profile } = await supabase
@@ -99,6 +102,8 @@ export async function createBillingPortalSession() {
     return { error: "No subscription found" }
   }
 
+  const stripe = getStripe()
+  
   const session = await stripe.billingPortal.sessions.create({
     customer: profile.stripe_customer_id,
     return_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/dashboard`,
