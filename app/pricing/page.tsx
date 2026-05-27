@@ -24,30 +24,41 @@ function PricingPageContent() {
   }, [supabase.auth])
 
   const handleSubscribe = async (productId: string) => {
+    console.log("[v0] handleSubscribe called with productId:", productId)
+    console.log("[v0] isAuthenticated:", isAuthenticated)
     setLoading(productId)
     
     // Check auth client-side first
     if (isAuthenticated === false) {
+      console.log("[v0] User not authenticated, redirecting to signup")
       router.push("/auth/signup?redirect=/pricing")
       setLoading(null)
       return
     }
     
-    const result = await createCheckoutSession(productId, window.location.origin)
-    
-    if (result.error) {
-      if (result.error === "Not authenticated") {
-        router.push("/auth/signup?redirect=/pricing")
-      } else {
-        alert(result.error)
+    try {
+      console.log("[v0] Calling createCheckoutSession...")
+      const result = await createCheckoutSession(productId, window.location.origin)
+      console.log("[v0] createCheckoutSession result:", result)
+      
+      if (result.error) {
+        console.log("[v0] Error from createCheckoutSession:", result.error)
+        if (result.error === "Not authenticated") {
+          router.push("/auth/signup?redirect=/pricing")
+        } else {
+          alert(result.error)
+        }
+        setLoading(null)
+        return
       }
-      setLoading(null)
-      return
-    }
 
-    if (result.url) {
-      // Open Stripe checkout
-      window.location.href = result.url
+      if (result.url) {
+        console.log("[v0] Redirecting to Stripe checkout:", result.url)
+        window.location.href = result.url
+      }
+    } catch (err) {
+      console.error("[v0] Exception in handleSubscribe:", err)
+      alert("An error occurred. Please try again.")
     }
     setLoading(null)
   }
@@ -61,10 +72,10 @@ function PricingPageContent() {
             <div className="w-3 h-3 bg-[#00e5ff] rounded-full animate-pulse" />
             <span className="font-mono text-lg tracking-wider text-white">WHITE 80</span>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Link
               href="/auth/login"
-              className="hidden sm:block font-mono text-sm text-[#3d4f6b] hover:text-white transition-colors"
+              className="font-mono text-xs sm:text-sm text-[#3d4f6b] hover:text-white transition-colors"
             >
               Sign In
             </Link>
