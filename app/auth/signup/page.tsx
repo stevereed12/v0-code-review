@@ -61,19 +61,31 @@ function SignUpForm() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#060a10] flex items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div className="bg-[#0c1020] border border-[#00ffaa]/30 rounded-lg p-6 text-center">
-            <div className="w-12 h-12 bg-[#00ffaa]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-[#00ffaa]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+      <div className="min-h-screen bg-[#060a10] flex flex-col">
+        {/* Header */}
+        <header className="border-b border-[#131c2e]">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <Link href="/" className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
+              <div className="w-3 h-3 bg-[#00e5ff] rounded-full animate-pulse" />
+              <span className="font-mono text-lg tracking-wider text-white">WHITE 80</span>
+            </Link>
+          </div>
+        </header>
+        
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="w-full max-w-md">
+            <div className="bg-[#0c1020] border border-[#00ffaa]/30 rounded-lg p-6 text-center">
+              <div className="w-12 h-12 bg-[#00ffaa]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-[#00ffaa]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="font-mono text-lg text-white mb-2">Check Your Email</h2>
+              <p className="text-[#3d4f6b] font-mono text-sm">
+                We sent a confirmation link to <span className="text-[#00e5ff]">{email}</span>. 
+                Click the link to activate your account.
+              </p>
             </div>
-            <h2 className="font-mono text-lg text-white mb-2">Check Your Email</h2>
-            <p className="text-[#3d4f6b] font-mono text-sm">
-              We sent a confirmation link to <span className="text-[#00e5ff]">{email}</span>. 
-              Click the link to activate your account.
-            </p>
           </div>
         </div>
       </div>
@@ -81,20 +93,22 @@ function SignUpForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#060a10] flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-2">
+    <div className="min-h-screen bg-[#060a10] flex flex-col">
+      {/* Header */}
+      <header className="border-b border-[#131c2e]">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <Link href="/" className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
             <div className="w-3 h-3 bg-[#00e5ff] rounded-full animate-pulse" />
-            <span className="font-mono text-xl tracking-wider text-white">WHITE 80</span>
-          </div>
-          <p className="text-[#3d4f6b] font-mono text-sm">Trading Intelligence Platform</p>
+            <span className="font-mono text-lg tracking-wider text-white">WHITE 80</span>
+          </Link>
         </div>
+      </header>
 
-        {/* Form */}
-        <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-6">
-          <h1 className="font-mono text-lg text-white mb-6">Create Account</h1>
+      <div className="flex-1 flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          {/* Form */}
+          <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-6">
+            <h1 className="font-mono text-lg text-white mb-6">Create Account</h1>
 
           <form onSubmit={handleSignUp} className="space-y-4">
             <div>
@@ -165,6 +179,7 @@ function SignUpForm() {
         </div>
       </div>
     </div>
+  </div>
   )
 }
 

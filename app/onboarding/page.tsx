@@ -155,10 +155,10 @@ function OnboardingContent() {
       <div className="max-w-2xl mx-auto">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-2">
+          <Link href="/" className="inline-flex items-center gap-2 mb-2 hover:opacity-90 transition-opacity">
             <div className="w-3 h-3 bg-[#00e5ff] rounded-full animate-pulse" />
             <span className="font-mono text-xl tracking-wider text-white">WHITE 80</span>
-          </div>
+          </Link>
         </div>
 
         {/* Progress */}
