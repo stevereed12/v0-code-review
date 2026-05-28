@@ -63,8 +63,9 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Don't auto-redirect logged-in users from homepage - let them browse freely
-  // Only redirect from auth pages if already logged in
-  if (request.nextUrl.pathname.startsWith('/auth/') && user && !request.nextUrl.pathname.includes('/callback')) {
+  // Allow access to login page so users can switch accounts
+  // Only redirect from signup/callback if already logged in
+  if (request.nextUrl.pathname === '/auth/signup' && user && !request.nextUrl.pathname.includes('/callback')) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

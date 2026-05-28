@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -11,13 +11,36 @@ function LoginPageContent() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [existingSession, setExistingSession] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
   const router = useRouter()
   const supabase = createClient()
+
+  // Check if there's an existing session
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setExistingSession(!!user)
+      setCheckingSession(false)
+    }
+    checkSession()
+  }, [supabase.auth])
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    setExistingSession(false)
+    router.refresh()
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setLoading(true)
+
+    // Sign out any existing session first
+    if (existingSession) {
+      await supabase.auth.signOut()
+    }
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -31,6 +54,14 @@ function LoginPageContent() {
       router.push("/dashboard")
       router.refresh()
     }
+  }
+
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen bg-[#060a10] flex items-center justify-center">
+        <div className="w-3 h-3 bg-[#00e5ff] rounded-full animate-pulse" />
+      </div>
+    )
   }
 
   return (
@@ -47,6 +78,21 @@ function LoginPageContent() {
 
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-md">
+          {/* Existing session warning */}
+          {existingSession && (
+            <div className="bg-[#131c2e] border border-[#00e5ff]/30 rounded-lg p-4 mb-4">
+              <p className="text-[#d6dff0] font-mono text-sm mb-3">
+                You&apos;re currently signed in to another account.
+              </p>
+              <button
+                onClick={handleSignOut}
+                className="w-full bg-[#00e5ff]/10 hover:bg-[#00e5ff]/20 text-[#00e5ff] font-mono text-sm py-2 rounded transition-colors border border-[#00e5ff]/30"
+              >
+                SIGN OUT & CONTINUE
+              </button>
+            </div>
+          )}
+
           {/* Form */}
           <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-6">
             <h1 className="font-mono text-lg text-white mb-6">Sign In</h1>
