@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getStripe } from "@/lib/stripe"
-import { createClient } from "@supabase/supabase-js"
 import Stripe from "stripe"
+import { createClient } from "@supabase/supabase-js"
 
 export async function POST(req: NextRequest) {
-  // Initialize Stripe lazily at runtime
-  const stripe = getStripe()
+  const stripeSecretKey = process.env.STRIPE_SECRET_KEY
+  if (!stripeSecretKey) {
+    return NextResponse.json({ error: "Stripe not configured" }, { status: 500 })
+  }
   
-  // Initialize Supabase admin client lazily
+  const stripe = new Stripe(stripeSecretKey)
+  
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   
@@ -44,7 +46,6 @@ export async function POST(req: NextRequest) {
       const subscriptionId = session.subscription as string
 
       if (userId && subscriptionId) {
-        // Get subscription details
         const subscription = await stripe.subscriptions.retrieve(subscriptionId)
         
         await supabaseAdmin
@@ -64,7 +65,6 @@ export async function POST(req: NextRequest) {
       const subscription = event.data.object as Stripe.Subscription
       const customerId = subscription.customer as string
 
-      // Find user by customer ID
       const { data: profile } = await supabaseAdmin
         .from("profiles")
         .select("id")
