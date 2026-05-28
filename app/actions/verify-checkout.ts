@@ -1,7 +1,15 @@
 "use server"
 
-import { stripe } from "@/lib/stripe"
+import Stripe from "stripe"
 import { createClient } from "@/lib/supabase/server"
+
+function getStripeClient() {
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) {
+    throw new Error("STRIPE_SECRET_KEY is not configured")
+  }
+  return new Stripe(key)
+}
 
 export async function verifyCheckoutSession(sessionId: string) {
   const supabase = await createClient()
@@ -9,6 +17,13 @@ export async function verifyCheckoutSession(sessionId: string) {
   
   if (!user) {
     return { error: "Not authenticated" }
+  }
+
+  let stripe: Stripe
+  try {
+    stripe = getStripeClient()
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Stripe configuration error" }
   }
 
   try {
@@ -28,7 +43,7 @@ export async function verifyCheckoutSession(sessionId: string) {
     }
 
     // Get subscription details
-    const subscription = session.subscription as import("stripe").Stripe.Subscription | null
+    const subscription = session.subscription as Stripe.Subscription | null
     
     if (!subscription) {
       return { error: "No subscription found" }
