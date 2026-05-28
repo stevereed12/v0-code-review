@@ -1460,6 +1460,10 @@ export function White80Dashboard({
         scoutThemes={scoutThemes}
         scoutCapTier={scoutCapTier}
         scoutHorizon={scoutHorizon}
+        brief={brief}
+        signals={signals}
+        scoutResults={scoutResults}
+        buyHoldPicks={buyHoldPicks}
         onImport={handleImport}
       />
     </div>
