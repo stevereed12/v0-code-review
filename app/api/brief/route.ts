@@ -250,6 +250,81 @@ IMPORTANT FOR TOP PLAYS:
     
     const parsed = JSON.parse(text)
     
+    // ── Step 4: Validate and fix strike prices using Polygon data ──
+    if (parsed.top_plays && Array.isArray(parsed.top_plays) && polygonKey) {
+      // Get unique tickers from top plays
+      const topPlayTickers = [...new Set(parsed.top_plays.map((p: { ticker: string }) => p.ticker))]
+      
+      // Fetch current prices for these tickers
+      const tickerPrices: Record<string, number> = {}
+      
+      // First check if we already have prices from the market context
+      const allMarketTickers = [...indexData, ...sectorData, ...movers.gainers, ...movers.losers, ...mostActive]
+      for (const item of allMarketTickers) {
+        if (item.price) {
+          tickerPrices[item.ticker] = item.price
+        }
+      }
+      
+      // Fetch any missing prices
+      const missingTickers = topPlayTickers.filter(t => !tickerPrices[t])
+      if (missingTickers.length > 0) {
+        try {
+          const pricePromises = missingTickers.map(async (ticker: string) => {
+            const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/prev?adjusted=true&apiKey=${polygonKey}`
+            const res = await fetch(url)
+            const data = await res.json()
+            if (data.results?.[0]?.c) {
+              return { ticker, price: data.results[0].c }
+            }
+            return null
+          })
+          const results = await Promise.all(pricePromises)
+          for (const r of results) {
+            if (r) tickerPrices[r.ticker] = r.price
+          }
+        } catch (e) {
+          console.error("Failed to fetch missing prices:", e)
+        }
+      }
+      
+      // Now validate and fix strike prices
+      for (const play of parsed.top_plays) {
+        const currentPrice = tickerPrices[play.ticker]
+        if (!currentPrice) continue
+        
+        // Extract strike from play string (e.g., "Buy $185 calls exp Jun 6")
+        const strikeMatch = play.play?.match(/\$(\d+(?:\.\d+)?)\s*(calls?|puts?)/i)
+        if (!strikeMatch) continue
+        
+        const strike = parseFloat(strikeMatch[1])
+        const optionType = strikeMatch[2].toLowerCase()
+        
+        // Check if strike is reasonable (within 20% of current price)
+        const percentDiff = Math.abs((strike - currentPrice) / currentPrice) * 100
+        
+        if (percentDiff > 20) {
+          // Strike is too far from current price - fix it
+          const roundTo = currentPrice > 100 ? 5 : currentPrice > 50 ? 2.5 : 1
+          let newStrike: number
+          
+          if (optionType.includes('call')) {
+            // For calls, round up to nearest increment
+            newStrike = Math.ceil(currentPrice / roundTo) * roundTo
+          } else {
+            // For puts, round down to nearest increment
+            newStrike = Math.floor(currentPrice / roundTo) * roundTo
+          }
+          
+          // Replace the strike in the play string
+          play.play = play.play.replace(/\$\d+(?:\.\d+)?/, `$${newStrike}`)
+          
+          // Add a note that we corrected it
+          console.log(`Corrected ${play.ticker} strike: $${strike} -> $${newStrike} (current price: $${currentPrice.toFixed(2)})`)
+        }
+      }
+    }
+    
     return NextResponse.json(parsed)
   } catch (err) {
     console.error("Brief generation error:", err)

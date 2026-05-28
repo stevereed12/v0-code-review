@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { storage, STORAGE_KEYS, clearDailyDataIfNewDay, clearUserData, clearDataIfUserChanged } from "@/lib/storage"
-import { askClaude, fetchLivePrices, getStoredApiKey, ApiKeyRequiredError } from "@/lib/api"
+import { askClaude, fetchLivePrices, getStoredApiKey, setStoredApiKey, setStoredPolygonKey, ApiKeyRequiredError } from "@/lib/api"
 import { ApiKeyModal } from "./api-key-modal"
 import { buildSignalPrompt, buildBriefPrompt, buildNewsPrompt, buildScoutPrompt, buildCuratorPrompt, buildBuyHoldPrompt } from "@/lib/prompts"
 import { requestNotificationPermission, notifyOnComplete } from "@/lib/notifications"
@@ -97,12 +97,12 @@ export function White80Dashboard({
     const effectiveKey = anthropicKey || storedKey
     setHasApiKey(!!effectiveKey)
     
-    // Store the server-provided key locally if not already stored
+    // Store the server-provided key locally using the correct storage key
     if (anthropicKey && !storedKey) {
-      localStorage.setItem("white80_anthropic_key", anthropicKey)
+      setStoredApiKey(anthropicKey)
     }
     if (polygonKey) {
-      localStorage.setItem("white80_polygon_key", polygonKey)
+      setStoredPolygonKey(polygonKey)
     }
     
     setCurrentDate(
