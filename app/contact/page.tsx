@@ -3,18 +3,34 @@
 import { useState } from "react"
 import { PageHeader } from "@/components/white80/page-header"
 import { Mail, MessageSquare, Clock } from "lucide-react"
+import { sendContactMessage } from "@/app/actions/contact"
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    setSubmitted(true)
+    setError(null)
+
+    const form = e.currentTarget
+    const formData = new FormData(form)
+    const result = await sendContactMessage({
+      name: String(formData.get("name") || ""),
+      email: String(formData.get("email") || ""),
+      subject: String(formData.get("subject") || ""),
+      message: String(formData.get("message") || ""),
+    })
+
     setLoading(false)
+
+    if (result.error) {
+      setError(result.error)
+      return
+    }
+    setSubmitted(true)
   }
 
   return (
@@ -39,8 +55,8 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <div className="font-mono text-[10px] text-[#3d4f6b] tracking-wider">EMAIL</div>
-                  <a href="mailto:support@white80.io" className="text-[#d6dff0] hover:text-[#00e5ff] transition-colors">
-                    support@white80.io
+                  <a href="mailto:contact@white80.io" className="text-[#d6dff0] hover:text-[#00e5ff] transition-colors">
+                    contact@white80.io
                   </a>
                 </div>
               </div>
@@ -91,6 +107,7 @@ export default function ContactPage() {
                   </label>
                   <input
                     type="text"
+                    name="name"
                     required
                     className="w-full bg-[#060a10] border border-[#131c2e] rounded px-3 py-2 text-sm text-[#d6dff0] placeholder:text-[#3d4f6b] focus:outline-none focus:border-[#00e5ff]/50"
                     placeholder="Your name"
@@ -102,6 +119,7 @@ export default function ContactPage() {
                   </label>
                   <input
                     type="email"
+                    name="email"
                     required
                     className="w-full bg-[#060a10] border border-[#131c2e] rounded px-3 py-2 text-sm text-[#d6dff0] placeholder:text-[#3d4f6b] focus:outline-none focus:border-[#00e5ff]/50"
                     placeholder="you@example.com"
@@ -112,6 +130,7 @@ export default function ContactPage() {
                     SUBJECT
                   </label>
                   <select
+                    name="subject"
                     required
                     className="w-full bg-[#060a10] border border-[#131c2e] rounded px-3 py-2 text-sm text-[#d6dff0] focus:outline-none focus:border-[#00e5ff]/50"
                   >
@@ -128,12 +147,18 @@ export default function ContactPage() {
                     MESSAGE
                   </label>
                   <textarea
+                    name="message"
                     required
                     rows={4}
                     className="w-full bg-[#060a10] border border-[#131c2e] rounded px-3 py-2 text-sm text-[#d6dff0] placeholder:text-[#3d4f6b] focus:outline-none focus:border-[#00e5ff]/50 resize-none"
                     placeholder="How can we help?"
                   />
                 </div>
+                {error && (
+                  <div className="bg-[#f87171]/10 border border-[#f87171]/30 rounded px-3 py-2 text-[#f87171] font-mono text-xs">
+                    {error}
+                  </div>
+                )}
                 <button
                   type="submit"
                   disabled={loading}
