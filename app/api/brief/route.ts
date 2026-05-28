@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
           `${s.ticker}: $${s.price.toFixed(2)} (${s.change_pct >= 0 ? "+" : ""}${s.change_pct.toFixed(2)}%) vol:${(s.volume / 1_000_000).toFixed(1)}M`
 
         marketContext = `
-═══ LIVE POLYGON MARKET DATA ═══
+═══ LIVE POLYGON MARKET DATA (use these EXACT prices for strike calculations) ═══
 
 INDEX PERFORMANCE:
 ${indexData.map(formatSnapshot).join("\n")}
@@ -172,6 +172,12 @@ MOST ACTIVE BY VOLUME (where the action is):
 ${mostActive.map(formatSnapshot).join("\n")}
 
 ═══ END POLYGON DATA ═══
+
+*** USE THESE PRICES FOR STRIKE CALCULATIONS ***
+When suggesting options plays for ANY ticker listed above, use the price shown.
+For tickers NOT listed, you MUST search for the current price first.
+
+Example: If the data shows "NVDA: $132.50 (+2.15%)" then NVDA calls should be $130, $135, or $140 - NOT $180 or $200.
 
 IMPORTANT FOR TOP PLAYS:
 - Use this data as your STARTING POINT for Top Plays, but DO NOT just list the top gainers/losers

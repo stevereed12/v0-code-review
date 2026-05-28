@@ -265,8 +265,12 @@ export function buildBriefPrompt(tickers: string[]): string {
 
   return `You are White 80, a professional trading desk briefing system.
 
+TODAY'S DATE: ${sessionDate}
 CURRENT TIME: ${now.toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" })} ET
-GENERATING BRIEF FOR: ${sessionDate} | ${sessionLabel}
+GENERATING BRIEF FOR: ${sessionLabel}
+
+THIS IS A LIVE MARKET BRIEF - ALL DATA MUST BE FROM TODAY (${sessionDate}).
+If your search returns data from previous days, search again with "today" or "${sessionDate}" in your query.
 
 VALID OPTIONS EXPIRATION DATES (use ONLY these for any options plays):
 Weekly: ${weeklyExps.join(", ")}
@@ -275,7 +279,7 @@ Monthly (3rd Friday): ${monthlyExps.join(", ")}
 CRITICAL RULES:
 - Be specific with exact numbers, prices, and percentages
 - Write dense, factual prose like a Bloomberg terminal brief
-- Use web search to get CURRENT real-time data
+- Use web search to get CURRENT real-time data FOR TODAY ${sessionDate}
 - For options plays, you MUST use one of the expiration dates listed above - these are real market expiration dates
 - DO NOT make up expiration dates - options only expire on Fridays
 
@@ -315,15 +319,21 @@ WHITE 80 TOP PLAYS (5-10 highest conviction setups across the ENTIRE market):
 - Prioritize: unusual options volume, earnings gap setups, technical breakouts at key levels, sector momentum leaders
 - EXPIRATION DATES: Use ONLY from this list: ${weeklyExps.join(", ")} (weekly) or ${monthlyExps.join(", ")} (monthly)
 
-CRITICAL FOR TOP PLAYS - STRIKE PRICES MUST BE REALISTIC:
-- You MUST web search each ticker's CURRENT stock price before suggesting an options play
-- Strike prices should be within 5-15% of the current stock price for weekly plays
-- For calls: strike should be AT or SLIGHTLY above current price (ATM or slightly OTM)
-- For puts: strike should be AT or SLIGHTLY below current price (ATM or slightly OTM)
-- Example: If NVDA is trading at $130, suggest "$130 calls" or "$135 calls" - NOT "$185 calls"
-- Example: If AAPL is at $190, suggest "$190 puts" or "$185 puts" - NOT "$220 puts"
-- NEVER copy strike prices from examples - always calculate based on CURRENT price from your search
-- Only include plays where the risk/reward is clearly asymmetric
+*** STRIKE PRICE RULES - READ CAREFULLY ***
+For EACH top play, you MUST:
+1. Search for the ticker's CURRENT stock price (e.g., "NVDA stock price today")
+2. Set strike price within 5-15% of that CURRENT price
+3. Format: "Buy $[strike] calls exp [date]" or "Buy $[strike] puts exp [date]"
+
+STRIKE PRICE MATH:
+- If stock is at $120 → use strikes like $115, $120, $125, $130 (NOT $180, $200, $85)
+- If stock is at $450 → use strikes like $440, $450, $460, $470 (NOT $550, $600, $380)
+- If stock is at $55 → use strikes like $52.50, $55, $57.50, $60 (NOT $75, $80, $40)
+
+WRONG: "NVDA $185 calls" when NVDA is trading at $130
+RIGHT: "NVDA $135 calls" when NVDA is trading at $130
+
+DO NOT use strike prices from memory or examples. CALCULATE from the CURRENT price you searched.
 
 VERDICT:
 - Overall market stance: RISK-ON, RISK-OFF, or NEUTRAL
