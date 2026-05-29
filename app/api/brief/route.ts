@@ -139,10 +139,16 @@ export async function POST(request: NextRequest) {
 
     // ── Step 1: Pull Polygon market data if key available ──
     let marketContext = ""
-    
+
+    // Hoisted to function scope so Step 4 (strike validation) can reuse them
+    let sectorData: MarketSnapshot[] = []
+    let mostActive: MarketSnapshot[] = []
+    let indexData: MarketSnapshot[] = []
+    let movers: { gainers: MarketSnapshot[]; losers: MarketSnapshot[] } = { gainers: [], losers: [] }
+
     if (polygonKey) {
       try {
-        const [sectorData, movers, mostActive, indexData] = await Promise.all([
+        ;[sectorData, movers, mostActive, indexData] = await Promise.all([
           getSnapshots(SECTOR_ETFS, polygonKey),
           getTopMovers(polygonKey),
           getMostActive(polygonKey),
