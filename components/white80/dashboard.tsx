@@ -1539,6 +1539,7 @@ export function White80Dashboard({
         signals={signals}
         scoutResults={scoutResults}
         buyHoldPicks={buyHoldPicks}
+        vibe={vibe}
         onImport={handleImport}
       />
     </div>

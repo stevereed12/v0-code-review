@@ -2,7 +2,7 @@
 
 import { useRef } from "react"
 import { Download, Upload, X, FileSpreadsheet, FileText } from "lucide-react"
-import type { TrackerLog, Brief, Signal, ScoutResult, BuyHoldPick } from "@/lib/types"
+import type { TrackerLog, Brief, Signal, ScoutResult, BuyHoldPick, VibeCheck } from "@/lib/types"
 import { 
   exportToJSON, 
   exportTrackerToCSV, 
@@ -10,7 +10,8 @@ import {
   exportBriefToCSV,
   exportSignalsToCSV,
   exportScoutToCSV,
-  exportBuyHoldToCSV
+  exportBuyHoldToCSV,
+  exportVibeToCSV
 } from "@/lib/export"
 
 interface ExportModalProps {
@@ -28,6 +29,7 @@ interface ExportModalProps {
   signals?: Signal[]
   scoutResults?: ScoutResult[]
   buyHoldPicks?: BuyHoldPick[]
+  vibe?: VibeCheck | null
   onImport: (data: {
     watchlist: string[]
     pinnedTickers: string[]
@@ -53,6 +55,7 @@ export function ExportModal({
   signals,
   scoutResults,
   buyHoldPicks,
+  vibe,
   onImport,
 }: ExportModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -74,6 +77,7 @@ export function ExportModal({
       signals,
       scoutResults,
       buyHoldPicks,
+      vibe,
     })
   }
 
@@ -108,6 +112,12 @@ export function ExportModal({
     }
   }
 
+  const handleExportVibe = () => {
+    if (vibe) {
+      exportVibeToCSV(vibe)
+    }
+  }
+
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -129,7 +139,7 @@ export function ExportModal({
     }
   }
 
-  const hasResearchData = brief || (signals && signals.length > 0) || (scoutResults && scoutResults.length > 0) || (buyHoldPicks && buyHoldPicks.length > 0)
+  const hasResearchData = brief || (signals && signals.length > 0) || (scoutResults && scoutResults.length > 0) || (buyHoldPicks && buyHoldPicks.length > 0) || vibe
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
@@ -231,6 +241,21 @@ export function ExportModal({
                     <div className="font-mono text-sm">Export Buy & Hold (CSV)</div>
                     <div className="text-xs text-[#4ade80]/70">
                       {buyHoldPicks.length} long-term picks
+                    </div>
+                  </div>
+                </button>
+              )}
+
+              {vibe && (
+                <button
+                  onClick={handleExportVibe}
+                  className="w-full flex items-center gap-3 p-3 bg-[#22d3ee]/10 border border-[#22d3ee] text-[#22d3ee] rounded transition-all hover:bg-[#22d3ee]/20"
+                >
+                  <FileText className="w-5 h-5" />
+                  <div className="text-left">
+                    <div className="font-mono text-sm">Export Vibe Check (CSV)</div>
+                    <div className="text-xs text-[#22d3ee]/70">
+                      Mood read, score {vibe.vibe_score}/100, drivers
                     </div>
                   </div>
                 </button>

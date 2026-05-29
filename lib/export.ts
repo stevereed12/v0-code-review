@@ -1,6 +1,6 @@
 // ─── DATA EXPORT/IMPORT ─────────────────────────────────────────────────────
 
-import type { TrackerLog, Brief, ScoutResult, BuyHoldPick, Signal } from "./types"
+import type { TrackerLog, Brief, ScoutResult, BuyHoldPick, Signal, VibeCheck } from "./types"
 
 interface ExportData {
   version: string
@@ -17,6 +17,7 @@ interface ExportData {
   signals?: Signal[]
   scoutResults?: ScoutResult[]
   buyHoldPicks?: BuyHoldPick[]
+  vibe?: VibeCheck | null
   thesisHistory?: Array<{
     ticker: string
     date: string
@@ -235,6 +236,70 @@ export function exportBuyHoldToCSV(picks: BuyHoldPick[], date: string): void {
   
   const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n")
   downloadFile(csv, `white80-buyhold-${date}.csv`, "text/csv")
+}
+
+export function exportVibeToCSV(vibe: VibeCheck): void {
+  const rows: string[][] = []
+
+  // Header
+  rows.push(["WHITE 80 VIBE CHECK EXPORT"])
+  rows.push(["Date", vibe.session_date])
+  rows.push(["Time", vibe.session_time])
+  rows.push(["Vibe Score", `${vibe.vibe_score}/100`])
+  rows.push(["Mood", vibe.mood])
+  rows.push(["Temperature", vibe.temperature])
+  rows.push(["Headline", `"${vibe.headline.replace(/"/g, '""')}"`])
+  rows.push([])
+
+  // The Read
+  rows.push(["THE READ"])
+  rows.push([`"${vibe.read.replace(/"/g, '""')}"`])
+  rows.push([])
+
+  // Drivers
+  rows.push(["WHAT'S MOVING THE MOOD"])
+  rows.push(["Driver", "Sentiment", "Detail"])
+  vibe.drivers.forEach((d) => {
+    rows.push([`"${d.label.replace(/"/g, '""')}"`, d.sentiment, `"${d.detail.replace(/"/g, '""')}"`])
+  })
+  rows.push([])
+
+  // Hot sectors
+  rows.push(["RUNNING HOT"])
+  rows.push(["Sector", "Change %", "Vibe"])
+  vibe.hot_sectors.forEach((s) => {
+    rows.push([s.sector, `${s.change_pct}%`, `"${s.vibe.replace(/"/g, '""')}"`])
+  })
+  rows.push([])
+
+  // Cold sectors
+  rows.push(["ICE COLD"])
+  rows.push(["Sector", "Change %", "Vibe"])
+  vibe.cold_sectors.forEach((s) => {
+    rows.push([s.sector, `${s.change_pct}%`, `"${s.vibe.replace(/"/g, '""')}"`])
+  })
+  rows.push([])
+
+  // Buzzing tickers
+  rows.push(["TALK OF THE TAPE"])
+  rows.push(["Ticker", "Vibe", "Why"])
+  vibe.buzzing_tickers.forEach((t) => {
+    rows.push([t.ticker, t.vibe, `"${t.why.replace(/"/g, '""')}"`])
+  })
+  rows.push([])
+
+  // Pulse + notes
+  rows.push(["SOCIAL PULSE"])
+  rows.push([`"${vibe.social_pulse.replace(/"/g, '""')}"`])
+  rows.push([])
+  rows.push(["CONTRARIAN NOTE"])
+  rows.push([`"${vibe.contrarian_note.replace(/"/g, '""')}"`])
+  rows.push([])
+  rows.push(["HOW TO PLAY IT"])
+  rows.push([`"${vibe.play_it.replace(/"/g, '""')}"`])
+
+  const csv = rows.map((r) => r.join(",")).join("\n")
+  downloadFile(csv, `white80-vibe-${vibe.session_date.replace(/[^a-z0-9]/gi, "-")}.csv`, "text/csv")
 }
 
 // Helper to download files
