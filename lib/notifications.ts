@@ -71,7 +71,7 @@ export function sendDesktopNotification(title: string, body: string, tag?: strin
 }
 
 export function notifyOnComplete(
-  type: "signals" | "news" | "curator" | "brief" | "scout",
+  type: "signals" | "news" | "curator" | "brief" | "scout" | "vibe",
   count?: number,
   options?: { soundEnabled?: boolean; notificationsEnabled?: boolean }
 ) {
@@ -83,6 +83,7 @@ export function notifyOnComplete(
     curator: { title: "Watchlist Curated", body: "Your watchlist has been updated" },
     brief: { title: "Pre-Market Brief Ready", body: "Morning market overview is ready" },
     scout: { title: "Scout Complete", body: `${count || 0} new opportunities found` },
+    vibe: { title: "Vibe Check Ready", body: "The market mood read is in" },
   }
 
   const msg = messages[type]

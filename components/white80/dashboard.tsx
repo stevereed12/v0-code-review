@@ -22,6 +22,7 @@ import {
   type BuyHoldPick,
   type TrackerLog,
   type LivePrice,
+  type VibeCheck,
 } from "@/lib/types"
 import { WatchlistHeader } from "./watchlist-header"
 import { SignalCard } from "./signal-card"
@@ -32,7 +33,8 @@ import { TrackerRow } from "./tracker-row"
 import { ActionButton } from "./action-button"
 import { SettingsPanel } from "./settings-panel"
 import { ExportModal } from "./export-modal"
-import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3, Crosshair, Search, Briefcase } from "lucide-react"
+import { Settings, TrendingUp, Radar, Newspaper, Activity, FileText, BarChart3, Crosshair, Search, Briefcase, Sparkles } from "lucide-react"
+import { VibePanel } from "./vibe-panel"
 import { stripCitations } from "@/lib/utils"
 import { Tier1Scanner } from "./tier1-scanner"
 import { QuickThesisSearch } from "./quick-thesis"
@@ -61,6 +63,7 @@ export function White80Dashboard({
   const [curatorState, setCuratorState] = useState<CuratorState | null>(null)
   const [signals, setSignals] = useState<Signal[]>([])
   const [brief, setBrief] = useState<Brief | null>(null)
+  const [vibe, setVibe] = useState<VibeCheck | null>(null)
   const [news, setNews] = useState<TickerNews[]>([])
   const [trackerLog, setTrackerLog] = useState<TrackerLog[]>([])
   const [scoutResults, setScoutResults] = useState<ScoutResult[]>([])
@@ -72,7 +75,7 @@ export function White80Dashboard({
   const [pricesAt, setPricesAt] = useState<string | null>(null)
 
   // UI state
-  const [loading, setLoading] = useState({ curator: false, signals: false, brief: false, news: false, scout: false, buyhold: false })
+  const [loading, setLoading] = useState({ curator: false, signals: false, brief: false, news: false, scout: false, buyhold: false, vibe: false })
   const [errors, setErrors] = useState<Record<string, string | null>>({})
   const [generatedAt, setGeneratedAt] = useState<Record<string, string>>({})
   const [autoNewsRefresh, setAutoNewsRefresh] = useState(false)
@@ -423,6 +426,49 @@ export function White80Dashboard({
     }
   }, [watchlist, polygonKey, soundEnabled, notificationsEnabled])
 
+  const runVibe = useCallback(async () => {
+    setLoading((s) => ({ ...s, vibe: true }))
+    setErrors((e) => ({ ...e, vibe: null }))
+    try {
+      const clientApiKey = getStoredApiKey()
+      if (!clientApiKey) {
+        setShowApiKeyModal(true)
+        setLoading((s) => ({ ...s, vibe: false }))
+        return
+      }
+
+      const clientPolygonKey = polygonKey || localStorage.getItem("white80_polygon_key") || undefined
+
+      const res = await fetch("/api/vibe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tickers: watchlist,
+          apiKey: clientApiKey,
+          polygonKey: clientPolygonKey,
+        }),
+      })
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: "Vibe check failed" }))
+        throw new Error(errData.error || "Vibe check failed")
+      }
+
+      const parsed = await res.json()
+      setVibe(parsed)
+      setGeneratedAt((g) => ({ ...g, vibe: new Date().toLocaleTimeString() }))
+      notifyOnComplete("vibe", undefined, { soundEnabled, notificationsEnabled })
+    } catch (err) {
+      if (err instanceof ApiKeyRequiredError) {
+        setShowApiKeyModal(true)
+      } else {
+        setErrors((e) => ({ ...e, vibe: (err as Error).message }))
+      }
+    } finally {
+      setLoading((s) => ({ ...s, vibe: false }))
+    }
+  }, [watchlist, polygonKey, soundEnabled, notificationsEnabled])
+
   const runScout = useCallback(async () => {
     if (scoutThemes.length === 0) {
       setErrors((e) => ({ ...e, scout: "Pick at least one theme" }))
@@ -666,6 +712,7 @@ export function White80Dashboard({
               { value: "news", label: "NEWS", icon: Newspaper },
               { value: "signals", label: "SIGNALS", icon: Activity },
               { value: "brief", label: "PRE-MKT", icon: FileText },
+              { value: "vibe", label: "VIBE", icon: Sparkles },
               { value: "tracker", label: "TRACKER", icon: BarChart3 },
             ].map((tab) => (
               <TabsTrigger
@@ -690,6 +737,7 @@ export function White80Dashboard({
               { value: "news", label: "NEWS", icon: Newspaper },
               { value: "signals", label: "SIGNALS", icon: Activity },
               { value: "brief", label: "PRE-MARKET", icon: FileText },
+              { value: "vibe", label: "VIBE", icon: Sparkles },
               { value: "tracker", label: "TRACKER", icon: BarChart3 },
             ].map((tab) => (
               <TabsTrigger
@@ -1426,6 +1474,33 @@ export function White80Dashboard({
 
               </div>
             )}
+          </TabsContent>
+
+          {/* VIBE TAB */}
+          <TabsContent value="vibe" className="mt-0">
+            <ActionButton
+              onClick={runVibe}
+              loading={loading.vibe}
+              label="CHECK THE VIBE"
+              loadingLabel="READING THE ROOM..."
+              color="#00e5ff"
+              className="mb-4"
+            />
+
+            {errors.vibe && (
+              <div className="font-mono bg-[#f87171]/10 border border-[#f87171]/40 p-2.5 rounded text-[10px] text-[#f87171] mb-4">
+                ERROR: {errors.vibe}
+              </div>
+            )}
+
+            {!vibe && !loading.vibe && (
+              <div className="font-mono text-center py-10 text-[10px] text-[#3d4f6b] tracking-wider leading-relaxed">
+                Vibe Check reads the emotional temperature of the market — fear vs. greed, what&apos;s
+                <br />running hot, what&apos;s ice cold, and how to play the mood. Tap to read the room.
+              </div>
+            )}
+
+            {vibe && <VibePanel vibe={vibe} />}
           </TabsContent>
 
           {/* TRACKER TAB */}

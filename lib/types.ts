@@ -62,6 +62,27 @@ export interface Brief {
   }>
 }
 
+export interface VibeCheck {
+  session_date: string
+  session_time: string
+  vibe_score: number // 0-100: 0 = max fear/capitulation, 50 = neutral, 100 = max greed/euphoria
+  mood: string // short label e.g. "RISK-ON RALLY", "JITTERY", "EUPHORIC", "GRINDING", "RISK-OFF"
+  temperature: "FREEZING" | "COLD" | "COOL" | "WARM" | "HOT" | "ON FIRE"
+  headline: string // playful one-liner capturing the day's energy
+  read: string // a paragraph: playful but actionable read of the market mood
+  drivers: Array<{
+    label: string
+    detail: string
+    sentiment: "POSITIVE" | "NEGATIVE" | "NEUTRAL"
+  }>
+  hot_sectors: Array<{ sector: string; vibe: string; change_pct: number }>
+  cold_sectors: Array<{ sector: string; vibe: string; change_pct: number }>
+  buzzing_tickers: Array<{ ticker: string; why: string; vibe: "BULLISH" | "BEARISH" | "MIXED" }>
+  social_pulse: string // what retail / social / fintwit is feeling right now
+  contrarian_note: string // the "but watch out" angle - what the crowd might be getting wrong
+  play_it: string // how to translate the vibe into action, kept playful but real
+}
+
 export interface CuratorPromotion {
   ticker: string
   reason: string
