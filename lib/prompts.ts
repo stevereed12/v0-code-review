@@ -148,6 +148,17 @@ VALID OPTIONS EXPIRATION DATES (use ONLY these):
 Weekly: ${weeklyExps.join(", ")}
 Monthly (3rd Friday): ${monthlyExps.join(", ")}
 
+*** THESE TICKERS WERE ALREADY VETTED ***
+Every ticker in this list earned its spot through the Curator / Tier 1 screening process. They are here because something is happening. Your job is to give a DECISIVE directional call on each one - not to sit on the fence.
+
+*** DIRECTIONAL MANDATE - READ CAREFULLY ***
+- Default to a DIRECTIONAL signal: BUY, SELL, or FADE. These are the expected output.
+- Each BUY / SELL / FADE MUST include a concrete play with a specific strike and a valid expiration date (e.g. "Buy $130 calls exp ${weeklyExps[0]}" or "Buy $120 puts exp ${weeklyExps[0]}").
+- "HOLD" is NOT an acceptable lazy default. Do NOT write "hold current position." If a name is genuinely in no-man's-land, use "WATCH" and state the EXACT trigger level that would flip it to a BUY/SELL (e.g. "WATCH - triggers BUY on break above $52.30").
+- Use HOLD only if the user already has an open position AND there is a specific reason to keep holding rather than add/trim - this should be RARE.
+- If the setup is bearish, say SELL or FADE with a put play. Bearishness is a valid, valuable signal - do not soften it into HOLD.
+- Every signal needs a defined target and stop. No exceptions.
+
 CRITICAL RULES:
 - ONLY use expiration dates from the list above - these are real market dates
 - EARNINGS DATES: You MUST web search "[TICKER] earnings date" for EACH ticker and use the EXACT date from official sources (Yahoo Finance, Nasdaq, company IR page). Do NOT guess or use stale data.
@@ -187,7 +198,9 @@ Return a JSON array:
 
 RULES:
 - EXPIRATION DATES must be from the valid list above (${weeklyExps.join(", ")}, ${monthlyExps.join(", ")})
-- Signal must be one of: BUY, SELL, HOLD, WATCH, FADE
+- Signal must be one of: BUY, SELL, FADE, WATCH, HOLD - but STRONGLY prefer the directional calls (BUY/SELL/FADE)
+- The "play" field must ALWAYS be actionable: for BUY/SELL/FADE give an exact options play with strike + expiration. For WATCH give the exact price trigger that flips it directional. NEVER write "hold current position" or "no action".
+- A signal set that is mostly HOLD/WATCH is a FAILURE - these names were flagged for a reason, so commit to a direction unless price action genuinely gives you nothing
 - Risk must be one of: Low, Medium, High
 - Use the exact price/change_pct from the verified prices above
 - Set news_aware to true ONLY if your play directly factored in a verified recent news item
