@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { CLAUDE_MODEL } from "@/lib/ai-config"
 
 const POLYGON_BASE = "https://api.polygon.io"
 
@@ -218,7 +219,7 @@ IMPORTANT FOR TOP PLAYS:
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: CLAUDE_MODEL,
         max_tokens: 8000,
         system: "You are a JSON API. You MUST respond with valid JSON only. No prose, no explanations, no markdown. Your entire response must be parseable JSON starting with { and ending with }. Never start with phrases like 'Based on' or 'Here is' - output raw JSON immediately.",
         tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 10 }],

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { CLAUDE_MODEL } from "@/lib/ai-config"
 
 // ─── CATALYST DETECTION API ──────────────────────────────────────────────────
 // Uses Claude to find upcoming catalysts for a batch of tickers
@@ -72,7 +73,7 @@ Return the array for all ${tickerBatch.length} tickers.`
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: CLAUDE_MODEL,
         max_tokens: 4000,
         tools: [{ type: "web_search_20250305", name: "web_search" }],
         messages: [{ role: "user", content: prompt }],

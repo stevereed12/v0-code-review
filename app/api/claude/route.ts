@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { CLAUDE_MODEL } from "@/lib/ai-config"
 
 // Server restart trigger: 2026-04-30T13:25:00
 // ─── JSON EXTRACTION UTILITY ─────────────────────────────────────────────────
@@ -182,7 +183,7 @@ export async function POST(request: NextRequest) {
     const trimmedKey = apiKey
 
     const body: Record<string, unknown> = {
-      model: "claude-sonnet-4-20250514",
+      model: CLAUDE_MODEL,
       max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
     }

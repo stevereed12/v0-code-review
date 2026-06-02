@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import Anthropic from "@anthropic-ai/sdk"
 import type { ExtractedTrade } from "@/lib/types"
+import { CLAUDE_MODEL } from "@/lib/ai-config"
 
 export const maxDuration = 60
 
@@ -185,7 +186,7 @@ export async function POST(req: NextRequest) {
       const mediaType = file.type as "image/jpeg" | "image/png" | "image/gif" | "image/webp"
       
       const response = await anthropic.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: CLAUDE_MODEL,
         max_tokens: 4096,
         messages: [
           {
