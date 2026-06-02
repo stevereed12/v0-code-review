@@ -78,6 +78,11 @@ Return the array for all ${tickerBatch.length} tickers.`
     
     if (!res.ok) {
       const errText = await res.text()
+      if (res.status === 429) {
+        return NextResponse.json({ 
+          error: "Rate limit reached on your Anthropic API key. Please wait a minute and try again, or upgrade your Anthropic plan for higher limits." 
+        }, { status: 429 })
+      }
       throw new Error(`Claude API error ${res.status}: ${errText.slice(0, 200)}`)
     }
     

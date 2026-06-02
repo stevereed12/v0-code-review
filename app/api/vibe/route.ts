@@ -157,6 +157,11 @@ Use this hard data to anchor the vibe — index breadth, sector heat/cold, and t
 
     if (!response.ok) {
       const errText = await response.text()
+      if (response.status === 429) {
+        return NextResponse.json({ 
+          error: "Rate limit reached on your Anthropic API key. Please wait a minute and try again, or upgrade your Anthropic plan for higher limits." 
+        }, { status: 429 })
+      }
       return NextResponse.json({ error: `Claude API error: ${errText.slice(0, 200)}` }, { status: 500 })
     }
 

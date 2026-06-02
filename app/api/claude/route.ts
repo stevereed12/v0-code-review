@@ -208,6 +208,14 @@ export async function POST(request: NextRequest) {
 
         if (!res.ok) {
           const errText = await res.text()
+          
+          // Rate limit error - give user a clear, actionable message
+          if (res.status === 429) {
+            return NextResponse.json({ 
+              error: "Rate limit reached on your Anthropic API key. Please wait a minute and try again, or upgrade your Anthropic plan for higher limits." 
+            }, { status: 429 })
+          }
+          
           // 5xx errors are server-side and worth retrying
           if (res.status >= 500 && attempt < 2) {
             await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)))

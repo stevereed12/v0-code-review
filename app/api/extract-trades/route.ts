@@ -285,6 +285,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ trades })
   } catch (error) {
     console.error("Trade extraction error:", error)
+    
+    // Check for rate limit error from Anthropic SDK
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    if (errorMessage.includes("429") || errorMessage.toLowerCase().includes("rate limit")) {
+      return NextResponse.json(
+        { error: "Rate limit reached on your Anthropic API key. Please wait a minute and try again, or upgrade your Anthropic plan for higher limits." },
+        { status: 429 }
+      )
+    }
+    
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to extract trades" },
       { status: 500 }
