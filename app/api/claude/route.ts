@@ -162,8 +162,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 })
     }
 
-    // Check for API key: client-provided takes priority, then env var
-    const apiKey = clientApiKey?.trim() || process.env.ANTHROPIC_API_KEY?.trim()
+    // Each user must supply their own Anthropic key. No shared server fallback.
+    const apiKey = clientApiKey?.trim()
     
     if (!apiKey) {
       return NextResponse.json(

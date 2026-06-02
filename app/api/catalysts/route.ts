@@ -6,10 +6,6 @@ import { CLAUDE_MODEL } from "@/lib/ai-config"
 
 const ANTHROPIC_API = "https://api.anthropic.com/v1/messages"
 
-function getApiKey(): string | null {
-  return process.env.ANTHROPIC_API_KEY || null
-}
-
 interface CatalystInfo {
   ticker: string
   hasCatalyst: boolean
@@ -20,16 +16,16 @@ interface CatalystInfo {
 }
 
 export async function POST(request: NextRequest) {
-  const apiKey = getApiKey()
-  if (!apiKey) {
-    return NextResponse.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 })
-  }
-  
   try {
     const body = await request.json()
     const tickers: string[] = body.tickers || []
-    const clientApiKey = body.clientApiKey?.trim()
-    
+    // Each user must supply their own Anthropic key. No shared server fallback.
+    const apiKey = body.clientApiKey?.trim()
+
+    if (!apiKey) {
+      return NextResponse.json({ error: "API_KEY_REQUIRED" }, { status: 401 })
+    }
+
     if (tickers.length === 0) {
       return NextResponse.json({ error: "tickers array required" }, { status: 400 })
     }
@@ -69,7 +65,7 @@ Return the array for all ${tickerBatch.length} tickers.`
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": clientApiKey || apiKey,
+        "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
