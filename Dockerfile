@@ -1,28 +1,40 @@
 # White80 routine — Playwright base image ships Chromium + system deps.
 FROM mcr.microsoft.com/playwright:v1.44.0-jammy
 
-# Install pnpm
 RUN npm install -g pnpm@9
 
 WORKDIR /app
 
-# Copy workspace config + ALL package.json files first (for layer caching)
-COPY pnpm-workspace.yaml ./
-COPY package.json ./
-COPY packages/engine/package.json ./packages/engine/package.json
-COPY apps/routine/package.json ./apps/routine/package.json
+# ── Step 1: Install & build the engine as a standalone package ──────────────
+COPY packages/engine/package.json ./packages/engine/
+WORKDIR /app/packages/engine
+RUN pnpm install --no-frozen-lockfile
+COPY packages/engine/ ./
+RUN pnpm run build
 
-# Install all workspace deps — resolves @white80/engine from local workspace
+# ── Step 2: Install the routine, pointing @white80/engine at the local build ─
+WORKDIR /app/apps/routine
+COPY apps/routine/package.json ./
+
+# Replace the workspace reference with a direct file path so pnpm
+# doesn't try to fetch @white80/engine from the npm registry.
+RUN node -e "
+  const fs = require('fs');
+  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+  pkg.dependencies['@white80/engine'] = 'file:../../packages/engine';
+  fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+"
+
 RUN pnpm install --no-frozen-lockfile
 
-# Copy all source AFTER install so code changes don't bust the dep cache
-COPY packages/engine ./packages/engine
-COPY apps/routine ./apps/routine
-COPY watchlist.json ./watchlist.json
+COPY apps/routine/ ./
 
-# Build engine first (routine imports from it), then routine
-RUN pnpm --filter @white80/engine run build \
-  && pnpm --filter @white80/routine run build
+# ── Step 3: Build the routine ───────────────────────────────────────────────
+RUN pnpm run build
+
+# ── Step 4: Copy runtime assets ─────────────────────────────────────────────
+WORKDIR /app
+COPY watchlist.json ./
 
 ENV NODE_ENV=production
 ENV OUTPUT_DIR=/tmp
