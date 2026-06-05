@@ -2,197 +2,691 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>White80 Brief</title>
+<title>White80 — The Audible</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
 <style>
   @page { size: A4 portrait; margin: 0; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
   :root {
-    --bg: #0b0e14;
-    --panel: #131823;
-    --ink: #e8edf5;
-    --muted: #8b97a8;
-    --accent: #4ea1ff;
-    --green: #2ecc71;
-    --red: #ff5c5c;
-    --amber: #ffb547;
-    --line: #232b3a;
+    --void: #0A0A0A;
+    --signal: #C8FF00;
+    --cream: #F4F0E6;
+    --muted: #888888;
+    --card: #111111;
+    --card-alt: #0f0f0f;
+    --border: #1a1a1a;
+    --border-2: #222222;
+    --red: #ff6b6b;
+    --red-bg: #3a0a0a;
+    --orange: #ff9f43;
+    --grey-badge: #2a2a2a;
   }
+
   html, body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    font-size: 11px;
-    line-height: 1.4;
+    background: var(--void);
+    color: var(--cream);
+    font-family: "DM Sans", system-ui, -apple-system, sans-serif;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+
   .page {
-    width: 210mm;
-    min-height: 297mm;
-    padding: 14mm 14mm 12mm;
+    width: 794px;
+    min-height: 1123px;
     page-break-after: always;
+    overflow: hidden;
+    padding: 32px;
+    box-sizing: border-box;
+    background: var(--void);
     position: relative;
   }
   .page:last-child { page-break-after: auto; }
-  h1 { font-size: 30px; letter-spacing: -0.5px; font-weight: 800; }
-  h2 { font-size: 15px; margin-bottom: 8px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
-  h3 { font-size: 12px; font-weight: 700; }
+
+  /* Typography helpers */
+  .bebas { font-family: "Bebas Neue", "DM Sans", sans-serif; letter-spacing: 0.04em; }
+  .mono { font-family: "DM Mono", ui-monospace, monospace; }
+  .sans { font-family: "DM Sans", sans-serif; }
+  .signal { color: var(--signal); }
   .muted { color: var(--muted); }
-  .row { display: flex; gap: 10px; }
-  .col { flex: 1; }
-  .panel {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 10px;
-  }
-  .kicker { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
-  .scorebar { height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; margin-top: 6px; }
-  .scorefill { height: 100%; background: linear-gradient(90deg, var(--red), var(--amber), var(--green)); }
-  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; }
-  .pos { color: var(--green); }
-  .neg { color: var(--red); }
+  .red { color: var(--red); }
+  .cream { color: var(--cream); }
+  .up { color: var(--signal); }
+  .down { color: var(--red); }
+  .flat { color: var(--muted); }
+
+  /* Masthead */
+  .masthead { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 1px solid var(--signal); }
+  .masthead-left { display: flex; align-items: center; gap: 14px; }
+  .logomark { width: 54px; height: 54px; border: 2px solid var(--signal); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 0.85; }
+  .logomark .w { font-family: "Bebas Neue", sans-serif; font-size: 34px; color: var(--signal); }
+  .logomark .eighty { font-family: "DM Mono", monospace; font-size: 11px; color: var(--signal); letter-spacing: 0.1em; }
+  .brand .name { font-family: "Bebas Neue", sans-serif; font-size: 36px; color: var(--cream); line-height: 0.95; }
+  .brand .tagline { font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; }
+  .masthead-right { text-align: right; }
+  .masthead-right .audible-label { font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; }
+  .masthead-right .date { font-family: "Bebas Neue", sans-serif; font-size: 30px; color: var(--cream); line-height: 1; margin: 2px 0; }
+  .masthead-right .edition { font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
+
+  /* Ticker strip */
+  .ticker-strip { display: flex; background: var(--card); border: 1px solid var(--border); border-radius: 4px; margin-top: 18px; }
+  .ticker-cell { flex: 1; padding: 10px 8px; text-align: center; border-right: 1px solid var(--border); }
+  .ticker-cell:last-child { border-right: none; }
+  .ticker-cell .tk { font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
+  .ticker-cell .px { font-family: "DM Mono", monospace; font-size: 18px; color: var(--cream); margin: 3px 0; }
+  .ticker-cell .ch { font-family: "DM Mono", monospace; font-size: 10px; }
+
+  /* Session risk banner */
+  .risk-banner { display: flex; margin-top: 18px; background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--signal); border-radius: 4px; overflow: hidden; }
+  .risk-left { width: 35%; padding: 16px 18px; border-right: 1px solid var(--border); }
+  .risk-left .lbl { font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: 0.16em; color: var(--muted); text-transform: uppercase; }
+  .risk-left .risk-label { font-family: "Bebas Neue", sans-serif; font-size: 32px; color: var(--signal); line-height: 1; margin: 4px 0; }
+  .risk-left .sub { font-family: "DM Mono", monospace; font-size: 9px; color: var(--muted); }
+  .risk-right { width: 65%; padding: 16px 18px; font-family: "DM Sans", sans-serif; font-size: 12px; line-height: 1.55; color: var(--cream); }
+
+  /* Kicker labels (// XXXX) */
+  .kicker { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--signal); text-transform: uppercase; margin: 20px 0 8px; }
+
+  /* Receipts */
+  .receipt-line { font-family: "DM Sans", sans-serif; font-size: 12px; line-height: 1.5; color: var(--cream); margin-bottom: 6px; padding-left: 14px; position: relative; }
+  .receipt-line::before { content: "\203A"; position: absolute; left: 0; color: var(--signal); }
+
+  /* Section header */
+  .section-head { display: flex; align-items: center; gap: 12px; margin: 22px 0 14px; }
+  .section-num { font-family: "DM Mono", monospace; font-size: 12px; font-weight: 500; color: var(--void); background: var(--signal); padding: 4px 7px; border-radius: 3px; }
+  .section-title { font-family: "Bebas Neue", sans-serif; font-size: 24px; color: var(--cream); letter-spacing: 0.05em; white-space: nowrap; }
+  .section-rule { flex: 1; height: 1px; background: var(--signal); opacity: 0.5; }
+
+  .read-note { font-family: "DM Sans", sans-serif; font-style: italic; font-size: 11px; color: var(--muted); margin-bottom: 12px; }
+
+  /* Brief prose */
+  .prose-p { font-family: "DM Sans", sans-serif; font-size: 12px; line-height: 1.6; color: var(--cream); margin-bottom: 10px; }
+  .prose-p .lead { font-weight: 700; }
+
+  /* Catalyst cards */
+  .catalyst-card { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; display: flex; gap: 10px; align-items: flex-start; }
+  .catalyst-card .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--signal); margin-top: 5px; flex-shrink: 0; }
+  .catalyst-card .ctx { font-family: "DM Sans", sans-serif; font-size: 11px; line-height: 1.5; color: var(--cream); }
+  .catalyst-card .ctx .ttl { font-weight: 700; color: var(--cream); }
+
+  /* Vibe check card */
+  .vibe-card { background: var(--card); border: 1px solid var(--border-2); border-radius: 6px; padding: 22px; margin-bottom: 6px; }
+  .vibe-header { display: flex; justify-content: space-between; align-items: center; }
+  .vibe-header .meta { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
+  .mood-badge { font-family: "DM Mono", monospace; font-size: 11px; letter-spacing: 0.08em; padding: 5px 12px; border-radius: 14px; background: #1c2630; color: #9fd8ff; border: 1px solid #2a3a48; }
+  .mood-badge.hot { background: rgba(255,107,107,0.12); color: var(--red); border-color: rgba(255,107,107,0.4); }
+  .mood-badge.warm { background: rgba(255,159,67,0.12); color: var(--orange); border-color: rgba(255,159,67,0.4); }
+  .vibe-score-row { display: flex; align-items: baseline; gap: 6px; margin: 14px 0 4px; }
+  .vibe-score { font-family: "DM Mono", monospace; font-size: 64px; line-height: 1; color: var(--signal); font-weight: 500; }
+  .vibe-score-max { font-family: "DM Mono", monospace; font-size: 22px; color: var(--muted); }
+  .mood-title { font-family: "Bebas Neue", sans-serif; font-size: 24px; color: var(--signal); letter-spacing: 0.04em; }
+  .mood-sub { font-family: "DM Sans", sans-serif; font-style: italic; font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .fng-meter { margin-top: 16px; }
+  .fng-bar { height: 8px; border-radius: 4px; background: linear-gradient(90deg, #ff6b6b 0%, #888 50%, #C8FF00 100%); position: relative; }
+  .fng-indicator { position: absolute; top: -3px; width: 14px; height: 14px; border-radius: 50%; background: var(--cream); border: 2px solid var(--void); transform: translateX(-50%); }
+  .fng-labels { display: flex; justify-content: space-between; margin-top: 6px; }
+  .fng-labels span { font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: 0.12em; color: var(--muted); }
+
+  /* Driver grid 2x2 */
+  .driver-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .driver-card { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 11px 13px; }
+  .driver-card .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .driver-card .dttl { font-family: "DM Mono", monospace; font-size: 11px; font-weight: 500; color: var(--cream); }
+  .driver-card .ddesc { font-family: "DM Sans", sans-serif; font-size: 11px; line-height: 1.45; color: var(--muted); }
+  .sent-badge { font-family: "DM Mono", monospace; font-size: 8px; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 3px; white-space: nowrap; }
+  .sent-POSITIVE { background: rgba(200,255,0,0.12); color: var(--signal); border: 1px solid rgba(200,255,0,0.4); }
+  .sent-NEGATIVE { background: var(--red-bg); color: var(--red); border: 1px solid rgba(255,107,107,0.4); }
+  .sent-NEUTRAL { background: var(--grey-badge); color: var(--muted); border: 1px solid #3a3a3a; }
+
+  /* Hot / Cold columns */
+  .hotcold { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .hc-col h4 { font-family: "DM Mono", monospace; font-size: 11px; letter-spacing: 0.1em; margin-bottom: 8px; }
+  .hc-row { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .hc-row .nm { font-family: "DM Sans", sans-serif; font-weight: 700; font-size: 12px; color: var(--cream); }
+  .hc-row .ds { font-family: "DM Sans", sans-serif; font-size: 10px; color: var(--muted); display: block; font-weight: 400; }
+  .hc-row .pc { font-family: "DM Mono", monospace; font-size: 13px; white-space: nowrap; }
+
+  /* Buzzing tickers */
+  .buzz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .buzz-card { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; }
+  .buzz-card .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .buzz-card .btk { font-family: "Bebas Neue", sans-serif; font-size: 20px; color: var(--cream); letter-spacing: 0.03em; }
+  .buzz-card .bwhy { font-family: "DM Sans", sans-serif; font-size: 10px; line-height: 1.45; color: var(--muted); }
+  .vibe-badge { font-family: "DM Mono", monospace; font-size: 8px; letter-spacing: 0.1em; padding: 2px 7px; border-radius: 3px; white-space: nowrap; }
+  .vibe-BULLISH { background: rgba(200,255,0,0.12); color: var(--signal); border: 1px solid rgba(200,255,0,0.4); }
+  .vibe-BEARISH { background: var(--red-bg); color: var(--red); border: 1px solid rgba(255,107,107,0.4); }
+  .vibe-MIXED { background: var(--grey-badge); color: var(--muted); border: 1px solid #3a3a3a; }
+  .vibe-CIRCUS { background: rgba(255,159,67,0.12); color: var(--orange); border: 1px solid rgba(255,159,67,0.4); }
+
+  /* Two-column social / contrarian */
+  .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .twocol .body { font-family: "DM Sans", sans-serif; font-size: 11px; line-height: 1.55; color: var(--cream); }
+  .twocol .body .key { color: var(--signal); font-weight: 700; }
+
+  /* How to play card */
+  .play-card { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 14px 16px; font-family: "DM Sans", sans-serif; font-size: 12px; line-height: 1.55; color: var(--cream); }
+
+  /* Tables */
   table { width: 100%; border-collapse: collapse; }
-  th, td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
-  th { color: var(--muted); font-weight: 600; font-size: 10px; text-transform: uppercase; }
-  .tag { background: #1c2433; border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; font-size: 10px; }
-  .foot { position: absolute; bottom: 8mm; left: 14mm; right: 14mm; color: var(--muted); font-size: 9px; display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 6px; }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .small { font-size: 10px; }
-  .big { font-size: 22px; font-weight: 800; }
+  thead th { font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 8px 8px; border-bottom: 1px solid var(--border-2); }
+  tbody td { font-family: "DM Sans", sans-serif; font-size: 11px; color: var(--cream); padding: 9px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tbody tr:nth-child(even) { background: var(--card-alt); }
+  td.tk { font-family: "DM Mono", monospace; font-weight: 500; color: var(--cream); }
+  td.num { font-family: "DM Mono", monospace; text-align: right; white-space: nowrap; }
+  th.num { text-align: right; }
+  td.play-cell { font-family: "DM Mono", monospace; font-size: 10px; }
+
+  /* Badges */
+  .badge { font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 3px; display: inline-block; white-space: nowrap; }
+  .badge-BUY { background: var(--signal); color: var(--void); font-weight: 500; }
+  .badge-FADE { background: var(--red-bg); color: var(--red); }
+  .badge-SELL { background: var(--red-bg); color: var(--red); }
+  .badge-HOLD { background: var(--grey-badge); color: var(--muted); }
+  .badge-WATCH { background: var(--grey-badge); color: var(--muted); }
+  .badge-HIGH { background: transparent; color: var(--signal); border: 1px solid var(--signal); }
+  .badge-MEDIUM, .badge-MED { background: transparent; color: var(--muted); border: 1px solid #444; }
+  .badge-LOW { background: transparent; color: var(--muted); border: 1px solid #444; }
+  .badge-LEADING { background: transparent; color: var(--signal); border: 1px solid var(--signal); }
+  .badge-LAGGING { background: transparent; color: var(--red); border: 1px solid rgba(255,107,107,0.6); }
+
+  /* The Close */
+  .close-card { background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--signal); border-radius: 4px; padding: 16px 18px; }
+  .close-card p { font-family: "DM Sans", sans-serif; font-size: 12px; line-height: 1.6; color: var(--cream); margin-bottom: 10px; }
+  .close-card p:last-child { margin-bottom: 0; }
+  .close-card .lead-in { font-weight: 700; color: var(--cream); }
+
+  /* Week ahead */
+  .week-card { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 10px 13px; margin-bottom: 7px; font-family: "DM Sans", sans-serif; font-size: 11px; line-height: 1.45; color: var(--cream); }
+  .week-card .day { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: 0.08em; color: var(--muted); }
+  .week-card .evt { font-weight: 700; color: var(--signal); }
+
+  /* Footer */
+  .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 26px; padding-top: 14px; border-top: 1px solid var(--border-2); }
+  .footer-left .fb { font-family: "Bebas Neue", sans-serif; font-size: 22px; color: var(--cream); letter-spacing: 0.05em; line-height: 1; }
+  .footer-left .ft { font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
+  .footer-right { font-family: "DM Sans", sans-serif; font-size: 8px; line-height: 1.4; color: var(--muted); max-width: 380px; text-align: right; }
+
+  .empty-note { font-family: "DM Sans", sans-serif; font-size: 11px; color: var(--muted); font-style: italic; }
 </style>
 </head>
 <body>
 <div id="root"></div>
 
+<!--
+  The data placeholder in the script tag below is replaced by populate-template.ts
+  with the BriefOutput JSON (also exposed as window.BRIEF). All four pages render
+  client-side from that object; the Playwright render fires after the script runs.
+  See the TOKEN to BriefOutput field-mapping comment at the bottom of this file.
+-->
 <script id="brief-data" type="application/json">__BRIEF_DATA__</script>
 <script>
 (function () {
+  "use strict";
+
+  // ── helpers ──
   function esc(s) {
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
-  function pct(n) {
-    if (typeof n !== "number" || isNaN(n)) return "";
-    var sign = n >= 0 ? "+" : "";
-    return sign + n.toFixed(2) + "%";
+  function isNum(n) { return typeof n === "number" && !isNaN(n); }
+  function pct(n, digits) {
+    if (!isNum(n)) return "—";
+    if (digits == null) digits = 2;
+    return (n >= 0 ? "+" : "") + n.toFixed(digits) + "%";
   }
-  function cls(n) { return (typeof n === "number" && n < 0) ? "neg" : "pos"; }
+  function dirClass(n) {
+    if (!isNum(n)) return "flat";
+    if (n > 0.0001) return "up";
+    if (n < -0.0001) return "down";
+    return "flat";
+  }
+  function num(n, digits) {
+    if (!isNum(n)) return "—";
+    return n.toFixed(digits == null ? 2 : digits);
+  }
+  function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
 
+  var MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  var DAYS = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+  function fmtMastheadDate(raw) {
+    if (!raw) return "";
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw).trim());
+    if (!m) return String(raw).toUpperCase();
+    var dt = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    return DAYS[dt.getDay()] + " · " + MONTHS[Number(m[2]) - 1] + " " + Number(m[3]) + " · " + m[1];
+  }
+
+  // Map vibe.temperature to an emoji badge + class
+  var TEMP_BADGE = {
+    "FREEZING": { txt: "🧊 FREEZING", cls: "" },
+    "COLD": { txt: "❄ COLD", cls: "" },
+    "COOL": { txt: "❄ COOL", cls: "" },
+    "WARM": { txt: "☀ WARM", cls: "warm" },
+    "HOT": { txt: "🔥 HOT", cls: "hot" },
+    "ON FIRE": { txt: "🔥 ON FIRE", cls: "hot" }
+  };
+
+  // Derive a conviction badge from a Tier1 composite score (0-6)
+  function scoreToConviction(score) {
+    if (!isNum(score)) return "MED";
+    if (score >= 5) return "HIGH";
+    if (score >= 3) return "MED";
+    return "LOW";
+  }
+
+  var LEGAL =
+    "White80 is a research and education publication. Nothing herein is investment advice, " +
+    "a solicitation, or an offer to buy or sell any security. Options carry substantial risk of " +
+    "loss. Trade your own plan. Past performance does not guarantee future results. © White80 Intelligence.";
+
+  // ── parse data ──
   var data;
   try {
     data = JSON.parse(document.getElementById("brief-data").textContent);
   } catch (e) {
-    document.getElementById("root").innerHTML = "<div class='page'><h1>Brief data failed to parse</h1></div>";
+    document.getElementById("root").innerHTML =
+      "<div class='page'><div class='masthead'><div class='brand'><div class='name'>WHITE80</div></div></div>" +
+      "<p class='empty-note' style='margin-top:40px'>Brief data failed to parse.</p></div>";
     return;
   }
 
-  var brief = data.brief || {};
-  var vibe = data.vibe || {};
-  var macro = brief.macro_pulse || {};
-  var rot = brief.sector_rotation || { leading: [], lagging: [] };
-  var foot = function (page) {
-    return "<div class='foot'><span>White80 — Pre-Market Intelligence</span>" +
-      "<span>" + esc(data.session_date || "") + "</span>" +
-      "<span>Page " + page + " of 4</span></div>";
-  };
+  var brief  = data.brief  || {};
+  var vibe   = data.vibe   || {};
+  var macro  = brief.macro_pulse || {};
+  var rot    = brief.sector_rotation || { leading: [], lagging: [] };
+  var verdict = brief.verdict || {};
+  var sessionDate = brief.session_date || data.session_date || "";
 
-  // ── PAGE 1: Cover + Vibe ──
-  var score = typeof vibe.vibe_score === "number" ? vibe.vibe_score : 0;
-  var p1 = "<div class='page'>" +
-    "<div class='kicker'>White80 Daily Brief</div>" +
-    "<h1>" + esc(brief.session_label || "Pre-Open") + " &middot; " + esc(brief.session_date || data.session_date || "") + "</h1>" +
-    "<div class='panel' style='margin-top:14px'>" +
-      "<h2>Market Vibe</h2>" +
-      "<div class='row'><div class='col'>" +
-        "<div class='big'>" + Math.round(score) + "<span class='muted'>/100</span> &mdash; " + esc(vibe.mood || "") + "</div>" +
-        "<div class='small muted'>" + esc(vibe.temperature || "") + "</div>" +
-        "<div class='scorebar'><div class='scorefill' style='width:" + Math.max(0, Math.min(100, score)) + "%'></div></div>" +
-      "</div></div>" +
-      "<p style='margin-top:10px'><strong>" + esc(vibe.headline || "") + "</strong></p>" +
-      "<p class='muted' style='margin-top:6px'>" + esc(vibe.read || "") + "</p>" +
-    "</div>" +
-    "<div class='row'>" +
-      "<div class='col panel'><h3>Hot Sectors</h3>" +
-        (vibe.hot_sectors || []).map(function (s) {
-          return "<div class='small'>" + esc(s.sector) + " <span class='" + cls(s.change_pct) + "'>" + pct(s.change_pct) + "</span> <span class='muted'>" + esc(s.vibe) + "</span></div>";
-        }).join("") +
-      "</div>" +
-      "<div class='col panel'><h3>Cold Sectors</h3>" +
-        (vibe.cold_sectors || []).map(function (s) {
-          return "<div class='small'>" + esc(s.sector) + " <span class='" + cls(s.change_pct) + "'>" + pct(s.change_pct) + "</span> <span class='muted'>" + esc(s.vibe) + "</span></div>";
-        }).join("") +
-      "</div>" +
-    "</div>" +
-    "<div class='panel'><h3>Social Pulse</h3><p class='small muted'>" + esc(vibe.social_pulse || "") + "</p>" +
-      "<h3 style='margin-top:8px'>Contrarian Note</h3><p class='small muted'>" + esc(vibe.contrarian_note || "") + "</p>" +
-      "<h3 style='margin-top:8px'>How To Play</h3><p class='small'>" + esc(vibe.play_it || "") + "</p>" +
-    "</div>" +
-    foot(1) + "</div>";
-
-  // ── PAGE 2: Macro + Sector rotation + Catalysts ──
-  function macroCell(label, obj) {
-    if (!obj) return "";
-    var val = obj.price != null ? obj.price : (obj.level != null ? obj.level : (obj.yield != null ? obj.yield : ""));
-    var change = obj.change_pct != null ? " <span class='" + cls(obj.change_pct) + "'>" + pct(obj.change_pct) + "</span>" : "";
-    return "<div class='panel small'><div class='muted'>" + esc(label) + "</div><div class='big' style='font-size:16px'>" + esc(val) + change + "</div><div class='muted'>" + esc(obj.context || obj.direction || "") + "</div></div>";
+  // ════════════════════════════ PAGE 1 — THE BRIEF ════════════════════════════
+  function masthead() {
+    var edition = data.edition_number != null
+      ? String(data.edition_number).replace(/^0+/, "").padStart(3, "0")
+      : "006";
+    return "" +
+      "<div class='masthead'>" +
+        "<div class='masthead-left'>" +
+          "<div class='logomark'><span class='w'>W</span><span class='eighty'>80</span></div>" +
+          "<div class='brand'><div class='name'>WHITE80</div>" +
+            "<div class='tagline'>INTELLIGENCE IS THE POSITION</div></div>" +
+        "</div>" +
+        "<div class='masthead-right'>" +
+          "<div class='audible-label'>THE AUDIBLE</div>" +
+          "<div class='date'>" + esc(fmtMastheadDate(sessionDate)) + "</div>" +
+          "<div class='edition'>PRE-OPEN EDITION · NO. " + esc(edition) + "</div>" +
+        "</div>" +
+      "</div>";
   }
+
+  function tickerStrip() {
+    var cells = [
+      { label: "SPY",  obj: macro.spy,      val: macro.spy ? num(macro.spy.price) : null,      ch: macro.spy ? macro.spy.change_pct : null },
+      { label: "QQQ",  obj: macro.qqq,      val: macro.qqq ? num(macro.qqq.price) : null,      ch: macro.qqq ? macro.qqq.change_pct : null },
+      { label: "VIX",  obj: macro.vix,      val: macro.vix ? num(macro.vix.level) : null,      ch: macro.vix ? macro.vix.change_pct : null },
+      { label: "WTI",  obj: macro.wti,      val: macro.wti ? num(macro.wti.price) : null,      ch: macro.wti ? macro.wti.change_pct : null },
+      { label: "10Y",  obj: macro.ten_year, val: macro.ten_year ? num(macro.ten_year.yield) + "%" : null, ch: macro.ten_year ? macro.ten_year.change_pct : null },
+      { label: "DXY",  obj: macro.dxy,      val: macro.dxy ? num(macro.dxy.level) : null,      ch: macro.dxy ? macro.dxy.change_pct : null },
+      { label: "GOLD", obj: macro.gold,     val: macro.gold ? num(macro.gold.price, 0) : null, ch: macro.gold ? macro.gold.change_pct : null }
+    ];
+    return "<div class='ticker-strip'>" + cells.map(function (c) {
+      return "<div class='ticker-cell'>" +
+        "<div class='tk'>" + esc(c.label) + "</div>" +
+        "<div class='px'>" + esc(c.val == null ? "—" : c.val) + "</div>" +
+        "<div class='ch " + dirClass(c.ch) + "'>" + (c.ch == null ? "—" : pct(c.ch)) + "</div>" +
+      "</div>";
+    }).join("") + "</div>";
+  }
+
+  function riskBanner() {
+    var tone = (verdict.tone || "NEUTRAL").toUpperCase();
+    return "<div class='risk-banner'>" +
+      "<div class='risk-left'>" +
+        "<div class='lbl'>SESSION RISK</div>" +
+        "<div class='risk-label'>" + esc(tone) + "</div>" +
+        "<div class='sub'>" + esc(brief.session_label || "PRE-OPEN") + " EDITION</div>" +
+      "</div>" +
+      "<div class='risk-right'>" + esc(verdict.summary || "") + "</div>" +
+    "</div>";
+  }
+
+  function receipts() {
+    var lines = brief.receipts || data.receipts || [];
+    var inner;
+    if (lines.length) {
+      inner = lines.map(function (l) { return "<div class='receipt-line'>" + esc(l) + "</div>"; }).join("");
+    } else {
+      // Derive a single receipt from the verdict if no explicit receipts were assembled.
+      inner = "<div class='empty-note'>" + esc(verdict.summary ? "Carrying forward: " + verdict.summary : "No receipts logged for the prior session.") + "</div>";
+    }
+    return "<div class='kicker'>// YESTERDAY'S RECEIPTS — THE BIG ONE</div>" + inner;
+  }
+
+  function briefProse() {
+    var paras = brief.brief_prose || brief.prose || [];
+    var body;
+    if (paras.length) {
+      body = paras.map(function (p) { return "<p class='prose-p'>" + esc(p) + "</p>"; }).join("");
+    } else {
+      // Fall back to verdict summary as the brief narrative (the validated schema's prose field).
+      body = "<p class='prose-p'>" + esc(verdict.summary || "Brief narrative unavailable.") + "</p>";
+    }
+    return "<div class='section-head'><span class='section-num'>01</span>" +
+      "<span class='section-title'>THE BRIEF</span><span class='section-rule'></span></div>" + body;
+  }
+
+  function catalysts() {
+    var cats = brief.catalysts || [];
+    var inner = cats.length
+      ? cats.map(function (c) {
+          return "<div class='catalyst-card'><span class='dot'></span>" +
+            "<span class='ctx'><span class='ttl'>" + esc(c.title) + "</span> — " + esc(c.body) + "</span></div>";
+        }).join("")
+      : "<div class='empty-note'>No catalysts on deck.</div>";
+    return "<div class='kicker'>// TOP CATALYSTS ON DECK</div>" + inner;
+  }
+
+  var p1 = "<div class='page'>" +
+    masthead() + tickerStrip() + riskBanner() + receipts() + briefProse() + catalysts() +
+  "</div>";
+
+  // ════════════════════════════ PAGE 2 — THE VIBE ════════════════════════════
+  function vibeCard() {
+    var score = isNum(vibe.vibe_score) ? clamp(Math.round(vibe.vibe_score), 0, 100) : 0;
+    var temp = (vibe.temperature || "").toUpperCase();
+    var badge = TEMP_BADGE[temp] || { txt: esc(temp || "—"), cls: "" };
+    return "<div class='vibe-card'>" +
+      "<div class='vibe-header'>" +
+        "<div class='meta'>VIBE CHECK · " + esc(vibe.session_date || sessionDate) + " · " + esc(vibe.session_time || "") + " ET</div>" +
+        "<div class='mood-badge " + badge.cls + "'>" + badge.txt + "</div>" +
+      "</div>" +
+      "<div class='vibe-score-row'><span class='vibe-score'>" + score + "</span><span class='vibe-score-max'>/100</span></div>" +
+      "<div class='mood-title'>" + esc(vibe.mood || "") + "</div>" +
+      "<div class='mood-sub'>" + esc(vibe.headline || "") + "</div>" +
+      "<div class='fng-meter'><div class='fng-bar'>" +
+        "<span class='fng-indicator' style='left:" + score + "%'></span>" +
+      "</div><div class='fng-labels'><span>FEAR</span><span>NEUTRAL</span><span>GREED</span></div></div>" +
+    "</div>";
+  }
+
+  function theRead() {
+    return "<div class='kicker'>// THE READ</div><p class='prose-p'>" + esc(vibe.read || "") + "</p>";
+  }
+
+  function drivers() {
+    var ds = vibe.drivers || [];
+    var inner = ds.length
+      ? ds.map(function (d) {
+          var s = (d.sentiment || "NEUTRAL").toUpperCase();
+          return "<div class='driver-card'><div class='top'>" +
+            "<span class='dttl'>" + esc(d.label) + "</span>" +
+            "<span class='sent-badge sent-" + esc(s) + "'>" + esc(s) + "</span></div>" +
+            "<div class='ddesc'>" + esc(d.detail) + "</div></div>";
+        }).join("")
+      : "<div class='empty-note'>No mood drivers logged.</div>";
+    return "<div class='kicker'>// WHAT'S MOVING THE MOOD</div><div class='driver-grid'>" + inner + "</div>";
+  }
+
+  function hotCold() {
+    var hot = (vibe.hot_sectors || []).map(function (s) {
+      return "<div class='hc-row'><span><span class='nm'>" + esc(s.sector) + "</span>" +
+        "<span class='ds'>" + esc(s.vibe) + "</span></span>" +
+        "<span class='pc up'>" + pct(s.change_pct, 1) + "</span></div>";
+    }).join("") || "<div class='empty-note'>—</div>";
+    var cold = (vibe.cold_sectors || []).map(function (s) {
+      return "<div class='hc-row'><span><span class='nm'>" + esc(s.sector) + "</span>" +
+        "<span class='ds'>" + esc(s.vibe) + "</span></span>" +
+        "<span class='pc down'>" + pct(s.change_pct, 1) + "</span></div>";
+    }).join("") || "<div class='empty-note'>—</div>";
+    return "<div class='hotcold' style='margin-top:18px'>" +
+      "<div class='hc-col'><h4 class='signal'>🔥 RUNNING HOT</h4>" + hot + "</div>" +
+      "<div class='hc-col'><h4 class='red'>❄ ICE COLD</h4>" + cold + "</div>" +
+    "</div>";
+  }
+
+  function buzzing() {
+    var bs = vibe.buzzing_tickers || [];
+    var inner = bs.length
+      ? bs.map(function (b) {
+          var v = (b.vibe || "MIXED").toUpperCase();
+          return "<div class='buzz-card'><div class='top'>" +
+            "<span class='btk'>" + esc(b.ticker) + "</span>" +
+            "<span class='vibe-badge vibe-" + esc(v) + "'>" + esc(v) + "</span></div>" +
+            "<div class='bwhy'>" + esc(b.why) + "</div></div>";
+        }).join("")
+      : "<div class='empty-note'>No tickers buzzing.</div>";
+    return "<div class='kicker'>// BUZZING TICKERS</div><div class='buzz-grid'>" + inner + "</div>";
+  }
+
+  function socialContrarian() {
+    return "<div class='twocol' style='margin-top:18px'>" +
+      "<div><div class='kicker' style='margin-top:0'>// SOCIAL PULSE</div>" +
+        "<div class='body'>" + esc(vibe.social_pulse || "") + "</div></div>" +
+      "<div><div class='kicker' style='margin-top:0'>// CONTRARIAN NOTE</div>" +
+        "<div class='body'>" + esc(vibe.contrarian_note || "") + "</div></div>" +
+    "</div>";
+  }
+
+  function howToPlay() {
+    return "<div class='kicker'>◎ HOW TO PLAY THE VIBE</div>" +
+      "<div class='play-card'>" + esc(vibe.play_it || "") + "</div>";
+  }
+
   var p2 = "<div class='page'>" +
-    "<h2>Macro Pulse</h2>" +
-    "<div class='grid2'>" +
-      macroCell("SPY", macro.spy) + macroCell("QQQ", macro.qqq) +
-      macroCell("VIX", macro.vix) + macroCell("DXY", macro.dxy) +
-      macroCell("10Y", macro.ten_year) + macroCell("WTI", macro.wti) +
-      macroCell("Gold", macro.gold) +
-    "</div>" +
-    "<div class='row'>" +
-      "<div class='col panel'><h3>Leading Sectors</h3>" +
-        (rot.leading || []).map(function (s) { return "<div class='small'>" + esc(s.sector) + " <span class='" + cls(s.change_pct) + "'>" + pct(s.change_pct) + "</span><br><span class='muted'>" + esc(s.detail) + "</span></div>"; }).join("") +
-      "</div>" +
-      "<div class='col panel'><h3>Lagging Sectors</h3>" +
-        (rot.lagging || []).map(function (s) { return "<div class='small'>" + esc(s.sector) + " <span class='" + cls(s.change_pct) + "'>" + pct(s.change_pct) + "</span><br><span class='muted'>" + esc(s.detail) + "</span></div>"; }).join("") +
-      "</div>" +
-    "</div>" +
-    "<div class='panel'><h2>Catalysts</h2>" +
-      (brief.catalysts || []).map(function (c) { return "<div style='margin-bottom:6px'><strong>" + esc(c.title) + "</strong><div class='small muted'>" + esc(c.body) + "</div></div>"; }).join("") +
-    "</div>" +
-    "<div class='panel'><h3>Verdict — " + esc((brief.verdict || {}).tone || "") + "</h3><p class='small'>" + esc((brief.verdict || {}).summary || "") + "</p></div>" +
-    foot(2) + "</div>";
+    "<div class='section-head'><span class='section-num'>02</span>" +
+      "<span class='section-title'>THE VIBE</span><span class='section-rule'></span></div>" +
+    vibeCard() + theRead() + drivers() + hotCold() + buzzing() + socialContrarian() + howToPlay() +
+  "</div>";
 
-  // ── PAGE 3: Top plays + Signals ──
-  var p3 = "<div class='page'>" +
-    "<h2>Top Plays</h2><table><thead><tr><th>Ticker</th><th>Action</th><th>Play</th><th>Conv.</th><th>Catalyst</th></tr></thead><tbody>" +
-      (brief.top_plays || []).map(function (p) {
-        return "<tr><td><strong>" + esc(p.ticker) + "</strong></td><td>" + esc(p.action) + "</td><td>" + esc(p.play) + "<br><span class='muted small'>" + esc(p.thesis) + "</span></td><td>" + esc(p.conviction) + "</td><td class='small'>" + esc(p.catalyst) + "</td></tr>";
-      }).join("") +
-    "</tbody></table>" +
-    "<h2 style='margin-top:14px'>Signals (Watchlist)</h2><table><thead><tr><th>Ticker</th><th>Signal</th><th>Play</th><th>Risk</th><th>Tgt/Stop</th></tr></thead><tbody>" +
-      (data.signals || []).map(function (s) {
-        return "<tr><td><strong>" + esc(s.ticker) + "</strong> <span class='muted small'>" + pct(s.change_pct) + "</span></td><td>" + esc(s.signal) + "</td><td class='small'>" + esc(s.play) + "<br><span class='muted'>" + esc(s.thesis) + "</span></td><td>" + esc(s.risk) + "</td><td class='small'>" + esc(s.target) + " / " + esc(s.stop) + "</td></tr>";
-      }).join("") +
-    "</tbody></table>" +
-    foot(3) + "</div>";
+  // ════════════════════════ PAGE 3 — TIER 1 + SIGNALS ════════════════════════
+  // Tier 1 table is sourced from brief.top_plays (highest-conviction, has action/conviction).
+  function tier1Table() {
+    var plays = brief.top_plays || [];
+    var rows = plays.length
+      ? plays.map(function (p) {
+          var action = (p.action || "BUY").toUpperCase();
+          var conv = (p.conviction || "MEDIUM").toUpperCase();
+          return "<tr>" +
+            "<td class='tk'>" + esc(p.ticker) + "</td>" +
+            "<td><span class='badge badge-" + esc(action) + "'>" + esc(action) + "</span></td>" +
+            "<td class='play-cell'>" + esc(p.play) + "</td>" +
+            "<td><span class='badge badge-" + esc(conv) + "'>" + esc(conv) + "</span></td>" +
+            "<td>" + esc(p.catalyst) + "</td>" +
+          "</tr>";
+        }).join("")
+      : "<tr><td colspan='5' class='empty-note'>No Tier 1 conviction plays today.</td></tr>";
+    return "<div class='section-head'><span class='section-num'>03</span>" +
+      "<span class='section-title'>TIER 1 — HIGHEST CONVICTION</span><span class='section-rule'></span></div>" +
+      "<div class='read-note'>Highest-conviction setups where catalyst, flow, and technicals converge.</div>" +
+      "<table><thead><tr><th>TICKER</th><th>ACTION</th><th>PLAY</th><th>CONV.</th><th>CATALYST</th></tr></thead>" +
+      "<tbody>" + rows + "</tbody></table>";
+  }
 
-  // ── PAGE 4: Tier 1 + Scout + Watchlist ──
+  function signalsTable() {
+    var sigs = data.signals || [];
+    var rows = sigs.length
+      ? sigs.map(function (s) {
+          var sig = (s.signal || "WATCH").toUpperCase();
+          return "<tr>" +
+            "<td class='tk'>" + esc(s.ticker) + "</td>" +
+            "<td><span class='badge badge-" + esc(sig) + "'>" + esc(sig) + "</span></td>" +
+            "<td class='play-cell'>" + esc(s.play) + "</td>" +
+            "<td class='num'>" + num(s.price) + "</td>" +
+            "<td class='num'>" + num(s.target) + "</td>" +
+            "<td class='num'>" + num(s.stop) + "</td>" +
+            "<td class='muted'>" + esc(s.risk) + "</td>" +
+          "</tr>";
+        }).join("")
+      : "<tr><td colspan='7' class='empty-note'>No watchlist signals today.</td></tr>";
+    return "<div class='section-head'><span class='section-num'>04</span>" +
+      "<span class='section-title'>SIGNALS — TARGET LEVELS</span><span class='section-rule'></span></div>" +
+      "<div class='read-note'>Watchlist levels to lean on — entries, targets, and where the thesis breaks.</div>" +
+      "<table><thead><tr><th>TICKER</th><th>SIGNAL</th><th>PLAY</th>" +
+      "<th class='num'>ENTRY</th><th class='num'>TARGET</th><th class='num'>STOP</th><th>RISK</th></tr></thead>" +
+      "<tbody>" + rows + "</tbody></table>";
+  }
+
+  var p3 = "<div class='page'>" + tier1Table() + signalsTable() + "</div>";
+
+  // ═══════════ PAGE 4 — SECTOR, CLOSE, WEEK AHEAD, CHEAT SHEET ═══════════
+  function sectorTable() {
+    var lead = (rot.leading || []).map(function (s) {
+      return "<tr><td><span class='badge badge-LEADING'>LEADING</span></td>" +
+        "<td class='tk'>" + esc(s.sector) + "</td>" +
+        "<td class='num " + dirClass(s.change_pct) + "'>" + pct(s.change_pct, 1) + "</td>" +
+        "<td>" + esc(s.detail) + "</td></tr>";
+    });
+    var lag = (rot.lagging || []).map(function (s) {
+      return "<tr><td><span class='badge badge-LAGGING'>LAGGING</span></td>" +
+        "<td class='tk'>" + esc(s.sector) + "</td>" +
+        "<td class='num " + dirClass(s.change_pct) + "'>" + pct(s.change_pct, 1) + "</td>" +
+        "<td>" + esc(s.detail) + "</td></tr>";
+    });
+    var rows = lead.concat(lag);
+    var body = rows.length ? rows.join("") : "<tr><td colspan='4' class='empty-note'>No sector rotation data.</td></tr>";
+    return "<div class='section-head'><span class='section-num'>05</span>" +
+      "<span class='section-title'>SECTOR ROTATION</span><span class='section-rule'></span></div>" +
+      "<div class='read-note'>Where money is rotating into — and bleeding out of — into the open.</div>" +
+      "<table><thead><tr><th>DIRECTION</th><th>SECTOR</th><th class='num'>MOVE</th><th>DETAIL</th></tr></thead>" +
+      "<tbody>" + body + "</tbody></table>";
+  }
+
+  function theClose() {
+    // Validated schema has no dedicated close.signal/close.audible; fall back to verdict.
+    var close = brief.close || {};
+    var signal = close.signal || verdict.summary || "";
+    var audible = close.audible || vibe.play_it || "";
+    return "<div class='section-head'><span class='section-num'>06</span>" +
+      "<span class='section-title'>THE CLOSE</span><span class='section-rule'></span></div>" +
+      "<div class='close-card'>" +
+        "<p><span class='lead-in'>Today's signal:</span> " + esc(signal) + "</p>" +
+        "<p><span class='lead-in'>The audible:</span> " + esc(audible) + "</p>" +
+      "</div>";
+  }
+
+  function weekAhead() {
+    var wk = brief.week_ahead || data.week_ahead || [];
+    var inner = wk.length
+      ? wk.map(function (w) {
+          return "<div class='week-card'><span class='day'>" + esc(w.day) + " · " + esc(w.date) + "</span> — " +
+            "<span class='evt'>" + esc(w.event) + "</span> · " + esc(w.description) + "</div>";
+        }).join("")
+      : "<div class='empty-note'>Week-ahead calendar not assembled for this edition.</div>";
+    return "<div class='section-head'><span class='section-num'>07</span>" +
+      "<span class='section-title'>THE WEEK AHEAD</span><span class='section-rule'></span></div>" + inner;
+  }
+
+  function cheatSheet() {
+    var rows = brief.cheat_sheet || data.cheat_sheet || [];
+    var body = rows.length
+      ? rows.map(function (c) {
+          return "<tr><td class='mono'>" + esc(c.tape) + "</td>" +
+            "<td class='mono'>" + esc(c.position) + "</td>" +
+            "<td class='mono'>" + esc(c.trigger) + "</td></tr>";
+        }).join("")
+      : "<tr><td colspan='3' class='empty-note'>Positioning cheat sheet not assembled for this edition.</td></tr>";
+    var framework = brief.cheat_framework || "Match exposure to the tape — size up only when the signal, flow, and trigger all agree.";
+    return "<div class='section-head'><span class='section-num'>08</span>" +
+      "<span class='section-title'>POSITIONING CHEAT SHEET</span><span class='section-rule'></span></div>" +
+      "<table><thead><tr><th>IF THE TAPE SAYS</th><th>POSITION</th><th>TRIGGER</th></tr></thead>" +
+      "<tbody>" + body + "</tbody></table>" +
+      "<div class='read-note' style='margin-top:10px'><em>Framework:</em> " + esc(framework) + "</div>";
+  }
+
+  function footer() {
+    return "<div class='footer'>" +
+      "<div class='footer-left'><div class='fb'>WHITE80</div>" +
+        "<div class='ft'>// INTELLIGENCE IS THE POSITION</div></div>" +
+      "<div class='footer-right'>" + esc(LEGAL) + "</div>" +
+    "</div>";
+  }
+
   var p4 = "<div class='page'>" +
-    "<h2>Tier 1 Scanner</h2><table><thead><tr><th>Ticker</th><th>Score</th><th>Sector</th><th>Price</th><th>Reasoning</th></tr></thead><tbody>" +
-      (data.tier1 || []).slice(0, 20).map(function (t) {
-        return "<tr><td><strong>" + esc(t.ticker) + "</strong></td><td>" + esc(t.score) + "/6</td><td class='small'>" + esc(t.sector) + "</td><td>$" + esc(t.price) + " <span class='" + cls(t.changePercent) + "'>" + pct(t.changePercent) + "</span></td><td class='small muted'>" + esc(t.reasoning) + "</td></tr>";
-      }).join("") +
-    "</tbody></table>" +
-    "<h2 style='margin-top:12px'>Scout Discoveries</h2>" +
-      ((data.scout || []).length === 0
-        ? "<p class='muted small'>No new discoveries today.</p>"
-        : (data.scout || []).map(function (s) {
-            return "<div class='panel small'><strong>" + esc(s.ticker) + "</strong> — " + esc(s.name) + " <span class='tag'>" + esc(s.conviction) + "</span><br><span class='muted'>" + esc(s.thesis) + "</span><br>Catalyst: " + esc(s.catalyst) + " &middot; Target: " + esc(s.upside_target) + "</div>";
-          }).join("")) +
-    "<h2 style='margin-top:8px'>Active Watchlist</h2><p class='small'>" + (data.watchlist || []).map(esc).join(" &middot; ") + "</p>" +
-    "<p class='small muted' style='margin-top:6px'>" + esc((data.curator || {}).summary || "") + "</p>" +
-    foot(4) + "</div>";
+    sectorTable() + theClose() + weekAhead() + cheatSheet() + footer() +
+  "</div>";
 
   document.getElementById("root").innerHTML = p1 + p2 + p3 + p4;
+  // expose for debugging / programmatic checks
+  window.BRIEF = data;
 })();
 </script>
+
+<!--
+═══════════════════════════════════════════════════════════════════════════════
+  TOKEN → BriefOutput FIELD MAPPING
+═══════════════════════════════════════════════════════════════════════════════
+  populate-template.ts replaces the script-tag data placeholder with
+  JSON.stringify(BriefOutput) (escaped). The inline script reads that object (also exposed as window.BRIEF)
+  and renders the four pages. BriefOutput is defined in packages/engine/src/types.ts.
+
+  ── Masthead ────────────────────────────────────────────────────────────────
+  date (masthead)            ← brief.session_date | data.session_date  → "FRI · JUN 5 · 2026"
+  edition no.                ← data.edition_number (optional; defaults "006")
+
+  ── Ticker strip ────────────────────────────────────────────────────────────
+  SPY/QQQ/WTI price + change ← brief.macro_pulse.spy/.qqq/.wti  (.price/.change_pct)
+  VIX                        ← brief.macro_pulse.vix.level (.change_pct if present)
+  10Y                        ← brief.macro_pulse.ten_year.yield
+  DXY                        ← brief.macro_pulse.dxy.level
+  GOLD                       ← brief.macro_pulse.gold.price
+
+  ── Session Risk banner ──────────────────────────────────────────────────────
+  risk label                 ← brief.verdict.tone
+  subtitle                   ← brief.session_label
+  audible prose              ← brief.verdict.summary
+
+  ── Yesterday's Receipts ─────────────────────────────────────────────────────
+  receipt lines              ← brief.receipts[] | data.receipts[]  (optional → derived from verdict)
+
+  ── Section 01 THE BRIEF ─────────────────────────────────────────────────────
+  prose paragraphs           ← brief.brief_prose[] | brief.prose[]  (optional → falls back to verdict.summary)
+  catalysts                  ← brief.catalysts[].title/.body
+
+  ── Section 02 THE VIBE (all from data.vibe) ─────────────────────────────────
+  vibe meta date/time        ← vibe.session_date / vibe.session_time
+  mood badge                 ← vibe.temperature (FREEZING…ON FIRE → emoji)
+  score (and meter position) ← vibe.vibe_score (0-100)
+  mood title                 ← vibe.mood
+  mood subtitle              ← vibe.headline
+  the read                   ← vibe.read
+  drivers (2x2)              ← vibe.drivers[].label/.detail/.sentiment
+  running hot                ← vibe.hot_sectors[].sector/.vibe/.change_pct
+  ice cold                   ← vibe.cold_sectors[].sector/.vibe/.change_pct
+  buzzing tickers            ← vibe.buzzing_tickers[].ticker/.why/.vibe (BULLISH/BEARISH/MIXED/CIRCUS)
+  social pulse               ← vibe.social_pulse
+  contrarian note            ← vibe.contrarian_note
+  how to play                ← vibe.play_it
+
+  ── Section 03 TIER 1 (from brief.top_plays) ─────────────────────────────────
+  ticker/action/play/conv/catalyst ← brief.top_plays[].ticker/.action/.play/.conviction/.catalyst
+
+  ── Section 04 SIGNALS (from data.signals) ───────────────────────────────────
+  ticker/signal/play         ← signals[].ticker/.signal/.play
+  entry/target/stop          ← signals[].price/.target/.stop
+  risk                       ← signals[].risk
+
+  ── Section 05 SECTOR ROTATION ───────────────────────────────────────────────
+  LEADING rows               ← brief.sector_rotation.leading[].sector/.change_pct/.detail
+  LAGGING rows               ← brief.sector_rotation.lagging[].sector/.change_pct/.detail
+
+  ── Section 06 THE CLOSE ─────────────────────────────────────────────────────
+  today's signal             ← brief.close.signal  (optional → verdict.summary)
+  the audible                ← brief.close.audible (optional → vibe.play_it)
+
+  ── Section 07 THE WEEK AHEAD ────────────────────────────────────────────────
+  bullet cards               ← brief.week_ahead[] | data.week_ahead[]  .day/.date/.event/.description (optional)
+
+  ── Section 08 POSITIONING CHEAT SHEET ───────────────────────────────────────
+  rows                       ← brief.cheat_sheet[] | data.cheat_sheet[]  .tape/.position/.trigger (optional)
+  framework note             ← brief.cheat_framework (optional → default)
+
+  ── Footer ───────────────────────────────────────────────────────────────────
+  legal disclaimer           ← static (defined in this template)
+
+  NOTE: Fields marked (optional) are NOT in the current packages/engine BriefOutput
+  schema. They render from forward-compatible fields if the pipeline later adds them,
+  otherwise the section degrades gracefully (derived value or an italic placeholder).
+═══════════════════════════════════════════════════════════════════════════════
+-->
 </body>
 </html>
