@@ -2,7 +2,7 @@
   "tickers": [
     "SPY", "QQQ",
     "AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA",
-    "AMD", "PLTR", "COIN", "MSTR", "HOOD", "SOFI"
+    "AMD", "HOOD", "SOFI"
   ],
   "_note": "Edit this file directly on GitHub (pencil icon) to add or remove tickers. No code deploy needed — the routine reads this fresh on every run."
 }
