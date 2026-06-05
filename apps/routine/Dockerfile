@@ -6,18 +6,21 @@ RUN npm install -g pnpm@9
 
 WORKDIR /app
 
-# Copy workspace config first for cached layer
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
+# Copy workspace config + ALL package.json files first (for layer caching)
+COPY pnpm-workspace.yaml ./
+COPY package.json ./
 COPY packages/engine/package.json ./packages/engine/package.json
 COPY apps/routine/package.json ./apps/routine/package.json
 
-# Install all workspace deps — no-frozen-lockfile in case lockfile drifts
+# Install all workspace deps — resolves @white80/engine from local workspace
 RUN pnpm install --no-frozen-lockfile
 
-# Copy the rest of the source
-COPY . .
+# Copy all source AFTER install so code changes don't bust the dep cache
+COPY packages/engine ./packages/engine
+COPY apps/routine ./apps/routine
+COPY watchlist.json ./watchlist.json
 
-# Build engine first (routine depends on its compiled output), then routine
+# Build engine first (routine imports from it), then routine
 RUN pnpm --filter @white80/engine run build \
   && pnpm --filter @white80/routine run build
 
