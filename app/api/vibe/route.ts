@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { CLAUDE_MODEL } from "@/lib/ai-config"
+import { askModel, MODELS } from "@white80/engine"
 
 const POLYGON_BASE = "https://api.polygon.io"
 
@@ -82,11 +82,7 @@ async function getTopMovers(apiKey: string): Promise<{ gainers: MarketSnapshot[]
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { tickers = [], apiKey, polygonKey } = body
-
-    if (!apiKey) {
-      return NextResponse.json({ error: "Anthropic API key required" }, { status: 400 })
-    }
+    const { tickers = [], polygonKey } = body
 
     // ── Step 1: Pull Polygon market data if key available ──
     let marketContext = ""
@@ -137,53 +133,19 @@ Use this hard data to anchor the vibe — index breadth, sector heat/cold, and t
       `${marketContext}\n\nUse web search for current price action`
     )
 
-    // ── Step 3: Call Claude with web search, strict JSON ──
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: CLAUDE_MODEL,
-        max_tokens: 5000,
-        system:
-          "You are a JSON API. You MUST respond with valid JSON only. No prose, no explanations, no markdown. Your entire response must be parseable JSON starting with { and ending with }. Never start with phrases like 'Based on' or 'Here is' - output raw JSON immediately.",
-        tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 6 }],
-        messages: [{ role: "user", content: fullPrompt }],
-      }),
-    })
-
-    if (!response.ok) {
-      const errText = await response.text()
-      if (response.status === 429) {
-        return NextResponse.json({ 
-          error: "Rate limit reached on your Anthropic API key. Please wait a minute and try again, or upgrade your Anthropic plan for higher limits." 
-        }, { status: 429 })
-      }
-      return NextResponse.json({ error: `Claude API error: ${errText.slice(0, 200)}` }, { status: 500 })
-    }
-
-    const result = await response.json()
-
-    let text = ""
-    for (const block of result.content || []) {
-      if (block.type === "text") text += block.text
-    }
-
-    text = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
-    text = text.replace(/<\/?cite[^>]*>/g, "").replace(/\[\d+\]/g, "")
-    const jsonStart = text.indexOf("{")
-    if (jsonStart > 0) text = text.slice(jsonStart)
-    const jsonEnd = text.lastIndexOf("}")
-    if (jsonEnd !== -1 && jsonEnd < text.length - 1) text = text.slice(0, jsonEnd + 1)
-
-    const parsed = JSON.parse(text)
+    // ── Step 3: Read the vibe via the Vibe Engine model (sonar-pro, live search) ──
+    const parsed = await askModel<unknown>(MODELS.VIBE_ENGINE, "", fullPrompt)
 
     return NextResponse.json(parsed)
   } catch (err) {
+    const message = err instanceof Error ? err.message : "Vibe check failed"
+    if (/rate limit/i.test(message)) {
+      return NextResponse.json({ error: message }, { status: 429 })
+    }
+    if (message === "API_KEY_REQUIRED") {
+      return NextResponse.json({ error: "API_KEY_REQUIRED" }, { status: 401 })
+    }
     console.error("Vibe check error:", err)
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Vibe check failed" }, { status: 500 })
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
