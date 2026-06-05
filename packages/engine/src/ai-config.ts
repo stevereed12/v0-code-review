@@ -1,9 +1,8 @@
 // ─── ANTHROPIC MODEL CONFIG ──────────────────────────────────────────────────
-// The canonical model id now lives in @white80/engine (shared by the web app and
-// the automated routine), re-exported here so existing `@/lib/ai-config` imports
-// keep working and there is a single source of truth. Update it in the engine.
+// Centralized so a model deprecation/migration is a one-line change.
+// Mirrors the web app's lib/ai-config.ts.
 //
 // Current: claude-sonnet-4-6 (claude-sonnet-4-20250514 retires 2026-06-15)
 // Models: https://docs.anthropic.com/en/docs/about-claude/models
 
-export { CLAUDE_MODEL } from "@white80/engine"
+export const CLAUDE_MODEL = "claude-sonnet-4-6"

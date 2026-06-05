@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>White80 Brief</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0b0e14;
+    --panel: #131823;
+    --ink: #e8edf5;
+    --muted: #8b97a8;
+    --accent: #4ea1ff;
+    --green: #2ecc71;
+    --red: #ff5c5c;
+    --amber: #ffb547;
+    --line: #232b3a;
+  }
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    line-height: 1.4;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 14mm 14mm 12mm;
+    page-break-after: always;
+    position: relative;
+  }
+  .page:last-child { page-break-after: auto; }
+  h1 { font-size: 30px; letter-spacing: -0.5px; font-weight: 800; }
+  h2 { font-size: 15px; margin-bottom: 8px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+  h3 { font-size: 12px; font-weight: 700; }
+  .muted { color: var(--muted); }
+  .row { display: flex; gap: 10px; }
+  .col { flex: 1; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .kicker { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+  .scorebar { height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; margin-top: 6px; }
+  .scorefill { height: 100%; background: linear-gradient(90deg, var(--red), var(--amber), var(--green)); }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 10px; text-transform: uppercase; }
+  .tag { background: #1c2433; border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; font-size: 10px; }
+  .foot { position: absolute; bottom: 8mm; left: 14mm; right: 14mm; color: var(--muted); font-size: 9px; display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 6px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .small { font-size: 10px; }
+  .big { font-size: 22px; font-weight: 800; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script id="brief-data" type="application/json">__BRIEF_DATA__</script>
+<script>
+(function () {
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function pct(n) {
+    if (typeof n !== "number" || isNaN(n)) return "";
+    var sign = n >= 0 ? "+" : "";
+    return sign + n.toFixed(2) + "%";
+  }
+  function cls(n) { return (typeof n === "number" && n < 0) ? "neg" : "pos"; }
+
+  var data;
+  try {
+    data = JSON.parse(document.getElementById("brief-data").textContent);
+  } catch (e) {
+    document.getElementById("root").innerHTML = "<div class='page'><h1>Brief data failed to parse</h1></div>";
+    return;
+  }
+
+  var brief = data.brief || {};
+  var vibe = data.vibe || {};
+  var macro = brief.macro_pulse || {};
+  var rot = brief.sector_rotation || { leading: [], lagging: [] };
+  var foot = function (page) {
+    return "<div class='foot'><span>White80 — Pre-Market Intelligence</span>" +
+      "<span>" + esc(data.session_date || "") + "</span>" +
+      "<span>Page " + page + " of 4</span></div>";
+  };
+
+  // ── PAGE 1: Cover + Vibe ──
+  var score = typeof vibe.vibe_score === "number" ? vibe.vibe_score : 0;
+  var p1 = "<div class='page'>" +
+    "<div class='kicker'>White80 Daily Brief</div>" +
+    "<h1>" + esc(brief.session_label || "Pre-Open") + " &middot; " + esc(brief.session_date || data.session_date || "") + "</h1>" +
+    "<div class='panel' style='margin-top:14px'>" +
+      "<h2>Market Vibe</h2>" +
+      "<div class='row'><div class='col'>" +
+        "<div class='big'>" + Math.round(score) + "<span class='muted'>/100</span> &mdash; " + esc(vibe.mood || "") + "</div>" +
+        "<div class='small muted'>" + esc(vibe.temperature || "") + "</div>" +
+        "<div class='scorebar'><div class='scorefill' style='width:" + Math.max(0, Math.min(100, score)) + "%'></div></div>" +
+      "</div></div>" +
+      "<p style='margin-top:10px'><strong>" + esc(vibe.headline || "") + "</strong></p>" +
+      "<p class='muted' style='margin-top:6px'>" + esc(vibe.read || "") + "</p>" +
+    "</div>" +
+    "<div class='row'>" +
+      "<div class='col panel'><h3>Hot Sectors</h3>" +
+        (vibe.hot_sectors || []).map(function (s) {
+          return "<div class='small'>" + esc(s.sector) + " <span class='" + cls(s.change_pct) + "'>" + pct(s.change_pct) + "</span> <span class='muted'>" + esc(s.vibe) + "</span></div>";
+        }).join("") +
+      "</div>" +
+      "<div class='col panel'><h3>Cold Sectors</h3>" +
+        (vibe.cold_sectors || []).map(function (s) {
+          return "<div class='small'>" + esc(s.sector) + " <span class='" + cls(s.change_pct) + "'>" + pct(s.change_pct) + "</span> <span class='muted'>" + esc(s.vibe) + "</span></div>";
+        }).join("") +
+      "</div>" +
+    "</div>" +
+    "<div class='panel'><h3>Social Pulse</h3><p class='small muted'>" + esc(vibe.social_pulse || "") + "</p>" +
+      "<h3 style='margin-top:8px'>Contrarian Note</h3><p class='small muted'>" + esc(vibe.contrarian_note || "") + "</p>" +
+      "<h3 style='margin-top:8px'>How To Play</h3><p class='small'>" + esc(vibe.play_it || "") + "</p>" +
+    "</div>" +
+    foot(1) + "</div>";
+
+  // ── PAGE 2: Macro + Sector rotation + Catalysts ──
+  function macroCell(label, obj) {
+    if (!obj) return "";
+    var val = obj.price != null ? obj.price : (obj.level != null ? obj.level : (obj.yield != null ? obj.yield : ""));
+    var change = obj.change_pct != null ? " <span class='" + cls(obj.change_pct) + "'>" + pct(obj.change_pct) + "</span>" : "";
+    return "<div class='panel small'><div class='muted'>" + esc(label) + "</div><div class='big' style='font-size:16px'>" + esc(val) + change + "</div><div class='muted'>" + esc(obj.context || obj.direction || "") + "</div></div>";
+  }
+  var p2 = "<div class='page'>" +
+    "<h2>Macro Pulse</h2>" +
+    "<div class='grid2'>" +
+      macroCell("SPY", macro.spy) + macroCell("QQQ", macro.qqq) +
+      macroCell("VIX", macro.vix) + macroCell("DXY", macro.dxy) +
+      macroCell("10Y", macro.ten_year) + macroCell("WTI", macro.wti) +
+      macroCell("Gold", macro.gold) +
+    "</div>" +
+    "<div class='row'>" +
+      "<div class='col panel'><h3>Leading Sectors</h3>" +
+        (rot.leading || []).map(function (s) { return "<div class='small'>" + esc(s.sector) + " <span class='" + cls(s.change_pct) + "'>" + pct(s.change_pct) + "</span><br><span class='muted'>" + esc(s.detail) + "</span></div>"; }).join("") +
+      "</div>" +
+      "<div class='col panel'><h3>Lagging Sectors</h3>" +
+        (rot.lagging || []).map(function (s) { return "<div class='small'>" + esc(s.sector) + " <span class='" + cls(s.change_pct) + "'>" + pct(s.change_pct) + "</span><br><span class='muted'>" + esc(s.detail) + "</span></div>"; }).join("") +
+      "</div>" +
+    "</div>" +
+    "<div class='panel'><h2>Catalysts</h2>" +
+      (brief.catalysts || []).map(function (c) { return "<div style='margin-bottom:6px'><strong>" + esc(c.title) + "</strong><div class='small muted'>" + esc(c.body) + "</div></div>"; }).join("") +
+    "</div>" +
+    "<div class='panel'><h3>Verdict — " + esc((brief.verdict || {}).tone || "") + "</h3><p class='small'>" + esc((brief.verdict || {}).summary || "") + "</p></div>" +
+    foot(2) + "</div>";
+
+  // ── PAGE 3: Top plays + Signals ──
+  var p3 = "<div class='page'>" +
+    "<h2>Top Plays</h2><table><thead><tr><th>Ticker</th><th>Action</th><th>Play</th><th>Conv.</th><th>Catalyst</th></tr></thead><tbody>" +
+      (brief.top_plays || []).map(function (p) {
+        return "<tr><td><strong>" + esc(p.ticker) + "</strong></td><td>" + esc(p.action) + "</td><td>" + esc(p.play) + "<br><span class='muted small'>" + esc(p.thesis) + "</span></td><td>" + esc(p.conviction) + "</td><td class='small'>" + esc(p.catalyst) + "</td></tr>";
+      }).join("") +
+    "</tbody></table>" +
+    "<h2 style='margin-top:14px'>Signals (Watchlist)</h2><table><thead><tr><th>Ticker</th><th>Signal</th><th>Play</th><th>Risk</th><th>Tgt/Stop</th></tr></thead><tbody>" +
+      (data.signals || []).map(function (s) {
+        return "<tr><td><strong>" + esc(s.ticker) + "</strong> <span class='muted small'>" + pct(s.change_pct) + "</span></td><td>" + esc(s.signal) + "</td><td class='small'>" + esc(s.play) + "<br><span class='muted'>" + esc(s.thesis) + "</span></td><td>" + esc(s.risk) + "</td><td class='small'>" + esc(s.target) + " / " + esc(s.stop) + "</td></tr>";
+      }).join("") +
+    "</tbody></table>" +
+    foot(3) + "</div>";
+
+  // ── PAGE 4: Tier 1 + Scout + Watchlist ──
+  var p4 = "<div class='page'>" +
+    "<h2>Tier 1 Scanner</h2><table><thead><tr><th>Ticker</th><th>Score</th><th>Sector</th><th>Price</th><th>Reasoning</th></tr></thead><tbody>" +
+      (data.tier1 || []).slice(0, 20).map(function (t) {
+        return "<tr><td><strong>" + esc(t.ticker) + "</strong></td><td>" + esc(t.score) + "/6</td><td class='small'>" + esc(t.sector) + "</td><td>$" + esc(t.price) + " <span class='" + cls(t.changePercent) + "'>" + pct(t.changePercent) + "</span></td><td class='small muted'>" + esc(t.reasoning) + "</td></tr>";
+      }).join("") +
+    "</tbody></table>" +
+    "<h2 style='margin-top:12px'>Scout Discoveries</h2>" +
+      ((data.scout || []).length === 0
+        ? "<p class='muted small'>No new discoveries today.</p>"
+        : (data.scout || []).map(function (s) {
+            return "<div class='panel small'><strong>" + esc(s.ticker) + "</strong> — " + esc(s.name) + " <span class='tag'>" + esc(s.conviction) + "</span><br><span class='muted'>" + esc(s.thesis) + "</span><br>Catalyst: " + esc(s.catalyst) + " &middot; Target: " + esc(s.upside_target) + "</div>";
+          }).join("")) +
+    "<h2 style='margin-top:8px'>Active Watchlist</h2><p class='small'>" + (data.watchlist || []).map(esc).join(" &middot; ") + "</p>" +
+    "<p class='small muted' style='margin-top:6px'>" + esc((data.curator || {}).summary || "") + "</p>" +
+    foot(4) + "</div>";
+
+  document.getElementById("root").innerHTML = p1 + p2 + p3 + p4;
+})();
+</script>
+</body>
+</html>
