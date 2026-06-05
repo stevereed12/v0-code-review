@@ -3,17 +3,16 @@
 // the routine consumes. Each agent's logic is preserved verbatim in its own module;
 // this file only sequences the calls and threads keys/watchlist between them.
 //
-// Ordering rationale (and how it satisfies the completeness invariants):
-//   1. Curator     → resolves the active watchlist (builds from scratch if none given)
-//   2. Tier 1 Scan → technical scan over the universe (no LLM); produces tier1 matches
-//   3. Watchlist   → material news for the active watchlist tickers
-//   4. Signals     → one Signal per Tier-1 match  ⇒  signals.length === tier1.length
-//   5. Scout       → discovery candidates (may be empty)
-//   6. Daily Brief → macro/catalysts/top_plays (Polygon + Claude)
-//   7. Vibe        → market mood read (Polygon + Claude)
+// Signal ticker scope (as of v2):
+//   • Tier 1 matches (technical scan)
+//   • Curator active_watchlist callouts (promote list — catalyst/earnings flagged)
+//   • Mag 7 — always present every day
+//   • Scout tickers — anything Scout surfaces
+//   All deduplicated before passing to Signals Engine.
 
 import type { BriefOutput, PipelineOptions } from "./types"
 import { resolvePolygonKey } from "./model"
+import { MAG_7 } from "./models"
 import { runCurator } from "./agents/curator"
 import { runTier1Scan } from "./agents/tier1-scanner"
 import { runWatchlist } from "./agents/watchlist"
@@ -23,6 +22,11 @@ import { runDailyBrief } from "./agents/daily-brief"
 import { runVibe } from "./agents/vibe-engine"
 
 const DEFAULT_SCOUT_THEMES = ["ai_infra", "semis", "ai_apps"]
+
+/** Deduplicate a list of tickers, uppercasing all entries. */
+function dedupe(tickers: string[]): string[] {
+  return [...new Set(tickers.map((t) => t.toUpperCase()))]
+}
 
 /**
  * Run the full White80 morning pipeline end-to-end.
@@ -51,20 +55,33 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
   // ── 3. Watchlist (news monitor) over the active watchlist ──
   const news = await runWatchlist({ tickers: watchlist })
 
-  // ── 4. Signals: one Signal per Tier-1 match (keeps signals.length === tier1.length) ──
-  const tier1Tickers = tier1.map((t) => t.ticker)
-  const newsContext = news.length > 0 ? JSON.stringify(news) : null
-  const signals = await runSignals({
-    tickers: tier1Tickers,
-    newsContext,
-  })
-
-  // ── 5. Scout: discovery candidates (may be empty) ──
+  // ── 4. Scout: discovery candidates (may be empty) — run before Signals
+  //        so Scout tickers can be included in the signal universe ──
   const scout = await runScout({
     themes: options.scoutThemes ?? DEFAULT_SCOUT_THEMES,
     capTier: options.scoutCapTier ?? "mixed",
     horizon: options.scoutHorizon ?? "1-3mo",
     excludeTickers: watchlist,
+  })
+
+  // ── 5. Signals: expanded ticker scope ──
+  //   • Tier 1 matches
+  //   • Curator promotions (catalyst / earnings callouts)
+  //   • Mag 7 — always
+  //   • Scout tickers
+  const tier1Tickers    = tier1.map((t) => t.ticker)
+  const curatorTickers  = curator.promote.map((p) => p.ticker)
+  const scoutTickers    = scout.map((s) => s.ticker)
+  const signalTickers   = dedupe([
+    ...tier1Tickers,
+    ...curatorTickers,
+    ...MAG_7,
+    ...scoutTickers,
+  ])
+  const newsContext = news.length > 0 ? JSON.stringify(news) : null
+  const signals = await runSignals({
+    tickers: signalTickers,
+    newsContext,
   })
 
   // ── 6. Daily Brief: macro / catalysts / top plays ──

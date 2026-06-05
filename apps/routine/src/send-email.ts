@@ -8,7 +8,7 @@ import { Resend } from "resend"
 import type { BriefOutput } from "@white80/engine"
 
 const TO = process.env.EMAIL_TO || "steven12.reed@gmail.com"
-const FROM = process.env.EMAIL_FROM || "White80 <brief@white80.io>"
+const FROM = process.env.EMAIL_FROM || "White80 <contact@white80.io>"
 
 function subjectDate(output: BriefOutput): string {
   const raw = output.brief?.session_date || output.session_date || output.generated_at
