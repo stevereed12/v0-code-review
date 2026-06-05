@@ -5,37 +5,23 @@ RUN npm install -g pnpm@9
 
 WORKDIR /app
 
-# ── Step 1: Install & build the engine as a standalone package ──────────────
-COPY packages/engine/package.json ./packages/engine/
+# ── Step 1: Copy everything ──────────────────────────────────────────────────
+COPY . .
+
+# ── Step 2: Install & build the engine ───────────────────────────────────────
 WORKDIR /app/packages/engine
 RUN pnpm install --no-frozen-lockfile
-COPY packages/engine/ ./
 RUN pnpm run build
 
-# ── Step 2: Install the routine, pointing @white80/engine at the local build ─
+# ── Step 3: Patch routine package.json to use file: ref, then install ────────
 WORKDIR /app/apps/routine
-COPY apps/routine/package.json ./
-
-# Replace the workspace reference with a direct file path so pnpm
-# doesn't try to fetch @white80/engine from the npm registry.
-RUN node -e "
-  const fs = require('fs');
-  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-  pkg.dependencies['@white80/engine'] = 'file:../../packages/engine';
-  fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
-"
-
+RUN sed -i 's|"@white80/engine": "\*"|"@white80/engine": "file:../../packages/engine"|g' package.json
 RUN pnpm install --no-frozen-lockfile
 
-COPY apps/routine/ ./
-
-# ── Step 3: Build the routine ───────────────────────────────────────────────
+# ── Step 4: Build the routine ─────────────────────────────────────────────────
 RUN pnpm run build
 
-# ── Step 4: Copy runtime assets ─────────────────────────────────────────────
 WORKDIR /app
-COPY watchlist.json ./
-
 ENV NODE_ENV=production
 ENV OUTPUT_DIR=/tmp
 EXPOSE 8080
