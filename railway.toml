@@ -1,0 +1,21 @@
+# Railway service config for the White80 morning routine.
+# Dockerfile lives in apps/routine/ but build context must be repo root
+# so it can access packages/engine and pnpm-workspace.yaml.
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "apps/routine/Dockerfile"
+buildContext = "."
+
+[deploy]
+startCommand = "node apps/routine/dist/server.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+
+# ── Cron trigger ──
+# Weekdays at 09:30 UTC = 5:30 AM EDT (Mar–Nov).
+# During EST (Nov–Mar), shift to "30 10 * * 1-5" to stay at 5:30 AM ET.
+[[cron]]
+schedule = "30 9 * * 1-5"
+command = "bash apps/routine/scripts/cron-trigger.sh"
