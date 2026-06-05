@@ -1,27 +1,33 @@
-# White80 routine — Playwright base image ships Chromium + system deps.
 FROM mcr.microsoft.com/playwright:v1.44.0-jammy
 
-RUN npm install -g pnpm@9
-
 WORKDIR /app
 
-# ── Step 1: Copy everything ──────────────────────────────────────────────────
-COPY . .
+# ── Step 1: Build the engine standalone with npm ─────────────────────────────
+COPY packages/engine/package.json ./packages/engine/package.json
+COPY packages/engine/src ./packages/engine/src
+COPY packages/engine/tsconfig.json ./packages/engine/tsconfig.json
 
-# ── Step 2: Install & build the engine ───────────────────────────────────────
 WORKDIR /app/packages/engine
-RUN pnpm install --no-frozen-lockfile
-RUN pnpm run build
+RUN npm install --no-package-lock
+RUN npm run build
 
-# ── Step 3: Patch routine package.json to use file: ref, then install ────────
+# ── Step 2: Install & build the routine with npm ─────────────────────────────
 WORKDIR /app/apps/routine
-RUN sed -i 's|"@white80/engine": "\*"|"@white80/engine": "file:../../packages/engine"|g' package.json
-RUN pnpm install --no-frozen-lockfile
+COPY apps/routine/package.json ./package.json
 
-# ── Step 4: Build the routine ─────────────────────────────────────────────────
-RUN pnpm run build
+# Rewrite @white80/engine to a file: reference before npm install
+RUN sed -i 's|"@white80/engine": "\*"|"@white80/engine": "file:../../packages/engine"|' package.json
 
+COPY apps/routine/src ./src
+COPY apps/routine/tsconfig.json ./tsconfig.json
+
+RUN npm install --no-package-lock
+RUN npm run build
+
+# ── Step 3: Runtime ──────────────────────────────────────────────────────────
 WORKDIR /app
+COPY watchlist.json ./watchlist.json
+
 ENV NODE_ENV=production
 ENV OUTPUT_DIR=/tmp
 EXPOSE 8080
