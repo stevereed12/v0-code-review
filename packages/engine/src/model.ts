@@ -1,16 +1,24 @@
-// ─── CLAUDE CALL + JSON EXTRACTION ───────────────────────────────────────────
-// extractJSON is copied VERBATIM from the web app's app/api/claude/route.ts so
-// that the Signals/Curator/Watchlist/Scout agents parse Claude output byte-for-byte
-// identically outside the browser. askClaude reproduces the same Anthropic request,
-// retry, and web-search behavior the /api/claude route used.
+// ─── MODEL CALL + JSON EXTRACTION ────────────────────────────────────────────
+// Replaces the old Anthropic-specific claude.ts. All model calls now go through
+// the Perplexity Agent API, which is OpenAI-SDK compatible (base URL
+// https://api.perplexity.ai, single key PERPLEXITY_API_KEY). Each agent passes its
+// own model id (see ./models). extractJSON is preserved VERBATIM so Claude/GPT/
+// Gemini/Grok/Sonar JSON output parses byte-for-byte identically.
 
-import { CLAUDE_MODEL } from "./ai-config"
+import OpenAI from "openai"
+
+const client = new OpenAI({
+  apiKey: process.env.PERPLEXITY_API_KEY,
+  baseURL: "https://api.perplexity.ai",
+})
 
 export function extractJSON(s: string): unknown {
-  if (!s) throw new Error("Empty response from Claude")
+  if (!s) throw new Error("Empty response from model")
 
   // Strip code fences first
   let cleaned = s.replace(/```(?:json)?\s*/gi, "").replace(/```/g, "").trim()
+  // Strip citation markers that sonar models inject into responses (e.g. [1], [2])
+  cleaned = cleaned.replace(/\[\d+\]/g, "")
 
   // Try parsing as-is
   try {
@@ -154,99 +162,70 @@ export function extractJSON(s: string): unknown {
   throw new Error("Unclosed JSON in response and recovery failed. Response may be truncated.")
 }
 
+const JSON_SYSTEM_PROMPT =
+  "You are a JSON API. You MUST respond with valid JSON only. No prose, no explanations, no markdown. Your entire response must be parseable JSON starting with { and ending with }. Never start with phrases like 'Based on' or 'Here is' - output raw JSON immediately."
+
 /**
- * Calls Claude with the given prompt and returns parsed JSON of type T.
- * Mirrors the web app's /api/claude handler: web search enabled by default,
- * 3-attempt retry on transient/5xx/overload errors, same JSON extraction.
+ * Calls a model via the Perplexity Agent API and returns parsed JSON of type T.
+ * Mirrors the old askClaude retry semantics: 3 attempts with backoff on 5xx /
+ * overload / transient network errors, same extractJSON parsing. Sonar models
+ * have web search built in; xai/google models rely on prompt + Polygon context.
+ *
+ * @param model        Model id (see ./models MODELS)
+ * @param systemPrompt System prompt. Pass "" to use the default strict-JSON prompt.
+ * @param userPrompt   The user content (the verbatim agent prompt).
  */
-export async function askClaude<T>(
-  prompt: string,
-  apiKey: string,
-  useSearch = true,
-  maxTokens = 6000
+export async function askModel<T>(
+  model: string,
+  systemPrompt: string,
+  userPrompt: string,
+  retries = 3
 ): Promise<T> {
-  if (!prompt) throw new Error("Prompt is required")
+  if (!userPrompt) throw new Error("Prompt is required")
+  if (!process.env.PERPLEXITY_API_KEY?.trim()) throw new Error("API_KEY_REQUIRED")
 
-  const trimmedKey = apiKey?.trim()
-  if (!trimmedKey) throw new Error("API_KEY_REQUIRED")
-  if (!trimmedKey.startsWith("sk-ant-")) {
-    throw new Error(
-      `Invalid API key format. Expected 'sk-ant-...' but got '${trimmedKey.slice(0, 10)}...'`
-    )
-  }
-
-  const body: Record<string, unknown> = {
-    model: CLAUDE_MODEL,
-    max_tokens: maxTokens,
-    messages: [{ role: "user", content: prompt }],
-  }
-
-  if (useSearch) {
-    body.tools = [{ type: "web_search_20250305", name: "web_search" }]
-  }
+  const system = systemPrompt?.trim() ? systemPrompt : JSON_SYSTEM_PROMPT
 
   let lastError: Error | null = null
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < retries; attempt++) {
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": trimmedKey,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify(body),
+      const completion = await client.chat.completions.create({
+        model,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: userPrompt },
+        ],
       })
 
-      if (!res.ok) {
-        const errText = await res.text()
-
-        if (res.status === 429) {
-          throw new Error(
-            "Rate limit reached on your Anthropic API key. Please wait a minute and try again, or upgrade your Anthropic plan for higher limits."
-          )
-        }
-
-        if (res.status >= 500 && attempt < 2) {
-          await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)))
-          lastError = new Error(`Server ${res.status}: ${errText.slice(0, 100)}`)
-          continue
-        }
-        throw new Error(`API ${res.status}: ${errText.slice(0, 200)}`)
-      }
-
-      const data = (await res.json()) as {
-        error?: { message?: string }
-        content?: Array<{ type: string; text?: string }>
-        stop_reason?: string
-      }
-      if (data.error) {
-        if (attempt < 2 && /overload|server|temporarily|timeout/i.test(data.error.message || "")) {
-          await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)))
-          lastError = new Error(data.error.message)
-          continue
-        }
-        throw new Error(data.error.message)
-      }
-
-      const textBlocks = (data.content || []).filter((b) => b.type === "text")
-      const text = textBlocks.map((b) => b.text ?? "").join("\n").trim()
+      const text = (completion.choices?.[0]?.message?.content ?? "").trim()
 
       if (!text) {
-        const blockTypes = (data.content || []).map((b: { type: string }) => b.type).join(", ")
-        const stopReason = data.stop_reason || "unknown"
-        if (attempt < 2 && (blockTypes.includes("tool_use") || blockTypes.includes("server_tool_use"))) {
-          lastError = new Error(`Empty after tools (stop=${stopReason})`)
+        const finish = completion.choices?.[0]?.finish_reason || "unknown"
+        if (attempt < retries - 1) {
+          lastError = new Error(`Empty response (finish=${finish})`)
           await new Promise((r) => setTimeout(r, 1000))
           continue
         }
-        throw new Error(`Empty text response. stop_reason=${stopReason}, blocks=[${blockTypes || "none"}]`)
+        throw new Error(`Empty text response. finish_reason=${finish}`)
       }
 
       return extractJSON(text) as T
     } catch (err) {
       lastError = err as Error
-      if (attempt < 2 && /network|fetch|timeout|abort/i.test((err as Error).message)) {
+      const status = (err as { status?: number })?.status
+      const msg = (err as Error).message || ""
+
+      if (status === 429) {
+        throw new Error(
+          "Rate limit reached on your Perplexity API key. Please wait a minute and try again, or upgrade your plan for higher limits."
+        )
+      }
+
+      const transient =
+        (typeof status === "number" && status >= 500) ||
+        /overload|server|temporarily|timeout|network|fetch|abort|ECONN|socket/i.test(msg)
+
+      if (attempt < retries - 1 && transient) {
         await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)))
         continue
       }
@@ -254,14 +233,7 @@ export async function askClaude<T>(
     }
   }
 
-  throw new Error(lastError?.message || "Failed after 3 attempts")
-}
-
-/** Resolve an Anthropic key from explicit option or environment. */
-export function resolveAnthropicKey(explicit?: string): string {
-  const key = (explicit || process.env.ANTHROPIC_API_KEY || "").trim()
-  if (!key) throw new Error("ANTHROPIC_API_KEY required (pass anthropicKey or set the env var)")
-  return key
+  throw new Error(lastError?.message || `Failed after ${retries} attempts`)
 }
 
 /** Resolve a Polygon key from explicit option or environment (may be empty). */

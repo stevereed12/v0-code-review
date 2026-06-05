@@ -7,7 +7,7 @@
 
 import type { Tier1Signal, SignalResult, ScanConfig, ScanResult } from "../types"
 import { DEFAULT_SCAN_CONFIG, SECTOR_ETFS } from "../types"
-import { resolvePolygonKey } from "../claude"
+import { resolvePolygonKey } from "../model"
 
 const POLYGON_BASE = "https://api.polygon.io"
 

@@ -1,9 +1,9 @@
 import type { Signal, LivePrice, OptionsChainSummary } from "../types"
 import { buildSignalPrompt } from "../prompts"
-import { askClaude, resolveAnthropicKey } from "../claude"
+import { askModel } from "../model"
+import { MODELS } from "../models"
 
 export interface SignalsOptions {
-  anthropicKey?: string
   tickers: string[]
   newsContext?: string | null
   livePrices?: Record<string, LivePrice> | null
@@ -12,7 +12,6 @@ export interface SignalsOptions {
 
 /** Signals engine — verbatim prompt, returns one Signal per watchlist ticker. */
 export async function runSignals(opts: SignalsOptions): Promise<Signal[]> {
-  const key = resolveAnthropicKey(opts.anthropicKey)
   if (!opts.tickers || opts.tickers.length === 0) return []
   const prompt = buildSignalPrompt(
     opts.tickers,
@@ -20,5 +19,5 @@ export async function runSignals(opts: SignalsOptions): Promise<Signal[]> {
     opts.livePrices ?? null,
     opts.optionsData ?? null
   )
-  return askClaude<Signal[]>(prompt, key)
+  return askModel<Signal[]>(MODELS.SIGNALS_ENGINE, "", prompt)
 }

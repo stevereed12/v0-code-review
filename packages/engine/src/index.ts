@@ -21,9 +21,9 @@ export type { DailyBriefOptions } from "./agents/daily-brief"
 export { runVibe } from "./agents/vibe-engine"
 export type { VibeOptions } from "./agents/vibe-engine"
 
-// Claude helpers (shared client + key resolution)
-export { askClaude, extractJSON, resolveAnthropicKey, resolvePolygonKey } from "./claude"
-export { CLAUDE_MODEL } from "./ai-config"
+// Model helpers (shared Perplexity Agent API client + key resolution)
+export { askModel, extractJSON, resolvePolygonKey } from "./model"
+export { MODELS } from "./models"
 
 // Prompt builders (verbatim)
 export {

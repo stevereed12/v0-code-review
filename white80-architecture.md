@@ -17,22 +17,27 @@ environment variables it needs.
 
 ## 1. Where the seven agents live (original locations)
 
-| Agent | Original location | Mechanism |
-|-------|-------------------|-----------|
-| **Tier 1 Scanner** | `app/api/tier1-scan/route.ts` | Pure Polygon technical scan (no LLM). `POST` scans a universe, `GET` scans one ticker. |
-| **Signals Engine** | prompt in `lib/prompts.ts` (`buildSignalPrompt`), invoked from `components/white80/dashboard.tsx` → `/api/claude` | Claude + web search. Returns `Signal[]` (one per watchlist ticker). |
-| **Curator** | prompt in `lib/prompts.ts` (`buildCuratorPrompt`), invoked from dashboard → `/api/claude` | Claude + web search. Returns `CuratorState`. |
-| **Watchlist (News monitor)** | prompt in `lib/prompts.ts` (`buildNewsPrompt`), invoked from dashboard → `/api/claude` | Claude + web search. Returns `TickerNews[]`. This is the "Watchlist" agent in the seven-agent set — it monitors the active watchlist for material news. |
-| **Daily Brief** | `app/api/brief/route.ts` (+ `buildBriefPrompt`) | Polygon market data → injected into prompt → Claude + web search (`max_uses: 10`). Post-processes strike prices against live Polygon prices. Returns `Brief`. |
-| **Vibe Engine** | `app/api/vibe/route.ts` (+ `buildVibePrompt`) | Polygon market data → injected → Claude + web search (`max_uses: 6`). Returns `VibeCheck`. |
-| **Scout** | prompt in `lib/prompts.ts` (`buildScoutPrompt`), invoked from dashboard → `/api/claude` | Claude + web search. Returns `ScoutResult[]`. |
+| Agent | Original location | Model | Mechanism |
+|-------|-------------------|-------|-----------|
+| **Tier 1 Scanner** | `app/api/tier1-scan/route.ts` | — (no LLM) | Pure Polygon technical scan (no LLM). `POST` scans a universe, `GET` scans one ticker. |
+| **Signals Engine** | prompt in `lib/prompts.ts` (`buildSignalPrompt`), invoked from `components/white80/dashboard.tsx` → `/api/claude` | `xai/grok-4.3` | Structured JSON. Returns `Signal[]` (one per watchlist ticker). |
+| **Curator** | prompt in `lib/prompts.ts` (`buildCuratorPrompt`), invoked from dashboard → `/api/claude` | `perplexity/sonar-pro` | Built-in web search for macro context. Returns `CuratorState`. |
+| **Watchlist (News monitor)** | prompt in `lib/prompts.ts` (`buildNewsPrompt`), invoked from dashboard → `/api/claude` | `perplexity/sonar` | Built-in web search (cheapest grounded tier) for per-ticker news. Returns `TickerNews[]`. This is the "Watchlist" agent — it monitors the active watchlist for material news. |
+| **Daily Brief** | `app/api/brief/route.ts` (+ `buildBriefPrompt`) | `google/gemini-3.1-pro-preview` | Polygon market data → injected into prompt → model call. Post-processes strike prices against live Polygon prices. Returns `Brief`. |
+| **Vibe Engine** | `app/api/vibe/route.ts` (+ `buildVibePrompt`) | `perplexity/sonar-pro` | Polygon market data → injected → built-in web search for social/sentiment. Returns `VibeCheck`. |
+| **Scout** | prompt in `lib/prompts.ts` (`buildScoutPrompt`), invoked from dashboard → `/api/claude` | `xai/grok-4.20-reasoning` | Reasoning over patterns, structured JSON. Returns `ScoutResult[]`. |
 
 Supporting (not part of the daily seven, but extracted for completeness): **Catalyst detector**
 (`app/api/catalysts/route.ts`), **Quick Thesis** and **Buy & Hold** prompts in `lib/prompts.ts`.
 
-The shared JSON-extraction + retry logic lived in `app/api/claude/route.ts` (`extractJSON`). The
-engine reproduces this verbatim as `askClaude()` so client-style agents (Signals, Curator, News,
-Scout) behave identically outside the browser.
+**Model routing.** Every LLM agent now calls the Perplexity Agent API (OpenAI-SDK compatible,
+base URL `https://api.perplexity.ai`) through a single unified caller, `askModel(model, system,
+user)` in `packages/engine/src/model.ts`. Per-agent model ids live in
+`packages/engine/src/models.ts` (`MODELS`). One key, `PERPLEXITY_API_KEY`, bills all calls.
+Sonar models (`perplexity/sonar*`) have web search built in; the xai/google models get their
+context from the prompt + injected Polygon data. The shared JSON-extraction + retry logic (the
+old `extractJSON`/`askClaude` from `app/api/claude/route.ts`) is preserved verbatim as
+`extractJSON()`, now additionally stripping the `[n]` citation markers sonar injects.
 
 ---
 
@@ -50,26 +55,26 @@ Engine export: `runTier1Scan(opts: { polygonKey: string; tickers?: string[]; con
 ```ts
 buildSignalPrompt(tickers, newsContext?, livePrices?, optionsData?): string  // → Signal[]
 ```
-Engine export: `runSignals(opts: { anthropicKey; tickers; newsContext?; livePrices?; optionsData? }): Promise<Signal[]>`
+Engine export: `runSignals(opts: { tickers; newsContext?; livePrices?; optionsData? }): Promise<Signal[]>`
 
 ### Curator
 ```ts
 buildCuratorPrompt(currentList: string[]): string  // → CuratorState
 ```
-Engine export: `runCurator(opts: { anthropicKey; watchlist }): Promise<CuratorState>`
+Engine export: `runCurator(opts: { watchlist }): Promise<CuratorState>`
 
 ### Watchlist (News)
 ```ts
 buildNewsPrompt(tickers: string[]): string  // → TickerNews[]
 ```
-Engine export: `runWatchlist(opts: { anthropicKey; tickers }): Promise<TickerNews[]>`
+Engine export: `runWatchlist(opts: { tickers }): Promise<TickerNews[]>`
 
 ### Daily Brief
 ```ts
 // Original: POST /api/brief  body: { tickers, apiKey, polygonKey? }  → Brief
 buildBriefPrompt(tickers: string[]): string
 ```
-Engine export: `runDailyBrief(opts: { anthropicKey; tickers; polygonKey? }): Promise<Brief>`
+Engine export: `runDailyBrief(opts: { tickers; polygonKey? }): Promise<Brief>`
 (reproduces Polygon fetch + market-context injection + strike-price correction verbatim)
 
 ### Vibe Engine
@@ -77,19 +82,19 @@ Engine export: `runDailyBrief(opts: { anthropicKey; tickers; polygonKey? }): Pro
 // Original: POST /api/vibe  body: { tickers, apiKey, polygonKey? }  → VibeCheck
 buildVibePrompt(tickers: string[]): string
 ```
-Engine export: `runVibe(opts: { anthropicKey; tickers; polygonKey? }): Promise<VibeCheck>`
+Engine export: `runVibe(opts: { tickers; polygonKey? }): Promise<VibeCheck>`
 
 ### Scout
 ```ts
 buildScoutPrompt(themes, capTier, horizon, excludeTickers?): string  // → ScoutResult[]
 ```
-Engine export: `runScout(opts: { anthropicKey; themes; capTier; horizon; excludeTickers? }): Promise<ScoutResult[]>`
+Engine export: `runScout(opts: { themes; capTier; horizon; excludeTickers? }): Promise<ScoutResult[]>`
 
 ### Pipeline
 ```ts
 runPipeline(options?: PipelineOptions): Promise<BriefOutput>
 ```
-Runs all seven in sequence. `PipelineOptions` carries `anthropicKey`, `polygonKey`, optional
+Runs all seven in sequence. `PipelineOptions` carries `polygonKey`, optional
 `watchlist`, `scoutThemes`, `scoutCapTier`, `scoutHorizon`. See `packages/engine/src/types.ts`.
 
 ---
@@ -142,7 +147,7 @@ into the page. This is documented as a new addition, not a modification of exist
 
 Names only (discovered via `process.env` grep across the repo):
 
-- `ANTHROPIC_API_KEY` — *(was supplied per-user from the browser as `clientApiKey`; the routine uses the env var)*
+- `PERPLEXITY_API_KEY` — single key for all model calls via the Perplexity Agent API (replaced `ANTHROPIC_API_KEY`; resolved from the env var inside `askModel`)
 - `POLYGON_API_KEY`
 - `RESEND_API_KEY`
 - `NEXT_PUBLIC_BASE_URL`, `NEXT_PUBLIC_SITE_URL`
@@ -150,7 +155,7 @@ Names only (discovered via `process.env` grep across the repo):
 - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
 - `NODE_ENV`, `VERCEL_URL`
 
-Only `ANTHROPIC_API_KEY`, `POLYGON_API_KEY`, and `RESEND_API_KEY` are relevant to the routine.
+Only `PERPLEXITY_API_KEY`, `POLYGON_API_KEY`, and `RESEND_API_KEY` are relevant to the routine.
 Supabase/Stripe/Vercel vars belong to the web app and are not used by the engine or routine.
 
 ---

@@ -7,8 +7,8 @@
 
 import type { Brief } from "../types"
 import { buildBriefPrompt } from "../prompts"
-import { CLAUDE_MODEL } from "../ai-config"
-import { resolveAnthropicKey, resolvePolygonKey } from "../claude"
+import { askModel, resolvePolygonKey } from "../model"
+import { MODELS } from "../models"
 
 const POLYGON_BASE = "https://api.polygon.io"
 
@@ -137,17 +137,15 @@ async function getMostActive(apiKey: string): Promise<MarketSnapshot[]> {
 }
 
 export interface DailyBriefOptions {
-  anthropicKey?: string
   tickers?: string[]
   polygonKey?: string
 }
 
 /**
  * Daily Brief agent. Returns the parsed Brief object.
- * Throws on Claude error (matching the original route's error semantics).
+ * Throws on model error (matching the original route's error semantics).
  */
 export async function runDailyBrief(opts: DailyBriefOptions): Promise<Brief> {
-  const apiKey = resolveAnthropicKey(opts.anthropicKey)
   const polygonKey = resolvePolygonKey(opts.polygonKey)
   const tickers = opts.tickers ?? []
 
@@ -222,57 +220,14 @@ IMPORTANT FOR TOP PLAYS:
     `Use web search to get CURRENT real-time data\n\n${marketContext}`
   )
 
-  // ── Step 3: Call Claude with system prompt for strict JSON ──
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: CLAUDE_MODEL,
-      max_tokens: 8000,
-      system: "You are a JSON API. You MUST respond with valid JSON only. No prose, no explanations, no markdown. Your entire response must be parseable JSON starting with { and ending with }. Never start with phrases like 'Based on' or 'Here is' - output raw JSON immediately.",
-      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 10 }],
-      messages: [{ role: "user", content: fullPrompt }],
-    }),
-  })
-
-  if (!response.ok) {
-    const errText = await response.text()
-    if (response.status === 429) {
-      throw new Error(
-        "Rate limit reached on your Anthropic API key. Please wait a minute and try again, or upgrade your Anthropic plan for higher limits."
-      )
-    }
-    throw new Error(`Claude API error: ${errText.slice(0, 200)}`)
-  }
-
-  const result = (await response.json()) as { content?: Array<{ type: string; text?: string }> }
-
-  // Extract text from response
-  let text = ""
-  for (const block of result.content || []) {
-    if (block.type === "text") text += block.text
-  }
-
-  // Clean and parse JSON
-  text = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
-  // Strip citation markup
-  text = text.replace(/<\/?cite[^>]*>/g, "").replace(/\[\d+\]/g, "")
-  // Remove any prose prefix before JSON (e.g., "Based on my search, here is the data:")
-  const jsonStart = text.indexOf("{")
-  if (jsonStart > 0) {
-    text = text.slice(jsonStart)
-  }
-  // Remove any prose suffix after JSON
-  const jsonEnd = text.lastIndexOf("}")
-  if (jsonEnd !== -1 && jsonEnd < text.length - 1) {
-    text = text.slice(0, jsonEnd + 1)
-  }
-
-  const parsed = JSON.parse(text)
+  // ── Step 3: Call the model with strict-JSON system prompt ──
+  // gemini gets its market data from the injected Polygon context + the prompt's
+  // web-search instruction; extractJSON handles fences/citations/prose trimming.
+  const parsed = (await askModel<Record<string, unknown>>(
+    MODELS.DAILY_BRIEF,
+    "You are a JSON API. You MUST respond with valid JSON only. No prose, no explanations, no markdown. Your entire response must be parseable JSON starting with { and ending with }. Never start with phrases like 'Based on' or 'Here is' - output raw JSON immediately.",
+    fullPrompt
+  )) as Record<string, any>
 
   // ── Step 4: Validate and fix strike prices using Polygon data ──
   if (parsed.top_plays && Array.isArray(parsed.top_plays) && polygonKey) {

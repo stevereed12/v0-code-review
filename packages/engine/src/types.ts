@@ -301,8 +301,6 @@ export const DEFAULT_SCAN_CONFIG: ScanConfig = {
 // ─── PIPELINE AGGREGATE TYPES (new) ──────────────────────────────────────────
 
 export interface PipelineOptions {
-  /** Anthropic API key. Falls back to process.env.ANTHROPIC_API_KEY. */
-  anthropicKey?: string
   /** Polygon API key. Falls back to process.env.POLYGON_API_KEY. */
   polygonKey?: string
   /**

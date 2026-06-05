@@ -13,7 +13,7 @@
 //   7. Vibe        → market mood read (Polygon + Claude)
 
 import type { BriefOutput, PipelineOptions } from "./types"
-import { resolveAnthropicKey, resolvePolygonKey } from "./claude"
+import { resolvePolygonKey } from "./model"
 import { runCurator } from "./agents/curator"
 import { runTier1Scan } from "./agents/tier1-scanner"
 import { runWatchlist } from "./agents/watchlist"
@@ -33,12 +33,10 @@ const DEFAULT_SCOUT_THEMES = ["ai_infra", "semis", "ai_apps"]
  * on whether the assembled output is publishable.
  */
 export async function runPipeline(options: PipelineOptions = {}): Promise<BriefOutput> {
-  const anthropicKey = resolveAnthropicKey(options.anthropicKey)
   const polygonKey = resolvePolygonKey(options.polygonKey)
 
   // ── 1. Curator: resolve the active watchlist ──
   const curator = await runCurator({
-    anthropicKey,
     watchlist: options.watchlist ?? [],
   })
   const watchlist = curator.active_watchlist
@@ -51,20 +49,18 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
   const tier1 = scan.matches
 
   // ── 3. Watchlist (news monitor) over the active watchlist ──
-  const news = await runWatchlist({ anthropicKey, tickers: watchlist })
+  const news = await runWatchlist({ tickers: watchlist })
 
   // ── 4. Signals: one Signal per Tier-1 match (keeps signals.length === tier1.length) ──
   const tier1Tickers = tier1.map((t) => t.ticker)
   const newsContext = news.length > 0 ? JSON.stringify(news) : null
   const signals = await runSignals({
-    anthropicKey,
     tickers: tier1Tickers,
     newsContext,
   })
 
   // ── 5. Scout: discovery candidates (may be empty) ──
   const scout = await runScout({
-    anthropicKey,
     themes: options.scoutThemes ?? DEFAULT_SCOUT_THEMES,
     capTier: options.scoutCapTier ?? "mixed",
     horizon: options.scoutHorizon ?? "1-3mo",
@@ -72,10 +68,10 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
   })
 
   // ── 6. Daily Brief: macro / catalysts / top plays ──
-  const brief = await runDailyBrief({ anthropicKey, polygonKey, tickers: watchlist })
+  const brief = await runDailyBrief({ polygonKey, tickers: watchlist })
 
   // ── 7. Vibe: market mood read ──
-  const vibe = await runVibe({ anthropicKey, polygonKey, tickers: watchlist })
+  const vibe = await runVibe({ polygonKey, tickers: watchlist })
 
   return {
     generated_at: new Date().toISOString(),

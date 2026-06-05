@@ -5,8 +5,8 @@
 
 import type { VibeCheck } from "../types"
 import { buildVibePrompt } from "../prompts"
-import { CLAUDE_MODEL } from "../ai-config"
-import { resolveAnthropicKey, resolvePolygonKey } from "../claude"
+import { askModel, resolvePolygonKey } from "../model"
+import { MODELS } from "../models"
 
 const POLYGON_BASE = "https://api.polygon.io"
 
@@ -87,14 +87,12 @@ async function getTopMovers(apiKey: string): Promise<{ gainers: MarketSnapshot[]
 }
 
 export interface VibeOptions {
-  anthropicKey?: string
   tickers?: string[]
   polygonKey?: string
 }
 
 /** Vibe Engine agent. Returns the parsed VibeCheck object. */
 export async function runVibe(opts: VibeOptions): Promise<VibeCheck> {
-  const apiKey = resolveAnthropicKey(opts.anthropicKey)
   const polygonKey = resolvePolygonKey(opts.polygonKey)
   const tickers = opts.tickers ?? []
 
@@ -146,49 +144,14 @@ Use this hard data to anchor the vibe — index breadth, sector heat/cold, and t
     `${marketContext}\n\nUse web search for current price action`
   )
 
-  // ── Step 3: Call Claude with web search, strict JSON ──
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: CLAUDE_MODEL,
-      max_tokens: 5000,
-      system:
-        "You are a JSON API. You MUST respond with valid JSON only. No prose, no explanations, no markdown. Your entire response must be parseable JSON starting with { and ending with }. Never start with phrases like 'Based on' or 'Here is' - output raw JSON immediately.",
-      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 6 }],
-      messages: [{ role: "user", content: fullPrompt }],
-    }),
-  })
+  // ── Step 3: Call the model with web search (sonar built-in), strict JSON ──
+  // sonar-pro grounds the social/sentiment layer via its built-in web search;
+  // extractJSON strips the [n] citations sonar injects before parsing.
+  const parsed = await askModel<VibeCheck>(
+    MODELS.VIBE_ENGINE,
+    "You are a JSON API. You MUST respond with valid JSON only. No prose, no explanations, no markdown. Your entire response must be parseable JSON starting with { and ending with }. Never start with phrases like 'Based on' or 'Here is' - output raw JSON immediately.",
+    fullPrompt
+  )
 
-  if (!response.ok) {
-    const errText = await response.text()
-    if (response.status === 429) {
-      throw new Error(
-        "Rate limit reached on your Anthropic API key. Please wait a minute and try again, or upgrade your Anthropic plan for higher limits."
-      )
-    }
-    throw new Error(`Claude API error: ${errText.slice(0, 200)}`)
-  }
-
-  const result = (await response.json()) as { content?: Array<{ type: string; text?: string }> }
-
-  let text = ""
-  for (const block of result.content || []) {
-    if (block.type === "text") text += block.text
-  }
-
-  text = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
-  text = text.replace(/<\/?cite[^>]*>/g, "").replace(/\[\d+\]/g, "")
-  const jsonStart = text.indexOf("{")
-  if (jsonStart > 0) text = text.slice(jsonStart)
-  const jsonEnd = text.lastIndexOf("}")
-  if (jsonEnd !== -1 && jsonEnd < text.length - 1) text = text.slice(0, jsonEnd + 1)
-
-  const parsed = JSON.parse(text)
-
-  return parsed as VibeCheck
+  return parsed
 }
