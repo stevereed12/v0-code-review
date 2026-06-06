@@ -8,6 +8,10 @@ healthcheckPath = "/health"
 healthcheckTimeout = 30
 restartPolicyType = "on_failure"
 
+# ── Cron trigger ──
+# 8:30 AM ET = 12:30 PM UTC (EDT, Mar–Nov)
+# One hour before market open — freshest pre-market data.
+# In EST (Nov–Mar), shift to "30 13 * * 1-5" to stay at 8:30 AM ET.
 [[cron]]
-schedule = "30 9 * * 1-5"
+schedule = "30 12 * * 1-5"
 command = "bash apps/routine/scripts/cron-trigger.sh"
