@@ -39,3 +39,4 @@ export {
 
 // All types & constants
 export * from "./types"
+\nexport { fetchMacroPulse } from "./macro"

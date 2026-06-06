@@ -319,6 +319,7 @@ export interface PipelineOptions {
 /** The single object the full pipeline assembles from all seven agents. */
 export interface BriefOutput {
   generated_at: string
+  macro_pulse?: import("./macro").MacroPulse
   session_date: string
   curator: CuratorState
   watchlist: string[]

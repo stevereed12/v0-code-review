@@ -12,6 +12,7 @@
 
 import type { BriefOutput, PipelineOptions } from "./types"
 import { resolvePolygonKey } from "./model"
+import { fetchMacroPulse } from "./macro"
 import { MAG_7 } from "./models"
 import { runCurator } from "./agents/curator"
 import { runTier1Scan } from "./agents/tier1-scanner"
@@ -38,6 +39,10 @@ function dedupe(tickers: string[]): string[] {
  */
 export async function runPipeline(options: PipelineOptions = {}): Promise<BriefOutput> {
   const polygonKey = resolvePolygonKey(options.polygonKey)
+
+  // ── 0. Macro pulse: fetch live prices from Polygon first ──
+  // These are ground-truth prices for the ticker strip — no LLM guesses at them.
+  const macroPulse = polygonKey ? await fetchMacroPulse(polygonKey) : undefined
 
   // ── 1. Curator: resolve the active watchlist ──
   const curator = await runCurator({
@@ -92,6 +97,7 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
 
   return {
     generated_at: new Date().toISOString(),
+    macro_pulse: macroPulse,
     session_date: brief.session_date,
     curator,
     watchlist,
