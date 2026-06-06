@@ -39,4 +39,9 @@ export {
 
 // All types & constants
 export * from "./types"
-\nexport { fetchMacroPulse } from "./macro"
+
+export { fetchMacroPulse } from "./macro"
+
+// Intraday alert scanner
+export { scanUniverse, ALERT_UNIVERSE } from "./agents/alert-scanner"
+export type { ScoredTicker, ScanOptions } from "./agents/alert-scanner"

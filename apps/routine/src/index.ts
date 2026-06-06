@@ -14,6 +14,8 @@ import { verifyLayout } from "./verify-layout"
 import { sendEmail } from "./send-email"
 import { generateXPost } from "./generate-x-post"
 
+export { runAlertScan } from "./run-alerts"
+
 export interface RoutineResult {
   output: BriefOutput
   pdfPath: string

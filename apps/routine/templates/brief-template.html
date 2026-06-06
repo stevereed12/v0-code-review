@@ -95,6 +95,10 @@
 
   /* Section header */
   .section-head { display: flex; align-items: center; gap: 12px; margin: 22px 0 14px; }
+  .scout-table td { font-size: 11px; vertical-align: top; padding: 6px 8px; }
+  .scout-table .up { color: var(--signal); font-family: "DM Mono", monospace; font-size: 11px; }
+  .scout-table .small { font-size: 10px; color: #aaa; }
+  .scout-table .sub { font-size: 9px; color: #888; margin-top: 2px; }
   .section-num { font-family: "DM Mono", monospace; font-size: 12px; font-weight: 500; color: var(--void); background: var(--signal); padding: 4px 7px; border-radius: 3px; }
   .section-title { font-family: "Bebas Neue", sans-serif; font-size: 24px; color: var(--cream); letter-spacing: 0.05em; white-space: nowrap; }
   .section-rule { flex: 1; height: 1px; background: var(--signal); opacity: 0.5; }
@@ -528,8 +532,32 @@
 
   var p3 = "<div class='page'>" + tier1Table() + signalsTable() + "</div>";
 
-  // ═══════════ PAGE 4 — SECTOR, CLOSE, WEEK AHEAD, CHEAT SHEET ═══════════
-  function sectorTable() {
+  // ═══════════ PAGE 4 — SCOUT, SECTOR, CLOSE, WEEK AHEAD, CHEAT SHEET ═══════════
+  function scoutSection() {
+    var picks = data.scout || [];
+    if (!picks.length) return "";
+    var convClass = { HIGH: "badge-BUY", MEDIUM: "badge-WATCH", SPECULATIVE: "badge-FADE" };
+    var rows = picks.map(function (s) {
+      var cls = convClass[s.conviction] || "badge-WATCH";
+      return "<tr>" +
+        "<td class='tk'>" + esc(s.ticker) + "<div class='sub'>" + esc(s.name) + "</div></td>" +
+        "<td><span class='badge " + cls + "'>" + esc(s.conviction) + "</span></td>" +
+        "<td>" + esc(s.market_cap) + "</td>" +
+        "<td>" + esc(s.thesis) + "</td>" +
+        "<td>" + esc(s.catalyst) + "</td>" +
+        "<td class='up'>" + esc(s.upside_target) + "</td>" +
+        "<td class='mono small'>" + esc(s.entry_strategy) + "</td>" +
+      "</tr>";
+    });
+    return "<div class='section-head'><span class='section-num'>05</span>" +
+      "<span class='section-title'>SCOUT — CATCH THE ROCKETS</span><span class='section-rule'></span></div>" +
+      "<div class='read-note'>1–12 month forward plays. Smaller caps. Asymmetric upside. Catch them before they take off.</div>" +
+      "<table class='scout-table'><thead><tr>" +
+        "<th>TICKER</th><th>CONVICTION</th><th>MKT CAP</th><th>THESIS</th><th>CATALYST</th><th>UPSIDE</th><th>ENTRY</th>" +
+      "</tr></thead><tbody>" + rows.join("") + "</tbody></table>";
+  }
+
+    function sectorTable() {
     var lead = (rot.leading || []).map(function (s) {
       return "<tr><td><span class='badge badge-LEADING'>LEADING</span></td>" +
         "<td class='tk'>" + esc(s.sector) + "</td>" +
@@ -602,7 +630,7 @@
   }
 
   var p4 = "<div class='page'>" +
-    sectorTable() + theClose() + weekAhead() + cheatSheet() + footer() +
+    scoutSection() + sectorTable() + theClose() + weekAhead() + cheatSheet() + footer() +
   "</div>";
 
   document.getElementById("root").innerHTML = p1 + p2 + p3 + p4;

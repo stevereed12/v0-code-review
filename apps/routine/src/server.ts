@@ -8,7 +8,7 @@
 // block on the multi-minute pipeline.
 
 import express from "express"
-import { runRoutine } from "./index"
+import { runRoutine, runAlertScan } from "./index"
 
 const PORT = Number(process.env.PORT || 8080)
 const RUN_SECRET = process.env.RUN_SECRET
@@ -48,6 +48,23 @@ app.post("/run", (req, res) => {
     .finally(() => {
       running = false
     })
+})
+
+app.post("/run-alerts", async (req, res) => {
+  // Auth: Bearer token must match RUN_SECRET.
+  const auth = req.header("authorization") || ""
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : ""
+  if (!RUN_SECRET || token !== RUN_SECRET) {
+    return res.status(401).json({ error: "unauthorized" })
+  }
+
+  try {
+    const alertCount = await runAlertScan()
+    res.json({ ok: true, alertCount })
+  } catch (err) {
+    console.error("[server] Alert scan failed:", err)
+    res.status(500).json({ ok: false, error: (err as Error).message })
+  }
 })
 
 app.listen(PORT, () => {

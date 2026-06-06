@@ -1,11 +1,11 @@
 // ─── LAYOUT VERIFICATION ─────────────────────────────────────────────────────
-// Sanity-checks the rendered PDF: expects 4 pages and a file size > 50 KB.
+// Sanity-checks the rendered PDF: expects 5 pages and a file size > 50 KB.
 // Logs warnings but never throws — a layout quirk should not block delivery.
 
 import { statSync, readFileSync } from "node:fs"
 import { PDFDocument } from "pdf-lib"
 
-const EXPECTED_PAGES = 4
+const EXPECTED_PAGES = 5
 const MIN_BYTES = 50 * 1024 // 50 KB
 
 export interface LayoutReport {

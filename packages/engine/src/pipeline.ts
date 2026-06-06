@@ -10,6 +10,7 @@
 //   • Scout tickers — anything Scout surfaces
 //   All deduplicated before passing to Signals Engine.
 
+import { writeFileSync } from "node:fs"
 import type { BriefOutput, PipelineOptions } from "./types"
 import { resolvePolygonKey } from "./model"
 import { fetchMacroPulse } from "./macro"
@@ -127,7 +128,9 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
             volume: t.day?.v || 0,
             session: t.marketStatus || "UNKNOWN",
             market_state: t.marketStatus || "UNKNOWN",
+            ts: tradeTime,
             age_seconds: Math.floor((now - tradeTime) / 1000),
+            name: t.ticker,
           }
         }
         console.log(`[pipeline] Fetched live prices for ${Object.keys(livePrices).length}/${signalTickers.length} signal tickers`)
@@ -142,6 +145,15 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
     newsContext,
     livePrices,
   })
+
+  // Hand today's signal tickers to the intraday alert scanner (best-effort).
+  // The alert scanner reads this file to raise the bar on names already in the brief.
+  try {
+    const briefTickersList = signals.map((s) => s.ticker)
+    writeFileSync("/tmp/white80-brief-tickers.json", JSON.stringify(briefTickersList))
+  } catch {
+    /* non-fatal — alert scanner falls back to an empty brief-ticker set */
+  }
 
   // ── 6. Daily Brief: macro / catalysts / top plays ──
   const brief = await runDailyBrief({ polygonKey, tickers: watchlist })
