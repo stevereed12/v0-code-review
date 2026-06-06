@@ -10,7 +10,7 @@
 //   • Scout tickers — anything Scout surfaces
 //   All deduplicated before passing to Signals Engine.
 
-import { writeFileSync } from "node:fs"
+import { writeFileSync, readFileSync, existsSync } from "node:fs"
 import type { BriefOutput, PipelineOptions } from "./types"
 import { resolvePolygonKey } from "./model"
 import { fetchMacroPulse } from "./macro"
@@ -22,6 +22,34 @@ import { runSignals } from "./agents/signals-engine"
 import { runScout } from "./agents/scout"
 import { runDailyBrief } from "./agents/daily-brief"
 import { runVibe } from "./agents/vibe-engine"
+import { fetchOptionsContext } from "./agents/options-context"
+
+const PREMARKET_SNAPSHOT_PATH = "/tmp/white80-premarket-snapshot.json"
+
+/** Read the 8:00 AM pre-market snapshot (if present) into a compact context string. */
+function loadPremarketContext(): string {
+  if (!existsSync(PREMARKET_SNAPSHOT_PATH)) return ""
+  try {
+    const snapshot = JSON.parse(readFileSync(PREMARKET_SNAPSHOT_PATH, "utf8"))
+    return `
+PRE-MARKET CONTEXT (as of 8:00 AM ET):
+SPY: ${snapshot.spyPremarket.changePct > 0 ? "+" : ""}${snapshot.spyPremarket.changePct.toFixed(2)}%
+QQQ: ${snapshot.qqqPremarket.changePct > 0 ? "+" : ""}${snapshot.qqqPremarket.changePct.toFixed(2)}%
+VIX proxy: ${snapshot.vixLevel.toFixed(2)}
+Overnight gappers (>1.5%): ${snapshot.overnightGappers
+      .map((g: { ticker: string; direction: string; gapPct: number }) => `${g.ticker} ${g.direction === "up" ? "+" : ""}${g.gapPct.toFixed(1)}%`)
+      .join(", ")}
+${snapshot.earningsReactions.length > 0
+        ? "Earnings reactions: " +
+          snapshot.earningsReactions
+            .map((e: { ticker: string; gapPct: number; note: string }) => `${e.ticker} ${e.gapPct > 0 ? "+" : ""}${e.gapPct.toFixed(1)}% — ${e.note}`)
+            .join("; ")
+        : ""}
+`.trim()
+  } catch {
+    return ""
+  }
+}
 
 const DEFAULT_SCOUT_THEMES = ["ai_infra", "semis", "ai_apps"]
 
@@ -40,6 +68,11 @@ function dedupe(tickers: string[]): string[] {
  */
 export async function runPipeline(options: PipelineOptions = {}): Promise<BriefOutput> {
   const polygonKey = resolvePolygonKey(options.polygonKey)
+
+  // ── Pre-market context: read the 8:00 AM snapshot (if the pre-market scan ran) ──
+  // Injected into the Signals Engine and Daily Brief so both already account for
+  // overnight gaps, futures-implied index moves, and earnings reactions.
+  const premarketContext = loadPremarketContext()
 
   // ── 0. Macro pulse: fetch live prices from Polygon first ──
   // These are ground-truth prices for the ticker strip — no LLM guesses at them.
@@ -140,10 +173,38 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
     }
   }
 
+  // ── 5c. Options flow context for every signal ticker (hard constraints) ──
+  // Bullish flow → tighter stop / higher target; bearish flow → flag the position.
+  let optionsContextStr = ""
+  if (polygonKey) {
+    try {
+      const optionsContext = await fetchOptionsContext(signalTickers)
+      optionsContextStr = optionsContext
+        .map(
+          (o) =>
+            `${o.ticker}: C/P ${o.callPutRatio.toFixed(2)}, bias ${o.bias}${o.unusualActivity ? " ⚡unusual" : ""}, dominant ${o.dominantStrike} exp ${o.dominantExpiry}, IVR ${o.ivRank}`
+        )
+        .join("\n")
+      console.log(`[pipeline] Fetched options context for ${optionsContext.length}/${signalTickers.length} signal tickers`)
+    } catch (e) {
+      console.warn("[pipeline] Options context fetch failed, Signals Engine will run without it:", e)
+    }
+  }
+
+  const signalsContextParts: string[] = []
+  if (premarketContext) signalsContextParts.push(premarketContext)
+  if (optionsContextStr) {
+    signalsContextParts.push(
+      `OPTIONS FLOW CONTEXT (hard constraints — bullish flow = tighter stop + higher target; bearish flow = flag the position):\n${optionsContextStr}`
+    )
+  }
+  const signalsContextPrefix = signalsContextParts.join("\n\n") || null
+
   const signals = await runSignals({
     tickers: signalTickers,
     newsContext,
     livePrices,
+    contextPrefix: signalsContextPrefix,
   })
 
   // Hand today's signal tickers to the intraday alert scanner (best-effort).
@@ -156,7 +217,7 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
   }
 
   // ── 6. Daily Brief: macro / catalysts / top plays ──
-  const brief = await runDailyBrief({ polygonKey, tickers: watchlist })
+  const brief = await runDailyBrief({ polygonKey, tickers: watchlist, premarketContext: premarketContext || null })
 
   // ── 7. Vibe: market mood read ──
   const vibe = await runVibe({ polygonKey, tickers: watchlist })

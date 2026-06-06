@@ -15,6 +15,7 @@ import { sendEmail } from "./send-email"
 import { generateXPost } from "./generate-x-post"
 
 export { runAlertScan } from "./run-alerts"
+export { runPremarketRoutine } from "./run-premarket"
 
 export interface RoutineResult {
   output: BriefOutput

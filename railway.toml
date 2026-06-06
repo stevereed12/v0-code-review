@@ -8,6 +8,15 @@ healthcheckPath = "/health"
 healthcheckTimeout = 30
 restartPolicyType = "on_failure"
 
+# ── Pre-market scan ──
+# 8:00 AM ET = 12:00 PM UTC (EDT, Mar–Nov), 30 min ahead of the brief.
+# Catches overnight gaps, futures-implied moves, and earnings reactions, and
+# writes the snapshot the 8:30 AM brief reads as context.
+# In EST (Nov–Mar), shift to "0 13 * * 1-5" to stay at 8:00 AM ET.
+[[cron]]
+schedule = "0 12 * * 1-5"
+command = "bash apps/routine/scripts/premarket-trigger.sh"
+
 # ── Cron trigger ──
 # 8:30 AM ET = 12:30 PM UTC (EDT, Mar–Nov)
 # One hour before market open — freshest pre-market data.

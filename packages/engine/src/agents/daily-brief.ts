@@ -139,6 +139,8 @@ async function getMostActive(apiKey: string): Promise<MarketSnapshot[]> {
 export interface DailyBriefOptions {
   tickers?: string[]
   polygonKey?: string
+  /** Pre-market snapshot context prepended to the prompt so the narrative accounts for overnight action. */
+  premarketContext?: string | null
 }
 
 /**
@@ -215,10 +217,12 @@ IMPORTANT FOR TOP PLAYS:
 
   // ── Step 2: Build prompt with market data injected ──
   const basePrompt = buildBriefPrompt(tickers)
-  const fullPrompt = basePrompt.replace(
+  const withMarket = basePrompt.replace(
     "Use web search to get CURRENT real-time data",
     `Use web search to get CURRENT real-time data\n\n${marketContext}`
   )
+  const premarket = opts.premarketContext?.trim()
+  const fullPrompt = premarket ? `${premarket}\n\n${withMarket}` : withMarket
 
   // ── Step 3: Call the model with strict-JSON system prompt ──
   // gemini gets its market data from the injected Polygon context + the prompt's

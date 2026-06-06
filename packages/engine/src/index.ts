@@ -45,3 +45,11 @@ export { fetchMacroPulse } from "./macro"
 // Intraday alert scanner
 export { scanUniverse, ALERT_UNIVERSE } from "./agents/alert-scanner"
 export type { ScoredTicker, ScanOptions } from "./agents/alert-scanner"
+
+// Pre-market scanner (8:00 AM ET)
+export { runPremarketScan } from "./agents/premarket-scanner"
+export type { PremarketSnapshot, OvernightGapper, EarningsReaction } from "./agents/premarket-scanner"
+
+// Options flow context for the Signals Engine
+export { fetchOptionsContext } from "./agents/options-context"
+export type { OptionsContext } from "./agents/options-context"

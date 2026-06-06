@@ -8,6 +8,8 @@ export interface SignalsOptions {
   newsContext?: string | null
   livePrices?: Record<string, LivePrice> | null
   optionsData?: Record<string, OptionsChainSummary | null> | null
+  /** Hard context prepended to the prompt (e.g. pre-market + options-flow summaries). */
+  contextPrefix?: string | null
 }
 
 /** Signals engine — verbatim prompt, returns one Signal per watchlist ticker. */
@@ -19,5 +21,7 @@ export async function runSignals(opts: SignalsOptions): Promise<Signal[]> {
     opts.livePrices ?? null,
     opts.optionsData ?? null
   )
-  return askModel<Signal[]>(MODELS.SIGNALS_ENGINE, "", prompt)
+  const prefix = opts.contextPrefix?.trim()
+  const fullPrompt = prefix ? `${prefix}\n\n${prompt}` : prompt
+  return askModel<Signal[]>(MODELS.SIGNALS_ENGINE, "", fullPrompt)
 }
