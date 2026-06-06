@@ -1,21 +1,15 @@
 // ─── MODEL CALL + JSON EXTRACTION ────────────────────────────────────────────
-// All model calls go through the Perplexity Agent API.
-// Sonar models (perplexity/sonar) use /chat/completions.
-// Third-party models (xai/*, google/*, anthropic/*) use /v1/agent.
-// We route based on the model prefix.
+// Two APIs, one function:
+//   Sonar models (no "/" in name): Perplexity /chat/completions via OpenAI SDK
+//   Agent API models (xai/*, anthropic/*, google/*): POST /v1/agent via fetch
+//     - Takes { model, input } not { messages[] }
+//     - Returns response.output_text not choices[0].message.content
 
 import OpenAI from "openai"
 
-// Sonar client — chat/completions endpoint
 const sonarClient = new OpenAI({
   apiKey: process.env.PERPLEXITY_API_KEY,
   baseURL: "https://api.perplexity.ai",
-})
-
-// Agent client — /v1/agent endpoint for third-party models
-const agentClient = new OpenAI({
-  apiKey: process.env.PERPLEXITY_API_KEY,
-  baseURL: "https://api.perplexity.ai/v1/agent",
 })
 
 function isSonarModel(model: string): boolean {
@@ -53,12 +47,37 @@ export function extractJSON(s: string): unknown {
   }
 
   if (end !== -1) return JSON.parse(cleaned.slice(start, end + 1))
-
   throw new Error("Unclosed JSON in response")
 }
 
 const JSON_SYSTEM_PROMPT =
-  "You are a JSON API. Respond with valid JSON only. No prose, no markdown, no explanations. Output raw JSON starting with { or [."
+  "You are a JSON API. Respond with valid JSON only. No prose, no markdown. Output raw JSON starting with { or [."
+
+async function callAgentAPI(model: string, system: string, user: string): Promise<string> {
+  const input = system
+    ? `${system}\n\n${user}`
+    : user
+
+  const res = await fetch("https://api.perplexity.ai/v1/agent", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ model, input }),
+  })
+
+  if (!res.ok) {
+    const err = await res.text()
+    throw Object.assign(new Error(`${res.status} ${err}`), { status: res.status })
+  }
+
+  const data = await res.json() as { output_text?: string; output?: Array<{ content?: Array<{ text?: string }> }> }
+  // Try output_text first, fall back to output[0].content[0].text
+  return data.output_text
+    ?? data.output?.[0]?.content?.[0]?.text
+    ?? ""
+}
 
 export async function askModel<T>(
   model: string,
@@ -70,22 +89,25 @@ export async function askModel<T>(
   if (!process.env.PERPLEXITY_API_KEY?.trim()) throw new Error("API_KEY_REQUIRED")
 
   const system = systemPrompt?.trim() ? systemPrompt : JSON_SYSTEM_PROMPT
-  const client = isSonarModel(model) ? sonarClient : agentClient
-  // Agent API uses just the model name without the provider prefix for the call
-  const modelId = isSonarModel(model) ? model : model
 
   let lastError: Error | null = null
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
-      const completion = await client.chat.completions.create({
-        model: modelId,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: userPrompt },
-        ],
-      })
+      let text: string
 
-      const text = (completion.choices?.[0]?.message?.content ?? "").trim()
+      if (isSonarModel(model)) {
+        const completion = await sonarClient.chat.completions.create({
+          model,
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: userPrompt },
+          ],
+        })
+        text = (completion.choices?.[0]?.message?.content ?? "").trim()
+      } else {
+        text = (await callAgentAPI(model, system, userPrompt)).trim()
+      }
+
       if (!text) {
         if (attempt < retries - 1) {
           lastError = new Error("Empty response")
@@ -94,6 +116,7 @@ export async function askModel<T>(
         }
         throw new Error("Empty text response from model")
       }
+
       return extractJSON(text) as T
     } catch (err) {
       lastError = err as Error
