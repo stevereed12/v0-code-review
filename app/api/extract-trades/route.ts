@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
-import Anthropic from "@anthropic-ai/sdk"
+import OpenAI from "openai"
 import type { ExtractedTrade } from "@/lib/types"
-import { CLAUDE_MODEL } from "@/lib/ai-config"
+import { extractJSON, MODELS } from "@white80/engine"
 
 export const maxDuration = 60
+
+// Image (screenshot) trade extraction is multimodal, so it can't go through the
+// text-only askModel() helper. It calls the same Perplexity Agent API directly
+// (OpenAI-SDK compatible, single PERPLEXITY_API_KEY) with an image_url content
+// block, then reuses the engine's extractJSON for byte-identical parsing.
+const perplexity = new OpenAI({
+  apiKey: process.env.PERPLEXITY_API_KEY,
+  baseURL: "https://api.perplexity.ai",
+})
 
 const EXTRACTION_PROMPT = `You are a trade extraction assistant. Analyze this content and extract all trades/transactions.
 
@@ -160,7 +169,6 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
     const file = formData.get("file") as File | null
-    const apiKey = formData.get("apiKey") as string | null
     const signalsJson = formData.get("signals") as string | null
     const topPlaysJson = formData.get("topPlays") as string | null
     
@@ -177,48 +185,31 @@ export async function POST(req: NextRequest) {
     } 
     // Handle image files (screenshots)
     else if (file.type.startsWith("image/")) {
-      if (!apiKey) {
-        return NextResponse.json({ error: "API key required for image processing" }, { status: 400 })
+      if (!process.env.PERPLEXITY_API_KEY) {
+        return NextResponse.json({ error: "API_KEY_REQUIRED" }, { status: 401 })
       }
-      
-      const anthropic = new Anthropic({ apiKey })
+
       const imageData = Buffer.from(await file.arrayBuffer()).toString("base64")
-      const mediaType = file.type as "image/jpeg" | "image/png" | "image/gif" | "image/webp"
-      
-      const response = await anthropic.messages.create({
-        model: CLAUDE_MODEL,
-        max_tokens: 4096,
+      const dataUrl = `data:${file.type};base64,${imageData}`
+
+      const response = await perplexity.chat.completions.create({
+        model: MODELS.CURATOR,
         messages: [
           {
             role: "user",
             content: [
-              {
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: mediaType,
-                  data: imageData,
-                },
-              },
-              {
-                type: "text",
-                text: EXTRACTION_PROMPT,
-              },
+              { type: "image_url", image_url: { url: dataUrl } },
+              { type: "text", text: EXTRACTION_PROMPT },
             ],
           },
         ],
       })
-      
-      const textContent = response.content.find(c => c.type === "text")
-      if (textContent && textContent.type === "text") {
-        try {
-          // Clean the response
-          let jsonStr = textContent.text.trim()
-          jsonStr = jsonStr.replace(/```json\n?/g, "").replace(/```\n?/g, "")
-          trades = JSON.parse(jsonStr)
-        } catch {
-          return NextResponse.json({ error: "Failed to parse extracted trades" }, { status: 500 })
-        }
+
+      const text = response.choices[0]?.message?.content ?? ""
+      try {
+        trades = extractJSON(text) as ExtractedTrade[]
+      } catch {
+        return NextResponse.json({ error: "Failed to parse extracted trades" }, { status: 500 })
       }
     } else {
       return NextResponse.json({ error: "Unsupported file type. Use CSV or image." }, { status: 400 })
@@ -286,11 +277,13 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Trade extraction error:", error)
     
-    // Check for rate limit error from Anthropic SDK
     const errorMessage = error instanceof Error ? error.message : String(error)
+    if (errorMessage === "API_KEY_REQUIRED") {
+      return NextResponse.json({ error: "API_KEY_REQUIRED" }, { status: 401 })
+    }
     if (errorMessage.includes("429") || errorMessage.toLowerCase().includes("rate limit")) {
       return NextResponse.json(
-        { error: "Rate limit reached on your Anthropic API key. Please wait a minute and try again, or upgrade your Anthropic plan for higher limits." },
+        { error: "Rate limit reached on your Perplexity API key. Please wait a minute and try again, or upgrade your plan for higher limits." },
         { status: 429 }
       )
     }

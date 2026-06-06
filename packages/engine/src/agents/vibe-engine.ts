@@ -1,5 +1,12 @@
-import { NextRequest, NextResponse } from "next/server"
-import { askModel, MODELS } from "@white80/engine"
+// ─── VIBE ENGINE AGENT ───────────────────────────────────────────────────────
+// Ported VERBATIM from the web app's app/api/vibe/route.ts. Polygon data gathering,
+// market-context injection, Claude call (web search max_uses 6, strict JSON system
+// prompt), and JSON cleaning are preserved exactly.
+
+import type { VibeCheck } from "../types"
+import { buildVibePrompt } from "../prompts"
+import { askModel, resolvePolygonKey } from "../model"
+import { MODELS } from "../models"
 
 const POLYGON_BASE = "https://api.polygon.io"
 
@@ -79,26 +86,31 @@ async function getTopMovers(apiKey: string): Promise<{ gainers: MarketSnapshot[]
   return { gainers: mapTickers(gainersData), losers: mapTickers(losersData) }
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-    const { tickers = [], polygonKey } = body
+export interface VibeOptions {
+  tickers?: string[]
+  polygonKey?: string
+}
 
-    // ── Step 1: Pull Polygon market data if key available ──
-    let marketContext = ""
+/** Vibe Engine agent. Returns the parsed VibeCheck object. */
+export async function runVibe(opts: VibeOptions): Promise<VibeCheck> {
+  const polygonKey = resolvePolygonKey(opts.polygonKey)
+  const tickers = opts.tickers ?? []
 
-    if (polygonKey) {
-      try {
-        const [sectorData, movers, indexData] = await Promise.all([
-          getSnapshots(SECTOR_ETFS, polygonKey),
-          getTopMovers(polygonKey),
-          getSnapshots(INDEX_ETFS, polygonKey),
-        ])
+  // ── Step 1: Pull Polygon market data if key available ──
+  let marketContext = ""
 
-        const formatSnapshot = (s: MarketSnapshot) =>
-          `${s.ticker}: $${s.price.toFixed(2)} (${s.change_pct >= 0 ? "+" : ""}${s.change_pct.toFixed(2)}%) vol:${(s.volume / 1_000_000).toFixed(1)}M`
+  if (polygonKey) {
+    try {
+      const [sectorData, movers, indexData] = await Promise.all([
+        getSnapshots(SECTOR_ETFS, polygonKey),
+        getTopMovers(polygonKey),
+        getSnapshots(INDEX_ETFS, polygonKey),
+      ])
 
-        marketContext = `
+      const formatSnapshot = (s: MarketSnapshot) =>
+        `${s.ticker}: $${s.price.toFixed(2)} (${s.change_pct >= 0 ? "+" : ""}${s.change_pct.toFixed(2)}%) vol:${(s.volume / 1_000_000).toFixed(1)}M`
+
+      marketContext = `
 ═══ LIVE POLYGON MARKET DATA (use this as the factual backbone of your vibe read) ═══
 
 INDEX PERFORMANCE:
@@ -117,35 +129,29 @@ ${movers.losers.map(formatSnapshot).join("\n")}
 
 Use this hard data to anchor the vibe — index breadth, sector heat/cold, and the extremes of the movers tell you the emotional temperature. Cross-reference with web search for WHY and for the social/sentiment layer.
 `
-      } catch (polyErr) {
-        console.error("Polygon data fetch failed, continuing with web search only:", polyErr)
-        marketContext = "\nNote: Polygon market data unavailable. Rely on web search for market data.\n"
-      }
-    } else {
-      marketContext = "\nNote: No Polygon API key provided. Rely on web search for market data.\n"
+    } catch (polyErr) {
+      console.error("Polygon data fetch failed, continuing with web search only:", polyErr)
+      marketContext = "\nNote: Polygon market data unavailable. Rely on web search for market data.\n"
     }
-
-    // ── Step 2: Build prompt with market data injected ──
-    const { buildVibePrompt } = await import("@/lib/prompts")
-    const basePrompt = buildVibePrompt(tickers)
-    const fullPrompt = basePrompt.replace(
-      "Use web search for current price action",
-      `${marketContext}\n\nUse web search for current price action`
-    )
-
-    // ── Step 3: Read the vibe via the Vibe Engine model (sonar-pro, live search) ──
-    const parsed = await askModel<unknown>(MODELS.VIBE_ENGINE, "", fullPrompt)
-
-    return NextResponse.json(parsed)
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Vibe check failed"
-    if (/rate limit/i.test(message)) {
-      return NextResponse.json({ error: message }, { status: 429 })
-    }
-    if (message === "API_KEY_REQUIRED") {
-      return NextResponse.json({ error: "API_KEY_REQUIRED" }, { status: 401 })
-    }
-    console.error("Vibe check error:", err)
-    return NextResponse.json({ error: message }, { status: 500 })
+  } else {
+    marketContext = "\nNote: No Polygon API key provided. Rely on web search for market data.\n"
   }
+
+  // ── Step 2: Build prompt with market data injected ──
+  const basePrompt = buildVibePrompt(tickers)
+  const fullPrompt = basePrompt.replace(
+    "Use web search for current price action",
+    `${marketContext}\n\nUse web search for current price action`
+  )
+
+  // ── Step 3: Call the model with web search (sonar built-in), strict JSON ──
+  // sonar-pro grounds the social/sentiment layer via its built-in web search;
+  // extractJSON strips the [n] citations sonar injects before parsing.
+  const parsed = await askModel<VibeCheck>(
+    MODELS.VIBE_ENGINE,
+    "You are a JSON API. You MUST respond with valid JSON only. No prose, no explanations, no markdown. Your entire response must be parseable JSON starting with { and ending with }. Never start with phrases like 'Based on' or 'Here is' - output raw JSON immediately.",
+    fullPrompt
+  )
+
+  return parsed
 }

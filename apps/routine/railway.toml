@@ -1,0 +1,51 @@
+# Railway service config for the White80 morning routine.
+# Build via the Dockerfile (Playwright base image), serve the HTTP trigger, and
+# let Railway healthcheck /health.
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "apps/routine/Dockerfile"
+
+[deploy]
+startCommand = "node apps/routine/dist/server.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+
+# ── Cron trigger ──
+# Weekdays at 09:30 UTC = 5:30 AM EDT (Mar–Nov).
+# During EST (Nov–Mar), shift this to "30 10 * * 1-5" so it stays 5:30 AM ET.
+[[cron]]
+schedule = "30 9 * * 1-5"
+command = "bash apps/routine/scripts/cron-trigger.sh"
+
+# ── Intraday alert scans ──
+# Hourly during market hours. UTC times assume EDT (Mar–Nov): 9:30 AM ET = 13:30 UTC,
+# last scan 3:30 PM ET = 19:30 UTC. In EST (Nov–Mar), shift each by +1 hour.
+[[cron]]
+schedule = "30 13 * * 1-5"
+command = "bash apps/routine/scripts/alert-trigger.sh"
+
+[[cron]]
+schedule = "30 14 * * 1-5"
+command = "bash apps/routine/scripts/alert-trigger.sh"
+
+[[cron]]
+schedule = "30 15 * * 1-5"
+command = "bash apps/routine/scripts/alert-trigger.sh"
+
+[[cron]]
+schedule = "30 16 * * 1-5"
+command = "bash apps/routine/scripts/alert-trigger.sh"
+
+[[cron]]
+schedule = "30 17 * * 1-5"
+command = "bash apps/routine/scripts/alert-trigger.sh"
+
+[[cron]]
+schedule = "30 18 * * 1-5"
+command = "bash apps/routine/scripts/alert-trigger.sh"
+
+[[cron]]
+schedule = "30 19 * * 1-5"
+command = "bash apps/routine/scripts/alert-trigger.sh"
