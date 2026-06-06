@@ -19,7 +19,7 @@ const agentClient = new OpenAI({
 })
 
 function isSonarModel(model: string): boolean {
-  return model.startsWith("perplexity/")
+  return !model.includes("/")
 }
 
 export function extractJSON(s: string): unknown {
