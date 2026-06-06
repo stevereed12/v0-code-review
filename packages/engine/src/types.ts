@@ -293,7 +293,7 @@ export interface ScanConfig {
 
 export const DEFAULT_SCAN_CONFIG: ScanConfig = {
   minScore: 3, // Lower default to show more opportunities
-  maxResults: 50, // Show more results
+  maxResults: 12, // Top 12 highest conviction only
   includeOptionsData: true,
   catalystWindowDays: [7, 28], // Expand window to 4 weeks
 }
