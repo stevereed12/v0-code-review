@@ -19,6 +19,7 @@ COPY apps/routine/package.json ./package.json
 RUN sed -i 's|"@white80/engine": "\*"|"@white80/engine": "file:../../packages/engine"|' package.json
 
 COPY apps/routine/src ./src
+COPY apps/routine/templates ./templates
 COPY apps/routine/tsconfig.json ./tsconfig.json
 
 RUN npm install --no-package-lock
