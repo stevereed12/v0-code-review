@@ -84,9 +84,63 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
     ...scoutTickers,
   ])
   const newsContext = news.length > 0 ? JSON.stringify(news) : null
+
+  // ── 5b. Fetch live prices for every signal ticker from Polygon ──
+  // These are passed as hard ground-truth to the Signals Engine so it cannot
+  // hallucinate entry/target/stop prices from training data.
+  let livePrices: Record<string, import("./types").LivePrice> | null = null
+  if (polygonKey) {
+    try {
+      const tickerList = signalTickers.join(",")
+      const snapRes = await fetch(
+        `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers?tickers=${tickerList}&apiKey=${polygonKey}`
+      )
+      if (snapRes.ok) {
+        const snapData = await snapRes.json() as {
+          tickers?: Array<{
+            ticker: string
+            lastTrade?: { p: number; t: number }
+            lastQuote?: { P: number; p: number }
+            min?: { c: number }
+            day?: { c: number; o: number; h: number; l: number; v: number }
+            prevDay?: { c: number }
+            todaysChange?: number
+            todaysChangePerc?: number
+            marketStatus?: string
+          }>
+        }
+        livePrices = {}
+        const now = Date.now()
+        for (const t of snapData.tickers ?? []) {
+          const price = t.lastTrade?.p || t.lastQuote?.P || t.lastQuote?.p || t.min?.c || t.day?.c || t.prevDay?.c || 0
+          const prevClose = t.prevDay?.c || 0
+          const change = price - prevClose
+          const changePct = prevClose > 0 ? (change / prevClose) * 100 : t.todaysChangePerc || 0
+          const tradeTime = t.lastTrade?.t ? t.lastTrade.t / 1_000_000 : now  // nanoseconds -> ms
+          livePrices[t.ticker] = {
+            price,
+            prev_close: prevClose,
+            change,
+            change_pct: changePct,
+            day_high: t.day?.h || 0,
+            day_low: t.day?.l || 0,
+            volume: t.day?.v || 0,
+            session: t.marketStatus || "UNKNOWN",
+            market_state: t.marketStatus || "UNKNOWN",
+            age_seconds: Math.floor((now - tradeTime) / 1000),
+          }
+        }
+        console.log(`[pipeline] Fetched live prices for ${Object.keys(livePrices).length}/${signalTickers.length} signal tickers`)
+      }
+    } catch (e) {
+      console.warn("[pipeline] Live price fetch failed, Signals Engine will use web search:", e)
+    }
+  }
+
   const signals = await runSignals({
     tickers: signalTickers,
     newsContext,
+    livePrices,
   })
 
   // ── 6. Daily Brief: macro / catalysts / top plays ──
