@@ -34,13 +34,15 @@ export function completenessCheck(output: BriefOutput): BriefOutput {
     fail("Tier 1 scan returned no matches (need at least 1).")
   }
 
-  // ── Signals: one per Tier-1 match ──
+  // ── Signals: must cover at least all Tier 1 tickers ──
+  // Signals scope is expanded beyond Tier 1 (includes Mag 7, Scout, Curator callouts)
+  // so signals.length >= tier1.length is the correct check.
   if (!Array.isArray(output.signals)) {
     fail("Signals output is missing or not an array.")
   }
-  if (output.signals.length !== output.tier1.length) {
+  if (output.signals.length < output.tier1.length) {
     fail(
-      `Signals count (${output.signals.length}) does not match Tier 1 count (${output.tier1.length}).`
+      `Signals count (${output.signals.length}) is less than Tier 1 count (${output.tier1.length}). Every Tier 1 play must have positioning.`
     )
   }
 
