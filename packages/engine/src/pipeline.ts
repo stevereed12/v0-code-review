@@ -207,6 +207,21 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
     contextPrefix: signalsContextPrefix,
   })
 
+  // ── 5d. Overwrite each signal's displayed price/change with the authoritative
+  //        Polygon snapshot. The LLM is told the live price but still emits the
+  //        `price`/`change_pct` fields itself, so it can drift to a stale
+  //        training-data value (e.g. MU $270 instead of $933). The template
+  //        renders signals[].price directly, so the snapshot must win here. ──
+  if (livePrices) {
+    for (const s of signals) {
+      const live = livePrices[s.ticker.toUpperCase()]
+      if (live && live.price > 0) {
+        s.price = live.price
+        s.change_pct = live.change_pct
+      }
+    }
+  }
+
   // Hand today's signal tickers to the intraday alert scanner (best-effort).
   // The alert scanner reads this file to raise the bar on names already in the brief.
   try {
@@ -217,7 +232,7 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
   }
 
   // ── 6. Daily Brief: macro / catalysts / top plays ──
-  const brief = await runDailyBrief({ polygonKey, tickers: watchlist, premarketContext: premarketContext || null })
+  const brief = await runDailyBrief({ polygonKey, tickers: watchlist, premarketContext: premarketContext || null, livePrices })
 
   // ── 7. Vibe: market mood read ──
   const vibe = await runVibe({ polygonKey, tickers: watchlist })

@@ -49,6 +49,7 @@ If a name has bullish news → plays should lean long unless the price already g
 
     priceBlock = `
 
+=== LIVE PRICES (use these, not training data) ===
 === VERIFIED LIVE PRICES (use THESE, not search results) ===
 Market State: ${marketState}
 ${stateNote[marketState] || `Market state: ${marketState}`}
@@ -56,7 +57,9 @@ ${stateNote[marketState] || `Market state: ${marketState}`}
 ${priceLines}
 ============================================================
 
-Use the exact prices above. DO NOT search for prices — these are ground truth from Yahoo Finance.
+Use the exact prices above. DO NOT search for prices — these are ground truth from Polygon.
+DO NOT use any price from your training data. The live price listed above for each ticker is the
+ONLY correct current price — anchor ALL strikes, targets, and stops to it.
 The "session" tag (PRE/REGULAR/POST/LAST) tells you which session the price is from.
 Tailor plays to current market state — e.g., during pre-market, suggest entries at the open or limit orders, not market orders.`
   }
@@ -166,6 +169,40 @@ CRITICAL RULES:
 - If you cannot verify an earnings date with high confidence, write "earnings date unconfirmed"
 - If an earnings date or event has ALREADY PASSED, do NOT mention it as upcoming
 ${priceBlock}${optionsBlock}${newsBlock}
+
+STRICT OPTIONS STRIKE RULES — FOLLOW EXACTLY:
+
+1. CALLS: Strike price MUST be ABOVE or EQUAL TO current price. Never recommend a call strike below the current stock price. A $220 call on a $270 stock is WRONG.
+
+2. PUTS: Strike price MUST be BELOW or EQUAL TO current price. Never recommend a put strike above the current stock price.
+
+3. STRIKE SELECTION GUIDELINES:
+   - High conviction (score 80+): 0-5% OTM (just above/below current price)
+   - Standard conviction (score 65-79): 5-10% OTM
+   - Speculative (score 50-64): 10-15% OTM
+   - Never exceed 15% OTM — these have near-zero probability of profit
+
+4. PRICE TARGET MUST BE REALISTIC FOR THE DTE:
+   - 7-14 DTE: max 5% move from current price
+   - 14-30 DTE: max 8-12% move from current price
+   - 30-60 DTE: max 12-20% move from current price
+   - Target = current price × (1 + realistic move %) for calls
+   - Target = current price × (1 - realistic move %) for puts
+
+5. ALWAYS ANCHOR TO THE LIVE PRICE IN CONTEXT: The live price injected above is the ONLY correct current price. Do NOT use any price from your training data. If the live price says PANW = $270.50, then ALL strike prices, targets, and stops must be calculated from $270.50.
+
+6. STOP LOSS: Set stop at 5-8% below entry for calls, 5-8% above entry for puts.
+
+Example of CORRECT output for PANW at $270.50, 30 DTE, high conviction:
+- Direction: CALL
+- Strike: $275 (1.8% OTM ✓)
+- Target: $295 (9.1% above current ✓)
+- Stop: $250 (7.6% below current ✓)
+
+Example of WRONG output (DO NOT DO THIS):
+- Direction: CALL
+- Strike: $220 (deep ITM, 18.7% below current ✗)
+- Target: $350 (29.5% above current for 30 DTE ✗)
 
 For each ticker (${tickers.join(", ")}), generate a trading signal. You MUST:
 1. Web search "[TICKER] earnings date 2026" to get the EXACT confirmed earnings date
