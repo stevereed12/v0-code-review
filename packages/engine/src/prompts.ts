@@ -10,8 +10,25 @@ export function buildSignalPrompt(
   tickers: string[],
   newsContext: string | null = null,
   livePrices: Record<string, LivePrice> | null = null,
-  optionsData: Record<string, OptionsChainSummary | null> | null = null
+  optionsData: Record<string, OptionsChainSummary | null> | null = null,
+  tier1Context: string | null = null
 ): string {
+  const tier1Block = tier1Context
+    ? `
+
+=== TIER 1 CONVICTION CONTEXT (CRITICAL — READ BEFORE GENERATING SIGNALS) ===
+The following tickers have been independently identified as the highest-conviction bullish plays for today's session by the Tier 1 Scanner:
+
+${tier1Context}
+
+RULES FOR TIER 1 TICKERS:
+- You MUST recommend CALL options or equity long positions for these tickers
+- You MUST NOT recommend puts, fade plays, or bearish signals on any Tier 1 ticker
+- Your entry/target/stop must reflect a BULLISH directional bias
+- If you have concerns about a Tier 1 ticker, note them briefly but still output a bullish play
+===`
+    : ""
+
   const newsBlock = newsContext
     ? `
 
@@ -168,7 +185,7 @@ CRITICAL RULES:
 - EARNINGS DATES: You MUST web search "[TICKER] earnings date" for EACH ticker and use the EXACT date from official sources (Yahoo Finance, Nasdaq, company IR page). Do NOT guess or use stale data.
 - If you cannot verify an earnings date with high confidence, write "earnings date unconfirmed"
 - If an earnings date or event has ALREADY PASSED, do NOT mention it as upcoming
-${priceBlock}${optionsBlock}${newsBlock}
+${tier1Block}${priceBlock}${optionsBlock}${newsBlock}
 
 STRICT OPTIONS STRIKE RULES — FOLLOW EXACTLY:
 
@@ -653,7 +670,9 @@ Schema:
 }
 
 Theme must be one of: ai_compute, semis, crypto_adj, macro_proxy, other
-Regime must be one of: TRENDING, CHOPPY, ROTATIONAL, RISK-OFF`
+Regime must be one of: TRENDING, CHOPPY, ROTATIONAL, RISK-OFF
+
+If a ticker appears in your watchlist analysis, present a balanced view but lean bullish for tickers with strong technical setups. The Tier 1 Scanner has final authority on directional bias.`
 }
 
 export function buildQuickThesisPrompt(ticker: string, currentPrice?: number): string {

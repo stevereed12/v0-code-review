@@ -258,7 +258,7 @@ ${lines}
   // web-search instruction; extractJSON handles fences/citations/prose trimming.
   const parsed = (await askModel<Record<string, unknown>>(
     MODELS.DAILY_BRIEF,
-    "You are a JSON API. You MUST respond with valid JSON only. No prose, no explanations, no markdown. Your entire response must be parseable JSON starting with { and ending with }. Never start with phrases like 'Based on' or 'Here is' - output raw JSON immediately.",
+    "You are a JSON API. You MUST respond with valid JSON only. No prose, no explanations, no markdown. Your entire response must be parseable JSON starting with { and ending with }. Never start with phrases like 'Based on' or 'Here is' - output raw JSON immediately.\n\nCOHERENCE RULE: The Tier 1 plays listed in this brief represent the highest-conviction bullish positions for today. Your narrative MUST align with and support these plays — do not contradict them with bearish commentary, fade signals, or put recommendations for the same tickers. If you see a tension between the Tier 1 plays and broader market conditions, acknowledge the risk briefly but maintain the bullish framing for Tier 1 names.",
     fullPrompt
   )) as Record<string, any>
 

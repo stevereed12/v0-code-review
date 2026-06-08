@@ -200,11 +200,34 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
   }
   const signalsContextPrefix = signalsContextParts.join("\n\n") || null
 
-  const signals = await runSignals({
+  // Tier 1 conviction context: every Tier 1 match is a highest-conviction bullish
+  // play. Inject it into the Signals Engine prompt so it never returns a put/fade
+  // on a name the brief simultaneously flags as a top long.
+  const tier1ContextStr = tier1
+    .map((t) => `${t.ticker}: TIER 1 BULLISH — highest conviction long, DO NOT recommend puts or fade signals`)
+    .join("\n")
+
+  let signals = await runSignals({
     tickers: signalTickers,
     newsContext,
     livePrices,
     contextPrefix: signalsContextPrefix,
+    tier1Context: tier1ContextStr || null,
+  })
+
+  // ── Coherence gate: a Tier 1 ticker can never carry a bearish signal ──
+  // Safety net behind the prompt injection above — if the Signals Engine still
+  // returns SELL/FADE on a Tier 1 name, drop it so the brief stays internally
+  // consistent (Tier 1 has final authority on directional bias).
+  const tier1TickerSet = new Set(tier1.map((t) => t.ticker.toUpperCase()))
+  signals = signals.filter((signal) => {
+    if (!tier1TickerSet.has(signal.ticker.toUpperCase())) return true
+    const isBearish = signal.signal === "SELL" || signal.signal === "FADE"
+    if (isBearish) {
+      console.warn(`[coherence] Removing bearish signal (${signal.signal}) for Tier 1 ticker ${signal.ticker}`)
+      return false
+    }
+    return true
   })
 
   // ── 5d. Overwrite each signal's displayed price/change with the authoritative
