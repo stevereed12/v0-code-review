@@ -9,6 +9,7 @@
 
 import express from "express"
 import { runRoutine, runAlertScan, runPremarketRoutine } from "./index"
+import { startScheduler } from "./scheduler"
 
 const PORT = Number(process.env.PORT || 8080)
 const RUN_SECRET = process.env.RUN_SECRET
@@ -89,4 +90,6 @@ app.listen(PORT, () => {
   if (!RUN_SECRET) {
     console.warn("[server] RUN_SECRET is not set — /run will reject all requests until it is.")
   }
+  startScheduler()
+  console.log("[server] Scheduler started.")
 })
