@@ -5,7 +5,7 @@
 // preserved exactly. Only the Next.js request/response wrapper is replaced with a
 // plain function signature.
 
-import type { Brief } from "../types"
+import type { Brief, LivePrice } from "../types"
 import { buildBriefPrompt } from "../prompts"
 import { askModel, resolvePolygonKey } from "../model"
 import { MODELS } from "../models"
@@ -141,6 +141,12 @@ export interface DailyBriefOptions {
   polygonKey?: string
   /** Pre-market snapshot context prepended to the prompt so the narrative accounts for overnight action. */
   premarketContext?: string | null
+  /**
+   * Authoritative live prices for the signal-ticker universe (from Polygon, fetched
+   * once in the pipeline). Injected as a hard constraint so the brief never quotes a
+   * stale training-data price for any of these names.
+   */
+  livePrices?: Record<string, LivePrice> | null
 }
 
 /**
@@ -221,15 +227,38 @@ IMPORTANT FOR TOP PLAYS:
     "Use web search to get CURRENT real-time data",
     `Use web search to get CURRENT real-time data\n\n${marketContext}`
   )
+  // Authoritative live prices for the signal-ticker universe — injected as a hard
+  // constraint so Claude never quotes a stale training-data price for these names.
+  let livePriceBlock = ""
+  if (opts.livePrices && Object.keys(opts.livePrices).length > 0) {
+    const lines = Object.entries(opts.livePrices)
+      .filter(([, p]) => p && p.price > 0)
+      .map(([ticker, p]) => {
+        const sign = p.change_pct >= 0 ? "+" : ""
+        return `${ticker}: $${p.price.toFixed(2)} (${sign}${p.change_pct.toFixed(2)}%)`
+      })
+      .join("\n")
+    if (lines) {
+      livePriceBlock = `LIVE MARKET DATA (authoritative, do not deviate):
+These are ground-truth Polygon prices for the tracked tickers. When you mention any
+of these names, use the EXACT price shown here — never a price from your training
+data, and never a number from a stale search result.
+
+${lines}
+`
+    }
+  }
+
   const premarket = opts.premarketContext?.trim()
-  const fullPrompt = premarket ? `${premarket}\n\n${withMarket}` : withMarket
+  const preParts = [livePriceBlock.trim(), premarket].filter(Boolean)
+  const fullPrompt = preParts.length > 0 ? `${preParts.join("\n\n")}\n\n${withMarket}` : withMarket
 
   // ── Step 3: Call the model with strict-JSON system prompt ──
   // gemini gets its market data from the injected Polygon context + the prompt's
   // web-search instruction; extractJSON handles fences/citations/prose trimming.
   const parsed = (await askModel<Record<string, unknown>>(
     MODELS.DAILY_BRIEF,
-    "You are a JSON API. You MUST respond with valid JSON only. No prose, no explanations, no markdown. Your entire response must be parseable JSON starting with { and ending with }. Never start with phrases like 'Based on' or 'Here is' - output raw JSON immediately.",
+    "You are a JSON API. You MUST respond with valid JSON only. No prose, no explanations, no markdown. Your entire response must be parseable JSON starting with { and ending with }. Never start with phrases like 'Based on' or 'Here is' - output raw JSON immediately.\n\nCOHERENCE RULE: The Tier 1 plays listed in this brief represent the highest-conviction bullish positions for today. Your narrative MUST align with and support these plays — do not contradict them with bearish commentary, fade signals, or put recommendations for the same tickers. If you see a tension between the Tier 1 plays and broader market conditions, acknowledge the risk briefly but maintain the bullish framing for Tier 1 names.",
     fullPrompt
   )) as Record<string, any>
 
@@ -246,6 +275,13 @@ IMPORTANT FOR TOP PLAYS:
     for (const item of allMarketTickers) {
       if (item.price) {
         tickerPrices[item.ticker] = item.price
+      }
+    }
+
+    // Authoritative live prices win over the snapshot-derived values above.
+    if (opts.livePrices) {
+      for (const [ticker, p] of Object.entries(opts.livePrices)) {
+        if (p && p.price > 0) tickerPrices[ticker.toUpperCase()] = p.price
       }
     }
 

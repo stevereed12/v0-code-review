@@ -123,55 +123,106 @@ async function getBars(ticker: string, apiKey: string, days = 25): Promise<Bar[]
 
 // ─── SCORING COMPONENTS ──────────────────────────────────────────────────────
 
-/** Options Heat (25). Uses the options contracts reference as a flow proxy. */
+/** Current ET wall-clock time as minutes since midnight. */
+function etMinutesNow(): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date())
+  const hour = Number(parts.find((p) => p.type === "hour")?.value ?? "0")
+  const minute = Number(parts.find((p) => p.type === "minute")?.value ?? "0")
+  return hour * 60 + minute
+}
+
+/** Options Heat (25). Uses the live options snapshot endpoint for real flow. */
 async function scoreOptionsHeat(ticker: string, currentPrice: number, apiKey: string): Promise<number> {
   try {
-    const now = new Date()
-    const in30 = new Date()
-    in30.setDate(now.getDate() + 30)
-    const from = now.toISOString().split("T")[0]
-    const to = in30.toISOString().split("T")[0]
     const data = (await polygonFetch(
-      `/v3/reference/options/contracts?underlying_ticker=${ticker}&expiration_date.gte=${from}&expiration_date.lte=${to}&limit=250`,
+      `/v3/snapshot/options/${ticker}?limit=250`,
       apiKey
-    )) as { results?: Array<{ contract_type: string; strike_price: number }> }
-    const contracts = data.results || []
-    if (contracts.length === 0) return 5
-
-    let calls = 0
-    let puts = 0
-    let atmCalls = 0
-    const atmRange = currentPrice * 0.05
-    for (const c of contracts) {
-      if (c.contract_type === "call") {
-        calls++
-        if (Math.abs(c.strike_price - currentPrice) <= atmRange) atmCalls++
-      } else if (c.contract_type === "put") {
-        puts++
-      }
+    )) as {
+      results?: Array<{
+        details?: { contract_type?: string; strike_price?: number; expiration_date?: string }
+        day?: { volume?: number; vwap?: number }
+        open_interest?: number
+        implied_volatility?: number
+        greeks?: { delta?: number }
+      }>
     }
-    const callPut = puts > 0 ? calls / puts : calls > 0 ? 5 : 1
-    const atmSkew = calls > 0 ? (atmCalls / calls) * 100 : 0
-    const unusual = callPut > 1.5 && atmSkew > 20
 
-    if (callPut > 2.0 && unusual) return 25
-    if (callPut > 1.5 || unusual) return 15
-    if (callPut >= 0.8) return 5
-    return 0 // put-heavy / bearish
+    const contracts = data.results ?? []
+    if (contracts.length === 0) return 5 // neutral fallback
+
+    let callVolume = 0
+    let putVolume = 0
+    let callOI = 0
+    let putOI = 0
+    let totalVolume = 0
+    let totalOI = 0
+    let unusualCount = 0 // contracts where volume > 2× OI (unusual flow)
+
+    for (const c of contracts) {
+      const type = c.details?.contract_type
+      const vol = c.day?.volume ?? 0
+      const oi = c.open_interest ?? 0
+
+      totalVolume += vol
+      totalOI += oi
+
+      if (type === "call") {
+        callVolume += vol
+        callOI += oi
+      } else if (type === "put") {
+        putVolume += vol
+        putOI += oi
+      }
+
+      // Unusual activity: today's volume significantly exceeds open interest
+      if (oi > 0 && vol > oi * 2) unusualCount++
+      // Also flag if a single contract has very high absolute volume (>500 contracts)
+      if (vol > 500) unusualCount++
+    }
+
+    const callPutRatio = putVolume > 0 ? callVolume / putVolume : callVolume > 0 ? 5 : 1
+    const unusualActivity = unusualCount >= 3 // at least 3 contracts with unusual flow
+
+    // Score
+    if (callPutRatio > 2.0 && unusualActivity) return 25
+    if (callPutRatio > 2.0 || (callPutRatio > 1.5 && unusualActivity)) return 20
+    if (callPutRatio > 1.5) return 15
+    if (callPutRatio >= 0.8) return 5  // neutral
+    if (callPutRatio < 0.5) return 0   // heavily put-dominated = bearish
+    return 3                            // slight put lean
   } catch {
-    return 5 // neutral when options data unavailable
+    return 5 // neutral on error
   }
 }
 
-/** Volume (20). Today's volume vs 20-day average. */
+/** Volume (20). Today's volume vs 20-day average, projected to full-day intraday. */
 function scoreVolume(bars: Bar[]): number {
   if (bars.length < 5) return 0
-  const today = bars[bars.length - 1].v
+  const today = bars[bars.length - 1]
   const lookback = bars.slice(-21, -1) // up to 20 prior days
   if (lookback.length === 0) return 0
   const avg = lookback.reduce((a, b) => a + b.v, 0) / lookback.length
   if (avg <= 0) return 0
-  const ratio = today / avg
+
+  // Intraday adjustment: if market hasn't closed yet, project full-day volume
+  // based on how much of the trading day has elapsed (9:30 AM–4:00 PM ET = 390 min)
+  let adjustedVolume = today.v
+  const etMinutes = etMinutesNow()
+  const marketOpenMinute = 9 * 60 + 30
+  const marketCloseMinute = 16 * 60
+  const elapsed = Math.max(1, etMinutes - marketOpenMinute)
+  const totalMinutes = marketCloseMinute - marketOpenMinute // 390
+  if (elapsed < totalMinutes) {
+    const pctElapsed = elapsed / totalMinutes
+    adjustedVolume = today.v / pctElapsed
+  }
+
+  const ratio = adjustedVolume / avg
   if (ratio > 3) return 20
   if (ratio > 2) return 15
   if (ratio > 1.5) return 10

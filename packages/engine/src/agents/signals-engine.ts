@@ -10,6 +10,8 @@ export interface SignalsOptions {
   optionsData?: Record<string, OptionsChainSummary | null> | null
   /** Hard context prepended to the prompt (e.g. pre-market + options-flow summaries). */
   contextPrefix?: string | null
+  /** Tier 1 bullish-conviction tickers — these may not receive bearish signals. */
+  tier1Context?: string | null
 }
 
 /** Signals engine — verbatim prompt, returns one Signal per watchlist ticker. */
@@ -19,7 +21,8 @@ export async function runSignals(opts: SignalsOptions): Promise<Signal[]> {
     opts.tickers,
     opts.newsContext ?? null,
     opts.livePrices ?? null,
-    opts.optionsData ?? null
+    opts.optionsData ?? null,
+    opts.tier1Context ?? null
   )
   const prefix = opts.contextPrefix?.trim()
   const fullPrompt = prefix ? `${prefix}\n\n${prompt}` : prompt

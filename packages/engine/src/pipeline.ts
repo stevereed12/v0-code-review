@@ -200,12 +200,50 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
   }
   const signalsContextPrefix = signalsContextParts.join("\n\n") || null
 
-  const signals = await runSignals({
+  // Tier 1 conviction context: every Tier 1 match is a highest-conviction bullish
+  // play. Inject it into the Signals Engine prompt so it never returns a put/fade
+  // on a name the brief simultaneously flags as a top long.
+  const tier1ContextStr = tier1
+    .map((t) => `${t.ticker}: TIER 1 BULLISH — highest conviction long, DO NOT recommend puts or fade signals`)
+    .join("\n")
+
+  let signals = await runSignals({
     tickers: signalTickers,
     newsContext,
     livePrices,
     contextPrefix: signalsContextPrefix,
+    tier1Context: tier1ContextStr || null,
   })
+
+  // ── Coherence gate: a Tier 1 ticker can never carry a bearish signal ──
+  // Safety net behind the prompt injection above — if the Signals Engine still
+  // returns SELL/FADE on a Tier 1 name, drop it so the brief stays internally
+  // consistent (Tier 1 has final authority on directional bias).
+  const tier1TickerSet = new Set(tier1.map((t) => t.ticker.toUpperCase()))
+  signals = signals.filter((signal) => {
+    if (!tier1TickerSet.has(signal.ticker.toUpperCase())) return true
+    const isBearish = signal.signal === "SELL" || signal.signal === "FADE"
+    if (isBearish) {
+      console.warn(`[coherence] Removing bearish signal (${signal.signal}) for Tier 1 ticker ${signal.ticker}`)
+      return false
+    }
+    return true
+  })
+
+  // ── 5d. Overwrite each signal's displayed price/change with the authoritative
+  //        Polygon snapshot. The LLM is told the live price but still emits the
+  //        `price`/`change_pct` fields itself, so it can drift to a stale
+  //        training-data value (e.g. MU $270 instead of $933). The template
+  //        renders signals[].price directly, so the snapshot must win here. ──
+  if (livePrices) {
+    for (const s of signals) {
+      const live = livePrices[s.ticker.toUpperCase()]
+      if (live && live.price > 0) {
+        s.price = live.price
+        s.change_pct = live.change_pct
+      }
+    }
+  }
 
   // Hand today's signal tickers to the intraday alert scanner (best-effort).
   // The alert scanner reads this file to raise the bar on names already in the brief.
@@ -217,7 +255,7 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
   }
 
   // ── 6. Daily Brief: macro / catalysts / top plays ──
-  const brief = await runDailyBrief({ polygonKey, tickers: watchlist, premarketContext: premarketContext || null })
+  const brief = await runDailyBrief({ polygonKey, tickers: watchlist, premarketContext: premarketContext || null, livePrices })
 
   // ── 7. Vibe: market mood read ──
   const vibe = await runVibe({ polygonKey, tickers: watchlist })
