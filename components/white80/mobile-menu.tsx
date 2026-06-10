@@ -82,8 +82,9 @@ export function MobileMenu({ isLoggedIn = false, currentPath = "/" }: MobileMenu
       {/* Side Drawer */}
       <div
         className={`fixed top-0 right-0 h-full w-full max-w-sm bg-[#0a0a0a] border-l border-[#262620] z-50 transform transition-transform duration-300 ease-out overflow-y-auto ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+          isOpen ? "translate-x-0 visible" : "translate-x-full invisible pointer-events-none"
         }`}
+        aria-hidden={!isOpen}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[#262620]">
