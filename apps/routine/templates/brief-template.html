@@ -325,13 +325,13 @@
 
   function tickerStrip() {
     var cells = [
-      { label: "SPY",  obj: macro.spy,      val: macro.spy ? num(macro.spy.price) : null,      ch: macro.spy ? macro.spy.change_pct : null },
-      { label: "QQQ",  obj: macro.qqq,      val: macro.qqq ? num(macro.qqq.price) : null,      ch: macro.qqq ? macro.qqq.change_pct : null },
-      { label: "VIX",  obj: macro.vix,      val: macro.vix ? num(macro.vix.level) : null,      ch: macro.vix ? macro.vix.change_pct : null },
-      { label: "WTI",  obj: macro.wti,      val: macro.wti ? num(macro.wti.price) : null,      ch: macro.wti ? macro.wti.change_pct : null },
-      { label: "10Y",  obj: macro.ten_year, val: macro.ten_year ? num(macro.ten_year.yield) + "%" : null, ch: macro.ten_year ? macro.ten_year.change_pct : null },
-      { label: "DXY",  obj: macro.dxy,      val: macro.dxy ? num(macro.dxy.level) : null,      ch: macro.dxy ? macro.dxy.change_pct : null },
-      { label: "GOLD", obj: macro.gold,     val: macro.gold ? num(macro.gold.price, 0) : null, ch: macro.gold ? macro.gold.change_pct : null }
+      { label: "SPY",        obj: macro.spy,      val: macro.spy ? num(macro.spy.price) : null,      ch: macro.spy ? macro.spy.change_pct : null },
+      { label: "QQQ",        obj: macro.qqq,      val: macro.qqq ? num(macro.qqq.price) : null,      ch: macro.qqq ? macro.qqq.change_pct : null },
+      { label: "VIX (VIXY)", obj: macro.vix,      val: macro.vix ? num(macro.vix.level) : null,      ch: macro.vix ? macro.vix.change_pct : null },
+      { label: "OIL (USO)",  obj: macro.wti,      val: macro.wti ? num(macro.wti.price) : null,      ch: macro.wti ? macro.wti.change_pct : null },
+      { label: "10Y (TLT)",  obj: macro.ten_year, val: macro.ten_year ? num(macro.ten_year.yield) : null, ch: macro.ten_year ? macro.ten_year.change_pct : null },
+      { label: "DXY (UUP)",  obj: macro.dxy,      val: macro.dxy ? num(macro.dxy.level) : null,      ch: macro.dxy ? macro.dxy.change_pct : null },
+      { label: "Gold (GLD)", obj: macro.gold,     val: macro.gold ? num(macro.gold.price, 0) : null, ch: macro.gold ? macro.gold.change_pct : null }
     ];
     return "<div class='ticker-strip'>" + cells.map(function (c) {
       return "<div class='ticker-cell'>" +
@@ -652,11 +652,12 @@
   edition no.                ← data.edition_number (optional; defaults "006")
 
   ── Ticker strip ────────────────────────────────────────────────────────────
-  SPY/QQQ/WTI price + change ← brief.macro_pulse.spy/.qqq/.wti  (.price/.change_pct)
-  VIX                        ← brief.macro_pulse.vix.level (.change_pct if present)
-  10Y                        ← brief.macro_pulse.ten_year.yield
-  DXY                        ← brief.macro_pulse.dxy.level
-  GOLD                       ← brief.macro_pulse.gold.price
+  SPY/QQQ price + change     ← brief.macro_pulse.spy/.qqq  (.price/.change_pct)
+  VIX (VIXY proxy)           ← brief.macro_pulse.vix.level (.change_pct if present)
+  OIL (USO proxy)            ← brief.macro_pulse.wti.price
+  10Y (TLT proxy, inverse)   ← brief.macro_pulse.ten_year.yield
+  DXY (UUP proxy)            ← brief.macro_pulse.dxy.level
+  Gold (GLD proxy)           ← brief.macro_pulse.gold.price
 
   ── Session Risk banner ──────────────────────────────────────────────────────
   risk label                 ← brief.verdict.tone

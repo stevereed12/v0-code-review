@@ -102,7 +102,13 @@ async function fetchEarningsTickers(tickers: string[]): Promise<SonarEarnings[]>
       messages: [
         {
           role: "user",
-          content: `Which of these tickers reported earnings after market close yesterday or pre-market today: ${tickers.join(", ")}? Reply with a JSON array: [{ticker, gapPct_estimate, note}] or [] if none.`,
+          content: `You are a financial news monitor with access to live web search. From this list, identify ONLY the tickers whose earnings release has ACTUALLY BEEN PUBLISHED after market close yesterday or pre-market today: ${tickers.join(", ")}.
+
+For each one, the "note" must state the actual reported figures (EPS beat/miss, revenue vs estimate) taken from the published release. Do NOT include a ticker whose earnings are merely SCHEDULED but not yet reported, and never fabricate or estimate results. If earnings are due but not yet out, omit the ticker.
+
+Reply with a JSON array: [{ticker, gapPct_estimate, note}] or [] if none have actually reported.
+
+CRITICAL: Never invent or estimate earnings results. Only include a ticker if you are certain its earnings report has been published.`,
         },
       ],
     })

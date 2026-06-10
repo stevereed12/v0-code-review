@@ -185,6 +185,8 @@ CRITICAL RULES:
 - EARNINGS DATES: You MUST web search "[TICKER] earnings date" for EACH ticker and use the EXACT date from official sources (Yahoo Finance, Nasdaq, company IR page). Do NOT guess or use stale data.
 - If you cannot verify an earnings date with high confidence, write "earnings date unconfirmed"
 - If an earnings date or event has ALREADY PASSED, do NOT mention it as upcoming
+
+EARNINGS ACCURACY RULE: Do not reference earnings results for any company unless the actual figures have been provided in your context above. If earnings are upcoming, note the date — do not invent results.
 ${tier1Block}${priceBlock}${optionsBlock}${newsBlock}
 
 STRICT OPTIONS STRIKE RULES — FOLLOW EXACTLY:
