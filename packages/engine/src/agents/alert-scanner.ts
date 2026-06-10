@@ -274,7 +274,17 @@ async function scoreCatalyst(ticker: string): Promise<{ score: number; note: str
       messages: [
         {
           role: "user",
-          content: `Is there breaking news, earnings, FDA approval, analyst upgrade, or major catalyst for ${ticker} in the last 24 hours? Reply with: YES: <one sentence> or NO`,
+          content: `You are a financial news monitor with access to live web search. For the ticker ${ticker}:
+
+1. Search for CONFIRMED, PUBLISHED news from the last 24 hours only.
+2. If earnings were reported: state the actual EPS beat/miss and revenue vs estimate. Only report this if the earnings release has actually been published — do NOT speculate or estimate.
+3. If earnings are SCHEDULED but NOT YET REPORTED: say "Earnings due [date] after/before close" — do NOT fabricate results.
+4. If there is analyst upgrade/downgrade: state the firm, old rating, new rating, and price target.
+5. If none of the above: reply NO.
+
+Reply format: YES: <one factual sentence with source> or NO
+
+CRITICAL: Never invent or estimate earnings results. If you are not certain the report has been published, say "Earnings due [date]" instead.`,
         },
       ],
     })
