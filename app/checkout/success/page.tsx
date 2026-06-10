@@ -34,50 +34,50 @@ function SuccessContent() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: "radial-gradient(ellipse at top, #151e30, #05070e 70%)" }}
+      style={{ background: "radial-gradient(ellipse at top, #1e1e19, #0a0a0a 70%)" }}
     >
       <div className="max-w-md w-full text-center">
         {/* Logo */}
         <Link href="/" className="inline-flex items-center gap-2 mb-8">
-          <div className="w-3 h-3 bg-[#00e5ff] rounded-full animate-pulse" />
+          <div className="w-3 h-3 bg-[#c8ff00] rounded-full animate-pulse" />
           <span className="font-mono text-xl tracking-wider text-white">WHITE 80</span>
         </Link>
 
         {/* Success Card */}
-        <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-8">
-          <div className="w-16 h-16 bg-[#00ffaa]/15 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-8 h-8 text-[#00ffaa]" />
+        <div className="bg-[#141411] border border-[#262620] rounded-lg p-8">
+          <div className="w-16 h-16 bg-[#c8ff00]/15 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 className="w-8 h-8 text-[#c8ff00]" />
           </div>
 
           <h1 className="text-2xl font-bold text-white mb-2">
             Welcome to White 80!
           </h1>
-          <p className="text-[#3d4f6b] mb-6">
+          <p className="text-[#6e6a5e] mb-6">
             Your 7-day free trial has started. Let&apos;s get you set up.
           </p>
 
-          <div className="bg-[#090c14] border border-[#131c2e] rounded p-4 mb-6">
-            <p className="text-sm text-[#d6dff0] mb-2">
+          <div className="bg-[#0a0a0a] border border-[#262620] rounded p-4 mb-6">
+            <p className="text-sm text-[#f4f0e6] mb-2">
               Next step: Connect your API keys
             </p>
-            <p className="text-xs text-[#3d4f6b]">
+            <p className="text-xs text-[#6e6a5e]">
               You&apos;ll need Polygon (free) and Anthropic keys to power the platform.
             </p>
           </div>
 
           <Link
             href={`/onboarding?session_id=${sessionId}`}
-            className="block w-full bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10] font-mono text-sm tracking-wider py-3 rounded transition-colors mb-3"
+            className="block w-full bg-[#c8ff00] hover:bg-[#c8ff00]/90 text-[#0a0a0a] font-mono text-sm tracking-wider py-3 rounded transition-colors mb-3"
           >
             CONTINUE TO SETUP
           </Link>
 
-          <p className="text-xs text-[#3d4f6b]">
+          <p className="text-xs text-[#6e6a5e]">
             Auto-redirecting in {countdown}s...
           </p>
         </div>
 
-        <p className="text-xs text-[#3d4f6b] mt-6">
+        <p className="text-xs text-[#6e6a5e] mt-6">
           Questions? Contact support@white80.io
         </p>
       </div>
@@ -90,9 +90,9 @@ export default function CheckoutSuccessPage() {
     <Suspense fallback={
       <div 
         className="min-h-screen flex items-center justify-center"
-        style={{ background: "radial-gradient(ellipse at top, #151e30, #05070e 70%)" }}
+        style={{ background: "radial-gradient(ellipse at top, #1e1e19, #0a0a0a 70%)" }}
       >
-        <div className="w-8 h-8 border-2 border-[#00e5ff] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#c8ff00] border-t-transparent rounded-full animate-spin" />
       </div>
     }>
       <SuccessContent />

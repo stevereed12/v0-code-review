@@ -593,8 +593,8 @@ export function White80Dashboard({
         />
       )}
       <div
-        className="font-serif text-[#d6dff0] min-h-screen p-6 pb-16"
-        style={{ background: "radial-gradient(ellipse at top, #151e30, #05070e 70%)" }}
+        className="font-serif text-[#f4f0e6] min-h-screen p-6 pb-16"
+        style={{ background: "radial-gradient(ellipse at top, #1e1e19, #0a0a0a 70%)" }}
     >
       {/* API Key Modal */}
       {showApiKeyModal && (
@@ -623,23 +623,23 @@ export function White80Dashboard({
         <div className="mb-4">
           <div className="flex justify-between items-start mb-1">
             <div>
-              <h1 className="text-4xl font-semibold tracking-tight">
-                White <span className="text-[#00e5ff]">80</span>
+              <h1 className="font-display text-5xl tracking-wide leading-none">
+                WHITE <span className="text-[#c8ff00]">80</span>
               </h1>
-              <div className="font-mono text-[9px] tracking-[2.5px] text-[#3d4f6b] mt-0.5">
-                PERSONAL ALPHA SYSTEM - v1.0
+              <div className="font-mono text-[9px] tracking-[2.5px] text-[#6e6a5e] mt-1">
+                INTELLIGENCE IS THE POSITION - v1.0
               </div>
             </div>
             <div className="text-right">
-              <div className="font-mono text-[10px] text-[#3d4f6b]">
+              <div className="font-mono text-[10px] text-[#6e6a5e]">
                 {currentDate || "---"}
-                <div className="text-[9px] mt-0.5" style={{ color: curatorState?.regime ? "#00e5ff" : "#3d4f6b" }}>
+                <div className="text-[9px] mt-0.5" style={{ color: curatorState?.regime ? "#c8ff00" : "#6e6a5e" }}>
                   {curatorState?.regime || "REGIME UNSET"}
                 </div>
               </div>
               {userEmail && (
                 <div className="mt-2 flex items-center gap-2 justify-end">
-                  <span className="font-mono text-[9px] text-[#3d4f6b]">{userEmail}</span>
+                  <span className="font-mono text-[9px] text-[#6e6a5e]">{userEmail}</span>
                 <button
                   onClick={async () => {
                     // Clear all user data before signing out
@@ -674,8 +674,8 @@ export function White80Dashboard({
           onClick={() => setShowSettings(!showSettings)}
           className={`mb-4 flex items-center gap-2 font-mono text-[10px] tracking-wider px-3 py-1.5 rounded border transition-all ${
             showSettings
-              ? "bg-[#00e5ff]/10 border-[#00e5ff] text-[#00e5ff]"
-              : "border-[#1a2540] text-[#3d4f6b] hover:text-[#d6dff0]"
+              ? "bg-[#c8ff00]/10 border-[#c8ff00] text-[#c8ff00]"
+              : "border-[#1e1e19] text-[#6e6a5e] hover:text-[#f4f0e6]"
           }`}
         >
           <Settings className="w-3.5 h-3.5" />
@@ -718,7 +718,7 @@ export function White80Dashboard({
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
-                className="flex flex-col items-center justify-center gap-1 font-mono text-[9px] tracking-wider py-2.5 px-1 rounded-md bg-[#0c1020] border border-[#131c2e] data-[state=active]:border-[#00e5ff] data-[state=active]:bg-[#00e5ff]/10 data-[state=active]:text-[#00e5ff] text-[#3d4f6b]"
+                className="flex flex-col items-center justify-center gap-1 font-mono text-[9px] tracking-wider py-2.5 px-1 rounded-md bg-[#141411] border border-[#262620] data-[state=active]:border-[#c8ff00] data-[state=active]:bg-[#c8ff00]/10 data-[state=active]:text-[#c8ff00] text-[#6e6a5e]"
               >
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
@@ -727,7 +727,7 @@ export function White80Dashboard({
           </TabsList>
           
           {/* Desktop: horizontal tabs */}
-          <TabsList className="hidden md:flex w-full justify-start bg-transparent border-b border-[#131c2e] rounded-none p-0 h-auto mb-5">
+          <TabsList className="hidden md:flex w-full justify-start bg-transparent border-b border-[#262620] rounded-none p-0 h-auto mb-5">
             {[
               { value: "thesis", label: "THESIS", icon: Search },
               { value: "tier1", label: "TIER 1", icon: Crosshair },
@@ -743,7 +743,7 @@ export function White80Dashboard({
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
-                className="font-mono text-[10px] tracking-wider px-3.5 py-2.5 border-b-2 border-transparent data-[state=active]:border-[#00e5ff] data-[state=active]:text-[#00e5ff] text-[#3d4f6b] rounded-none bg-transparent"
+                className="font-mono text-[10px] tracking-wider px-3.5 py-2.5 border-b-2 border-transparent data-[state=active]:border-[#c8ff00] data-[state=active]:text-[#c8ff00] text-[#6e6a5e] rounded-none bg-transparent"
               >
                 <tab.icon className="w-3.5 h-3.5 mr-1.5" />
                 {tab.label}
@@ -784,7 +784,7 @@ export function White80Dashboard({
               loading={loading.curator}
               label="RUN CURATOR"
               loadingLabel="CURATING..."
-              color="#00e5ff"
+              color="#c8ff00"
               className="mb-4"
             />
 
@@ -795,7 +795,7 @@ export function White80Dashboard({
             )}
 
             {!curatorState && !loading.curator && (
-              <div className="font-mono text-center py-10 text-[10px] text-[#3d4f6b] tracking-wider">
+              <div className="font-mono text-center py-10 text-[10px] text-[#6e6a5e] tracking-wider">
                 Run curator to dynamically refine the watchlist based on current setups, news, and thematic fit.
               </div>
             )}
@@ -803,12 +803,12 @@ export function White80Dashboard({
             {curatorState && (
               <div className="animate-in fade-in duration-300">
                 {/* Summary */}
-                <div className="bg-[#0c1020] border border-[#131c2e] rounded p-4 mb-4">
-                <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2">CURATOR SUMMARY</div>
+                <div className="bg-[#141411] border border-[#262620] rounded p-4 mb-4">
+                <div className="font-mono text-[9px] tracking-[2px] text-[#6e6a5e] mb-2">CURATOR SUMMARY</div>
                 <div className="text-base leading-relaxed">{stripCitations(curatorState.summary)}</div>
                   {curatorState.regime && (
-                    <div className="mt-2.5 inline-block px-2 py-0.5 border border-[#00e5ff]/40 rounded-sm">
-                      <span className="font-mono text-[9px] text-[#00e5ff] tracking-wider">
+                    <div className="mt-2.5 inline-block px-2 py-0.5 border border-[#c8ff00]/40 rounded-sm">
+                      <span className="font-mono text-[9px] text-[#c8ff00] tracking-wider">
                         REGIME - {curatorState.regime}
                       </span>
                     </div>
@@ -817,21 +817,21 @@ export function White80Dashboard({
 
                 {/* Promote / Demote */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                  <div className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5">
-                    <div className="font-mono text-[9px] tracking-[2px] text-[#00ffaa] mb-2.5">
+                  <div className="bg-[#141411] border border-[#262620] rounded p-3.5">
+                    <div className="font-mono text-[9px] tracking-[2px] text-[#c8ff00] mb-2.5">
                       PROMOTED - {curatorState.promote?.length || 0}
                     </div>
                     {!curatorState.promote?.length ? (
-                      <div className="font-mono text-[10px] text-[#3d4f6b]">none today</div>
+                      <div className="font-mono text-[10px] text-[#6e6a5e]">none today</div>
                     ) : (
                       curatorState.promote.map((p, i) => (
                         <div
                           key={i}
-                          className="pb-2.5 mb-2.5 border-b border-[#131c2e] last:border-0 last:pb-0 last:mb-0"
+                          className="pb-2.5 mb-2.5 border-b border-[#262620] last:border-0 last:pb-0 last:mb-0"
                         >
                           <div className="flex justify-between items-baseline mb-0.5">
-                            <span className="font-mono text-[13px] text-[#00ffaa] font-medium">{p.ticker}</span>
-                            <span className="font-mono text-[8px] text-[#3d4f6b] tracking-wide">
+                            <span className="font-mono text-[13px] text-[#c8ff00] font-medium">{p.ticker}</span>
+                            <span className="font-mono text-[8px] text-[#6e6a5e] tracking-wide">
                               {p.theme?.toUpperCase()}
                             </span>
                           </div>
@@ -841,17 +841,17 @@ export function White80Dashboard({
                     )}
                   </div>
 
-                  <div className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5">
+                  <div className="bg-[#141411] border border-[#262620] rounded p-3.5">
                     <div className="font-mono text-[9px] tracking-[2px] text-[#fb923c] mb-2.5">
                       DEMOTED - {curatorState.demote?.length || 0}
                     </div>
                     {!curatorState.demote?.length ? (
-                      <div className="font-mono text-[10px] text-[#3d4f6b]">none today</div>
+                      <div className="font-mono text-[10px] text-[#6e6a5e]">none today</div>
                     ) : (
                       curatorState.demote.map((d, i) => (
                         <div
                           key={i}
-                          className="pb-2.5 mb-2.5 border-b border-[#131c2e] last:border-0 last:pb-0 last:mb-0"
+                          className="pb-2.5 mb-2.5 border-b border-[#262620] last:border-0 last:pb-0 last:mb-0"
                         >
                 <div className="font-mono text-[13px] text-[#fb923c] font-medium mb-0.5">{d.ticker}</div>
                 <div className="text-[13px] leading-snug">{stripCitations(d.reason)}</div>
@@ -862,13 +862,13 @@ export function White80Dashboard({
                 </div>
 
                 {/* Theme gravity wells */}
-                <div className="bg-[#0c1020] border border-[#131c2e] rounded p-3.5">
-                  <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2.5">THEMATIC GRAVITY WELLS</div>
+                <div className="bg-[#141411] border border-[#262620] rounded p-3.5">
+                  <div className="font-mono text-[9px] tracking-[2px] text-[#6e6a5e] mb-2.5">THEMATIC GRAVITY WELLS</div>
                   <div className="flex flex-wrap gap-1.5">
                     {THEMES.map((t) => (
                       <span
                         key={t.id}
-                        className="font-mono text-[10px] px-2 py-1 bg-[#151e30] border border-[#1a2540] text-[#a78bfa] rounded-sm"
+                        className="font-mono text-[10px] px-2 py-1 bg-[#1e1e19] border border-[#1e1e19] text-[#f4f0e6] rounded-sm"
                       >
                         {t.label} - w{t.weight}
                       </span>
@@ -882,12 +882,12 @@ export function White80Dashboard({
           {/* SCOUT TAB */}
           <TabsContent value="scout" className="mt-0">
             {/* Configuration */}
-            <div className="bg-[#090c14] border border-[#131c2e] rounded p-3.5 mb-3.5">
-              <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2.5">SCOUT CONFIGURATION</div>
+            <div className="bg-[#0a0a0a] border border-[#262620] rounded p-3.5 mb-3.5">
+              <div className="font-mono text-[9px] tracking-[2px] text-[#6e6a5e] mb-2.5">SCOUT CONFIGURATION</div>
 
               {/* Cap tier */}
               <div className="mb-3">
-                <div className="font-mono text-[9px] text-[#3d4f6b] mb-1.5 tracking-wider">MARKET CAP TIER</div>
+                <div className="font-mono text-[9px] text-[#6e6a5e] mb-1.5 tracking-wider">MARKET CAP TIER</div>
                 <div className="flex flex-wrap gap-1">
                   {(Object.entries(CAP_TIERS) as [CapTier, (typeof CAP_TIERS)[CapTier]][]).map(([k, v]) => (
                     <button
@@ -895,8 +895,8 @@ export function White80Dashboard({
                       onClick={() => setScoutCapTier(k)}
                       className={`font-mono text-[10px] px-2.5 py-1 rounded-sm border transition-all ${
                         scoutCapTier === k
-                          ? "bg-[#00e5ff]/10 border-[#00e5ff] text-[#00e5ff]"
-                          : "border-[#1a2540] text-[#3d4f6b]"
+                          ? "bg-[#c8ff00]/10 border-[#c8ff00] text-[#c8ff00]"
+                          : "border-[#1e1e19] text-[#6e6a5e]"
                       }`}
                     >
                       {v.label} <span className="opacity-60 text-[9px]">{v.range}</span>
@@ -907,7 +907,7 @@ export function White80Dashboard({
 
               {/* Horizon */}
               <div className="mb-3">
-                <div className="font-mono text-[9px] text-[#3d4f6b] mb-1.5 tracking-wider">HOLDING HORIZON</div>
+                <div className="font-mono text-[9px] text-[#6e6a5e] mb-1.5 tracking-wider">HOLDING HORIZON</div>
                 <div className="flex flex-wrap gap-1">
                   {(Object.entries(HORIZONS) as [Horizon, string][]).map(([k, desc]) => (
                     <button
@@ -915,8 +915,8 @@ export function White80Dashboard({
                       onClick={() => setScoutHorizon(k)}
                       className={`font-mono text-[10px] px-2.5 py-1 rounded-sm border transition-all ${
                         scoutHorizon === k
-                          ? "bg-[#a78bfa]/10 border-[#a78bfa] text-[#a78bfa]"
-                          : "border-[#1a2540] text-[#3d4f6b]"
+                          ? "bg-[#f4f0e6]/10 border-[#f4f0e6] text-[#f4f0e6]"
+                          : "border-[#1e1e19] text-[#6e6a5e]"
                       }`}
                       title={desc}
                     >
@@ -928,7 +928,7 @@ export function White80Dashboard({
 
               {/* Themes */}
               <div>
-                <div className="font-mono text-[9px] text-[#3d4f6b] mb-1.5 tracking-wider">
+                <div className="font-mono text-[9px] text-[#6e6a5e] mb-1.5 tracking-wider">
                   THEMES ({scoutThemes.length} SELECTED)
                 </div>
                 <div className="flex flex-wrap gap-1">
@@ -939,7 +939,7 @@ export function White80Dashboard({
                         key={t.id}
                         onClick={() => toggleScoutTheme(t.id)}
                         className={`font-mono text-[10px] px-2.5 py-1 rounded-sm border transition-all ${
-                          on ? "bg-[#00ffaa]/10 border-[#00ffaa] text-[#00ffaa]" : "border-[#1a2540] text-[#3d4f6b]"
+                          on ? "bg-[#c8ff00]/10 border-[#c8ff00] text-[#c8ff00]" : "border-[#1e1e19] text-[#6e6a5e]"
                         }`}
                       >
                         {on && "* "}
@@ -956,7 +956,7 @@ export function White80Dashboard({
               loading={loading.scout}
               label="RUN SCOUT"
               loadingLabel="SCOUTING..."
-              color="#00ffaa"
+              color="#c8ff00"
               className="mb-4"
             />
 
@@ -967,7 +967,7 @@ export function White80Dashboard({
             )}
 
             {scoutResults.length === 0 && !loading.scout && (
-              <div className="font-mono text-center py-10 text-[10px] text-[#3d4f6b] tracking-wider leading-relaxed">
+              <div className="font-mono text-center py-10 text-[10px] text-[#6e6a5e] tracking-wider leading-relaxed">
                 Scout finds high-conviction buy-and-hold names
                 <br />
                 outside the mega-cap mainstream.
@@ -996,7 +996,7 @@ export function White80Dashboard({
         loadingLabel="Scanning market..."
       />
       {generatedAt.buyhold && (
-        <span className="text-[10px] text-[#3d4f6b] font-mono self-center">
+        <span className="text-[10px] text-[#6e6a5e] font-mono self-center">
           Updated {generatedAt.buyhold}
         </span>
       )}
@@ -1010,11 +1010,11 @@ export function White80Dashboard({
 
     {buyHoldPicks.length === 0 && !loading.buyhold && (
       <div className="text-center py-12">
-        <Briefcase className="w-10 h-10 text-[#3d4f6b] mx-auto mb-3" />
-        <p className="text-[#3d4f6b] font-mono text-sm">
+        <Briefcase className="w-10 h-10 text-[#6e6a5e] mx-auto mb-3" />
+        <p className="text-[#6e6a5e] font-mono text-sm">
           Find quality stocks and funds at attractive entry points
         </p>
-        <p className="text-[#3d4f6b]/60 font-mono text-xs mt-1">
+        <p className="text-[#6e6a5e]/60 font-mono text-xs mt-1">
           Long-term holds, pullback opportunities, dividend plays
         </p>
       </div>
@@ -1023,23 +1023,23 @@ export function White80Dashboard({
     {buyHoldPicks.length > 0 && (
       <div className="space-y-4">
         {buyHoldPicks.map((pick, i) => (
-          <div key={i} className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
+          <div key={i} className="bg-[#141411] border border-[#262620] rounded-lg p-4">
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
-                <span className="font-mono text-lg font-bold text-white">{pick.ticker}</span>
-                <span className="text-[#3d4f6b] text-sm">{pick.name}</span>
+                <span className="font-mono text-lg font-bold text-[#f4f0e6]">{pick.ticker}</span>
+                <span className="text-[#6e6a5e] text-sm">{pick.name}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className={`font-mono text-[9px] tracking-wider px-2 py-1 rounded ${
-                  pick.conviction === "HIGH" ? "bg-[#00ffaa]/15 text-[#00ffaa]" :
+                  pick.conviction === "HIGH" ? "bg-[#c8ff00]/15 text-[#c8ff00]" :
                   pick.conviction === "MEDIUM" ? "bg-[#fbbf24]/15 text-[#fbbf24]" :
-                  "bg-[#3d4f6b]/15 text-[#3d4f6b]"
+                  "bg-[#6e6a5e]/15 text-[#6e6a5e]"
                 }`}>
                   {pick.conviction} CONVICTION
                 </span>
                 <span className={`font-mono text-[9px] tracking-wider px-2 py-1 rounded ${
-                  pick.risk_level === "LOW" ? "bg-[#00ffaa]/15 text-[#00ffaa]" :
+                  pick.risk_level === "LOW" ? "bg-[#c8ff00]/15 text-[#c8ff00]" :
                   pick.risk_level === "MEDIUM" ? "bg-[#fbbf24]/15 text-[#fbbf24]" :
                   "bg-[#f87171]/15 text-[#f87171]"
                 }`}>
@@ -1050,52 +1050,52 @@ export function White80Dashboard({
 
             {/* Meta row */}
             <div className="flex items-center gap-4 mb-3 text-[11px] font-mono">
-              <span className="text-[#00e5ff]">${pick.current_price?.toFixed(2) || "—"}</span>
-              <span className="text-[#3d4f6b]">{pick.sector}</span>
-              <span className="text-[#3d4f6b]">{pick.market_cap}</span>
-              <span className="text-[#3d4f6b]">{pick.time_horizon}</span>
+              <span className="text-[#c8ff00]">${pick.current_price?.toFixed(2) || "—"}</span>
+              <span className="text-[#6e6a5e]">{pick.sector}</span>
+              <span className="text-[#6e6a5e]">{pick.market_cap}</span>
+              <span className="text-[#6e6a5e]">{pick.time_horizon}</span>
             </div>
 
             {/* Why Now */}
             <div className="mb-3">
               <div className="font-mono text-[9px] tracking-wider text-[#fb923c] mb-1">WHY NOW</div>
-              <p className="text-[13px] text-[#d6dff0]">{pick.why_now}</p>
+              <p className="text-[13px] text-[#f4f0e6]">{pick.why_now}</p>
             </div>
 
             {/* Entry Zone & Fair Value */}
             <div className="grid grid-cols-2 gap-4 mb-3">
               <div>
-                <div className="font-mono text-[9px] tracking-wider text-[#3d4f6b] mb-1">ENTRY ZONE</div>
-                <span className="text-[#00e5ff] font-mono text-sm">
+                <div className="font-mono text-[9px] tracking-wider text-[#6e6a5e] mb-1">ENTRY ZONE</div>
+                <span className="text-[#c8ff00] font-mono text-sm">
                   ${pick.entry_zone?.low?.toFixed(2) || "—"} - ${pick.entry_zone?.high?.toFixed(2) || "—"}
                 </span>
               </div>
               <div>
-                <div className="font-mono text-[9px] tracking-wider text-[#3d4f6b] mb-1">FAIR VALUE</div>
-                <span className="text-[#00ffaa] font-mono text-sm">${pick.fair_value?.toFixed(2) || "—"}</span>
+                <div className="font-mono text-[9px] tracking-wider text-[#6e6a5e] mb-1">FAIR VALUE</div>
+                <span className="text-[#c8ff00] font-mono text-sm">${pick.fair_value?.toFixed(2) || "—"}</span>
               </div>
             </div>
 
             {/* Thesis */}
             <div className="mb-3">
-              <div className="font-mono text-[9px] tracking-wider text-[#3d4f6b] mb-1">THESIS</div>
-                <p className="text-[12px] text-[#d6dff0]">{stripCitations(pick.thesis)}</p>
+              <div className="font-mono text-[9px] tracking-wider text-[#6e6a5e] mb-1">THESIS</div>
+                <p className="text-[12px] text-[#f4f0e6]">{stripCitations(pick.thesis)}</p>
             </div>
 
             {/* Bull/Bear Cases */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <div className="font-mono text-[9px] tracking-wider text-[#00ffaa] mb-1">BULL CASE</div>
-                <p className="text-[11px] text-[#d6dff0]/80">{pick.bull_case}</p>
+                <div className="font-mono text-[9px] tracking-wider text-[#c8ff00] mb-1">BULL CASE</div>
+                <p className="text-[11px] text-[#f4f0e6]/80">{pick.bull_case}</p>
               </div>
               <div>
                 <div className="font-mono text-[9px] tracking-wider text-[#f87171] mb-1">BEAR CASE</div>
-                <p className="text-[11px] text-[#d6dff0]/80">{pick.bear_case}</p>
+                <p className="text-[11px] text-[#f4f0e6]/80">{pick.bear_case}</p>
               </div>
             </div>
 
             {/* Add to Watchlist button */}
-            <div className="mt-3 pt-3 border-t border-[#131c2e]">
+            <div className="mt-3 pt-3 border-t border-[#262620]">
               <button
                 onClick={() => {
                   if (!watchlist.includes(pick.ticker)) {
@@ -1105,8 +1105,8 @@ export function White80Dashboard({
                 disabled={watchlist.includes(pick.ticker)}
                 className={`font-mono text-[10px] tracking-wider px-3 py-1.5 rounded transition-colors ${
                   watchlist.includes(pick.ticker)
-                    ? "bg-[#3d4f6b]/20 text-[#3d4f6b] cursor-not-allowed"
-                    : "bg-[#00e5ff]/10 text-[#00e5ff] hover:bg-[#00e5ff]/20"
+                    ? "bg-[#6e6a5e]/20 text-[#6e6a5e] cursor-not-allowed"
+                    : "bg-[#c8ff00]/10 text-[#c8ff00] hover:bg-[#c8ff00]/20"
                 }`}
               >
                 {watchlist.includes(pick.ticker) ? "IN WATCHLIST" : "ADD TO WATCHLIST"}
@@ -1133,8 +1133,8 @@ export function White80Dashboard({
                 onClick={() => setAutoNewsRefresh((a) => !a)}
                 className={`font-mono py-3 px-4 text-[10px] tracking-wider rounded border transition-all ${
                   autoNewsRefresh
-                    ? "bg-[#00ffaa]/10 border-[#00ffaa] text-[#00ffaa]"
-                    : "border-[#1a2540] text-[#3d4f6b]"
+                    ? "bg-[#c8ff00]/10 border-[#c8ff00] text-[#c8ff00]"
+                    : "border-[#1e1e19] text-[#6e6a5e]"
                 }`}
                 title="Auto-refresh every 15 min"
               >
@@ -1149,7 +1149,7 @@ export function White80Dashboard({
             )}
 
             {news.length === 0 && !loading.news && (
-              <div className="font-mono text-center py-10 text-[10px] text-[#3d4f6b] tracking-wider leading-relaxed">
+              <div className="font-mono text-center py-10 text-[10px] text-[#6e6a5e] tracking-wider leading-relaxed">
                 Run news monitor to scan the active watchlist for fresh catalysts.
                 <br />
                 Latest news flow feeds directly into Signals.
@@ -1159,7 +1159,7 @@ export function White80Dashboard({
             {news.length > 0 && (
               <>
                 {/* Aggregate counter */}
-                <div className="bg-[#090c14] border border-[#131c2e] rounded p-2.5 mb-3 flex justify-around flex-wrap gap-3">
+                <div className="bg-[#0a0a0a] border border-[#262620] rounded p-2.5 mb-3 flex justify-around flex-wrap gap-3">
                   {(() => {
                     const all = news.flatMap((n) => n.items || [])
                     const bull = all.filter((i) => i.impact === "BULLISH").length
@@ -1168,17 +1168,17 @@ export function White80Dashboard({
                     const quiet = news.filter((n) => !n.items?.length || n.summary === "quiet").length
                     return (
                       <>
-                        <div className="font-mono text-[10px] text-[#3d4f6b] tracking-wider">
-                          <span className="text-[#00ffaa] text-sm font-medium">{bull}</span> bull
+                        <div className="font-mono text-[10px] text-[#6e6a5e] tracking-wider">
+                          <span className="text-[#c8ff00] text-sm font-medium">{bull}</span> bull
                         </div>
-                        <div className="font-mono text-[10px] text-[#3d4f6b] tracking-wider">
+                        <div className="font-mono text-[10px] text-[#6e6a5e] tracking-wider">
                           <span className="text-[#f87171] text-sm font-medium">{bear}</span> bear
                         </div>
-                        <div className="font-mono text-[10px] text-[#3d4f6b] tracking-wider">
+                        <div className="font-mono text-[10px] text-[#6e6a5e] tracking-wider">
                           <span className="text-[#fb923c] text-sm font-medium">{high}</span> high impact
                         </div>
-                        <div className="font-mono text-[10px] text-[#3d4f6b] tracking-wider">
-                          <span className="text-[#3d4f6b] text-sm font-medium">{quiet}</span> quiet
+                        <div className="font-mono text-[10px] text-[#6e6a5e] tracking-wider">
+                          <span className="text-[#6e6a5e] text-sm font-medium">{quiet}</span> quiet
                         </div>
                       </>
                     )
@@ -1189,7 +1189,7 @@ export function White80Dashboard({
                   <NewsCard key={i} news={n} />
                 ))}
 
-                <div className="font-mono mt-3.5 p-2.5 bg-[#00e5ff]/5 border border-[#00e5ff]/30 rounded text-[10px] text-[#00e5ff] tracking-wide">
+                <div className="font-mono mt-3.5 p-2.5 bg-[#c8ff00]/5 border border-[#c8ff00]/30 rounded text-[10px] text-[#c8ff00] tracking-wide">
                   * News flow auto-feeds into Signals. Run signals next to get news-aware plays.
                 </div>
               </>
@@ -1205,16 +1205,16 @@ export function White80Dashboard({
                 loading={loading.signals}
                 label="RUN SIGNALS"
                 loadingLabel="SCANNING..."
-                color="#00ffaa"
+                color="#c8ff00"
                 className="flex-1 mr-3"
               />
-              <div className="flex bg-[#060a10] border border-[#131c2e] rounded-lg p-1">
+              <div className="flex bg-[#0a0a0a] border border-[#262620] rounded-lg p-1">
                 <button
                   onClick={() => setSignalView("signals")}
                   className={`font-mono text-[10px] px-3 py-1.5 rounded tracking-wider transition-colors ${
                     signalView === "signals"
-                      ? "bg-[#00ffaa]/20 text-[#00ffaa] border border-[#00ffaa]/50"
-                      : "text-[#3d4f6b] hover:text-[#d6dff0]"
+                      ? "bg-[#c8ff00]/20 text-[#c8ff00] border border-[#c8ff00]/50"
+                      : "text-[#6e6a5e] hover:text-[#f4f0e6]"
                   }`}
                 >
                   SIGNALS
@@ -1223,8 +1223,8 @@ export function White80Dashboard({
                   onClick={() => setSignalView("spreads")}
                   className={`font-mono text-[10px] px-3 py-1.5 rounded tracking-wider transition-colors ${
                     signalView === "spreads"
-                      ? "bg-[#a78bfa]/20 text-[#a78bfa] border border-[#a78bfa]/50"
-                      : "text-[#3d4f6b] hover:text-[#d6dff0]"
+                      ? "bg-[#f4f0e6]/20 text-[#f4f0e6] border border-[#f4f0e6]/50"
+                      : "text-[#6e6a5e] hover:text-[#f4f0e6]"
                   }`}
                 >
                   SPREADS
@@ -1239,23 +1239,23 @@ export function White80Dashboard({
             )}
 
             {pricesAt && Object.keys(livePrices).length > 0 && (
-              <div className="font-mono bg-[#00ffaa]/5 border border-[#00ffaa]/40 p-2 rounded text-[10px] text-[#00ffaa] tracking-wide mb-3 flex justify-between items-center flex-wrap gap-1.5">
+              <div className="font-mono bg-[#c8ff00]/5 border border-[#c8ff00]/40 p-2 rounded text-[10px] text-[#c8ff00] tracking-wide mb-3 flex justify-between items-center flex-wrap gap-1.5">
                 <span>
                   * PRICES + OPTIONS DATA - {Object.keys(livePrices).length}/{watchlist.length} TICKERS
                 </span>
-                <span className="text-[#3d4f6b]">fetched {pricesAt}</span>
+                <span className="text-[#6e6a5e]">fetched {pricesAt}</span>
               </div>
             )}
 
             {signals.length === 0 && !loading.signals && (
-              <div className="font-mono text-center py-10 text-[10px] text-[#3d4f6b] tracking-wider">
+              <div className="font-mono text-center py-10 text-[10px] text-[#6e6a5e] tracking-wider">
                 Run signals to scan the active watchlist for setups.
               </div>
             )}
 
             {/* Spread View Info Banner */}
             {signalView === "spreads" && signals.length > 0 && (
-              <div className="font-mono bg-[#a78bfa]/10 border border-[#a78bfa]/30 p-2.5 rounded text-[10px] text-[#a78bfa] mb-4 tracking-wide">
+              <div className="font-mono bg-[#f4f0e6]/10 border border-[#f4f0e6]/30 p-2.5 rounded text-[10px] text-[#f4f0e6] mb-4 tracking-wide">
                 SPREAD VIEW: Converting single-leg options into defined-risk spread strategies. Strikes are calculated based on signal direction and targets.
               </div>
             )}
@@ -1273,7 +1273,7 @@ export function White80Dashboard({
               loading={loading.brief}
               label="RUN PRE-MARKET BRIEF"
               loadingLabel="BRIEFING..."
-              color="#a78bfa"
+              color="#f4f0e6"
               className="mb-4"
             />
 
@@ -1284,7 +1284,7 @@ export function White80Dashboard({
             )}
 
             {!brief && !loading.brief && (
-              <div className="font-mono text-center py-10 text-[10px] text-[#3d4f6b] tracking-wider">
+              <div className="font-mono text-center py-10 text-[10px] text-[#6e6a5e] tracking-wider">
                 Run brief for overnight action, headlines, and today&apos;s setup.
               </div>
             )}
@@ -1292,103 +1292,103 @@ export function White80Dashboard({
             {brief && (
               <div className="animate-in fade-in duration-300 space-y-5">
                 {/* Header */}
-                <div className="text-center border-b border-[#131c2e] pb-4">
-                  <div className="font-mono text-[10px] tracking-[3px] text-[#3d4f6b] mb-1">WHITE 80 PRE-MARKET BRIEF</div>
-                  <div className="font-mono text-sm text-[#d6dff0]">{brief.session_date} | {brief.session_label}</div>
+                <div className="text-center border-b border-[#262620] pb-4">
+                  <div className="font-mono text-[10px] tracking-[3px] text-[#6e6a5e] mb-1">WHITE 80 PRE-MARKET BRIEF</div>
+                  <div className="font-mono text-sm text-[#f4f0e6]">{brief.session_date} | {brief.session_label}</div>
                 </div>
 
                 {/* MACRO PULSE */}
-                <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
-                  <div className="font-mono text-[10px] tracking-[2px] text-[#00e5ff] mb-4 border-b border-[#131c2e] pb-2">MACRO PULSE</div>
+                <div className="bg-[#141411] border border-[#262620] rounded-lg p-4">
+                  <div className="font-mono text-[10px] tracking-[2px] text-[#c8ff00] mb-4 border-b border-[#262620] pb-2">MACRO PULSE</div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-[13px]">
                     {/* SPY */}
                     <div>
-                      <span className="text-[#3d4f6b] font-mono text-[10px]">SPY</span>
-                      <div className="text-[#d6dff0]">
+                      <span className="text-[#6e6a5e] font-mono text-[10px]">SPY</span>
+                      <div className="text-[#f4f0e6]">
                         ${brief.macro_pulse?.spy?.price?.toFixed(2) || "—"}
-                        <span className={`ml-1 ${(brief.macro_pulse?.spy?.change_pct || 0) >= 0 ? "text-[#00ffaa]" : "text-[#f87171]"}`}>
+                        <span className={`ml-1 ${(brief.macro_pulse?.spy?.change_pct || 0) >= 0 ? "text-[#c8ff00]" : "text-[#f87171]"}`}>
                           ({(brief.macro_pulse?.spy?.change_pct || 0) >= 0 ? "+" : ""}{brief.macro_pulse?.spy?.change_pct?.toFixed(2) || 0}%)
                         </span>
                       </div>
-                      <div className="text-[10px] text-[#3d4f6b]">{brief.macro_pulse?.spy?.context}</div>
+                      <div className="text-[10px] text-[#6e6a5e]">{brief.macro_pulse?.spy?.context}</div>
                     </div>
                     {/* QQQ */}
                     <div>
-                      <span className="text-[#3d4f6b] font-mono text-[10px]">QQQ</span>
-                      <div className="text-[#d6dff0]">
+                      <span className="text-[#6e6a5e] font-mono text-[10px]">QQQ</span>
+                      <div className="text-[#f4f0e6]">
                         ${brief.macro_pulse?.qqq?.price?.toFixed(2) || "—"}
-                        <span className={`ml-1 ${(brief.macro_pulse?.qqq?.change_pct || 0) >= 0 ? "text-[#00ffaa]" : "text-[#f87171]"}`}>
+                        <span className={`ml-1 ${(brief.macro_pulse?.qqq?.change_pct || 0) >= 0 ? "text-[#c8ff00]" : "text-[#f87171]"}`}>
                           ({(brief.macro_pulse?.qqq?.change_pct || 0) >= 0 ? "+" : ""}{brief.macro_pulse?.qqq?.change_pct?.toFixed(2) || 0}%)
                         </span>
                       </div>
-                      <div className="text-[10px] text-[#3d4f6b]">{brief.macro_pulse?.qqq?.context}</div>
+                      <div className="text-[10px] text-[#6e6a5e]">{brief.macro_pulse?.qqq?.context}</div>
                     </div>
                     {/* VIX */}
                     <div>
-                      <span className="text-[#3d4f6b] font-mono text-[10px]">VIX</span>
-                      <div className="text-[#d6dff0]">{brief.macro_pulse?.vix?.level?.toFixed(2) || "—"}</div>
-                      <div className="text-[10px] text-[#3d4f6b]">{brief.macro_pulse?.vix?.context}</div>
+                      <span className="text-[#6e6a5e] font-mono text-[10px]">VIX</span>
+                      <div className="text-[#f4f0e6]">{brief.macro_pulse?.vix?.level?.toFixed(2) || "—"}</div>
+                      <div className="text-[10px] text-[#6e6a5e]">{brief.macro_pulse?.vix?.context}</div>
                     </div>
                     {/* DXY */}
                     <div>
-                      <span className="text-[#3d4f6b] font-mono text-[10px]">DXY</span>
-                      <div className="text-[#d6dff0]">{brief.macro_pulse?.dxy?.level?.toFixed(2) || "—"}</div>
-                      <div className="text-[10px] text-[#3d4f6b]">{brief.macro_pulse?.dxy?.context}</div>
+                      <span className="text-[#6e6a5e] font-mono text-[10px]">DXY</span>
+                      <div className="text-[#f4f0e6]">{brief.macro_pulse?.dxy?.level?.toFixed(2) || "—"}</div>
+                      <div className="text-[10px] text-[#6e6a5e]">{brief.macro_pulse?.dxy?.context}</div>
                     </div>
                     {/* 10Y */}
                     <div>
-                      <span className="text-[#3d4f6b] font-mono text-[10px]">10Y YIELD</span>
-                      <div className="text-[#d6dff0]">{brief.macro_pulse?.ten_year?.yield?.toFixed(2) || "—"}%</div>
-                      <div className="text-[10px] text-[#3d4f6b]">{brief.macro_pulse?.ten_year?.context}</div>
+                      <span className="text-[#6e6a5e] font-mono text-[10px]">10Y YIELD</span>
+                      <div className="text-[#f4f0e6]">{brief.macro_pulse?.ten_year?.yield?.toFixed(2) || "—"}%</div>
+                      <div className="text-[10px] text-[#6e6a5e]">{brief.macro_pulse?.ten_year?.context}</div>
                     </div>
                     {/* WTI */}
                     <div>
-                      <span className="text-[#3d4f6b] font-mono text-[10px]">WTI CRUDE</span>
-                      <div className="text-[#d6dff0]">
+                      <span className="text-[#6e6a5e] font-mono text-[10px]">WTI CRUDE</span>
+                      <div className="text-[#f4f0e6]">
                         ${brief.macro_pulse?.wti?.price?.toFixed(2) || "—"}
-                        <span className={`ml-1 ${(brief.macro_pulse?.wti?.change_pct || 0) >= 0 ? "text-[#00ffaa]" : "text-[#f87171]"}`}>
+                        <span className={`ml-1 ${(brief.macro_pulse?.wti?.change_pct || 0) >= 0 ? "text-[#c8ff00]" : "text-[#f87171]"}`}>
                           ({(brief.macro_pulse?.wti?.change_pct || 0) >= 0 ? "+" : ""}{brief.macro_pulse?.wti?.change_pct?.toFixed(2) || 0}%)
                         </span>
                       </div>
-                      <div className="text-[10px] text-[#3d4f6b]">{brief.macro_pulse?.wti?.context}</div>
+                      <div className="text-[10px] text-[#6e6a5e]">{brief.macro_pulse?.wti?.context}</div>
                     </div>
                     {/* Gold */}
                     <div>
-                      <span className="text-[#3d4f6b] font-mono text-[10px]">GOLD</span>
-                      <div className="text-[#d6dff0]">${brief.macro_pulse?.gold?.price?.toLocaleString() || "—"}</div>
-                      <div className="text-[10px] text-[#3d4f6b]">{brief.macro_pulse?.gold?.context}</div>
+                      <span className="text-[#6e6a5e] font-mono text-[10px]">GOLD</span>
+                      <div className="text-[#f4f0e6]">${brief.macro_pulse?.gold?.price?.toLocaleString() || "—"}</div>
+                      <div className="text-[10px] text-[#6e6a5e]">{brief.macro_pulse?.gold?.context}</div>
                     </div>
                   </div>
                 </div>
 
                 {/* TOP CATALYSTS */}
-                <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
-                  <div className="font-mono text-[10px] tracking-[2px] text-[#fb923c] mb-4 border-b border-[#131c2e] pb-2">TOP CATALYSTS</div>
+                <div className="bg-[#141411] border border-[#262620] rounded-lg p-4">
+                  <div className="font-mono text-[10px] tracking-[2px] text-[#fb923c] mb-4 border-b border-[#262620] pb-2">TOP CATALYSTS</div>
                   <div className="space-y-4">
                     {brief.catalysts?.map((c, i) => (
                       <div key={i}>
                 <div className="font-mono text-[12px] text-[#fb923c] mb-1">{i + 1}. {stripCitations(c.title)}</div>
-                <div className="text-[14px] leading-relaxed text-[#d6dff0] pl-4">{stripCitations(c.body)}</div>
+                <div className="text-[14px] leading-relaxed text-[#f4f0e6] pl-4">{stripCitations(c.body)}</div>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* SECTOR ROTATION */}
-                <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
-                  <div className="font-mono text-[10px] tracking-[2px] text-[#a78bfa] mb-4 border-b border-[#131c2e] pb-2">SECTOR ROTATION</div>
+                <div className="bg-[#141411] border border-[#262620] rounded-lg p-4">
+                  <div className="font-mono text-[10px] tracking-[2px] text-[#f4f0e6] mb-4 border-b border-[#262620] pb-2">SECTOR ROTATION</div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Leading */}
                     <div>
-                      <div className="font-mono text-[10px] text-[#00ffaa] mb-2">LEADING</div>
+                      <div className="font-mono text-[10px] text-[#c8ff00] mb-2">LEADING</div>
                       <div className="space-y-2">
                         {brief.sector_rotation?.leading?.map((s, i) => (
-                          <div key={i} className="bg-[#090c14] rounded p-2">
+                          <div key={i} className="bg-[#0a0a0a] rounded p-2">
                             <div className="flex justify-between items-baseline">
-                              <span className="text-[13px] text-[#d6dff0]">{s.sector}</span>
-                              <span className="font-mono text-[12px] text-[#00ffaa]">+{s.change_pct?.toFixed(1)}%</span>
+                              <span className="text-[13px] text-[#f4f0e6]">{s.sector}</span>
+                              <span className="font-mono text-[12px] text-[#c8ff00]">+{s.change_pct?.toFixed(1)}%</span>
                             </div>
-                            <div className="text-[11px] text-[#3d4f6b] mt-1">{s.detail}</div>
+                            <div className="text-[11px] text-[#6e6a5e] mt-1">{s.detail}</div>
                           </div>
                         ))}
                       </div>
@@ -1398,12 +1398,12 @@ export function White80Dashboard({
                       <div className="font-mono text-[10px] text-[#f87171] mb-2">LAGGING</div>
                       <div className="space-y-2">
                         {brief.sector_rotation?.lagging?.map((s, i) => (
-                          <div key={i} className="bg-[#090c14] rounded p-2">
+                          <div key={i} className="bg-[#0a0a0a] rounded p-2">
                             <div className="flex justify-between items-baseline">
-                              <span className="text-[13px] text-[#d6dff0]">{s.sector}</span>
+                              <span className="text-[13px] text-[#f4f0e6]">{s.sector}</span>
                               <span className="font-mono text-[12px] text-[#f87171]">{s.change_pct?.toFixed(1)}%</span>
                             </div>
-                            <div className="text-[11px] text-[#3d4f6b] mt-1">{s.detail}</div>
+                            <div className="text-[11px] text-[#6e6a5e] mt-1">{s.detail}</div>
                           </div>
                         ))}
                       </div>
@@ -1418,23 +1418,23 @@ export function White80Dashboard({
                     background: brief.verdict?.tone === "RISK-ON" ? "linear-gradient(135deg, rgba(0,255,170,0.1) 0%, rgba(0,229,255,0.05) 100%)" 
                       : brief.verdict?.tone === "RISK-OFF" ? "linear-gradient(135deg, rgba(248,113,113,0.1) 0%, rgba(251,146,60,0.05) 100%)"
                       : "linear-gradient(135deg, rgba(250,204,21,0.1) 0%, rgba(167,139,250,0.05) 100%)",
-                    border: `1px solid ${brief.verdict?.tone === "RISK-ON" ? "#00ffaa40" : brief.verdict?.tone === "RISK-OFF" ? "#f8717140" : "#facc1540"}`,
+                    border: `1px solid ${brief.verdict?.tone === "RISK-ON" ? "#c8ff0040" : brief.verdict?.tone === "RISK-OFF" ? "#f8717140" : "#facc1540"}`,
                   }}
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="font-mono text-[10px] tracking-[2px] text-[#3d4f6b]">VERDICT</div>
+                    <div className="font-mono text-[10px] tracking-[2px] text-[#6e6a5e]">VERDICT</div>
                     <div 
                       className="font-mono text-xs font-semibold px-3 py-1 rounded"
                       style={{ 
-                        color: brief.verdict?.tone === "RISK-ON" ? "#00ffaa" : brief.verdict?.tone === "RISK-OFF" ? "#f87171" : "#facc15",
-                        background: brief.verdict?.tone === "RISK-ON" ? "#00ffaa15" : brief.verdict?.tone === "RISK-OFF" ? "#f8717115" : "#facc1515",
-                        border: `1px solid ${brief.verdict?.tone === "RISK-ON" ? "#00ffaa40" : brief.verdict?.tone === "RISK-OFF" ? "#f8717140" : "#facc1540"}`,
+                        color: brief.verdict?.tone === "RISK-ON" ? "#c8ff00" : brief.verdict?.tone === "RISK-OFF" ? "#f87171" : "#facc15",
+                        background: brief.verdict?.tone === "RISK-ON" ? "#c8ff0015" : brief.verdict?.tone === "RISK-OFF" ? "#f8717115" : "#facc1515",
+                        border: `1px solid ${brief.verdict?.tone === "RISK-ON" ? "#c8ff0040" : brief.verdict?.tone === "RISK-OFF" ? "#f8717140" : "#facc1540"}`,
                       }}
                     >
                       {brief.verdict?.tone}
                     </div>
                   </div>
-                  <div className="text-[15px] leading-relaxed text-[#d6dff0]">{stripCitations(brief.verdict?.summary || "")}</div>
+                  <div className="text-[15px] leading-relaxed text-[#f4f0e6]">{stripCitations(brief.verdict?.summary || "")}</div>
                 </div>
 
                 {/* TOP PLAYS */}
@@ -1443,29 +1443,29 @@ export function White80Dashboard({
                   <div className="font-mono text-[10px] tracking-[2px] text-[#fb923c] mb-3">WHITE 80 TOP PLAYS</div>
                   <div className="space-y-3">
                     {brief.top_plays.map((play, i) => (
-                      <div key={i} className="bg-[#0c1020] border border-[#131c2e] rounded p-3">
+                      <div key={i} className="bg-[#141411] border border-[#262620] rounded p-3">
                         <div className="flex items-center justify-between mb-1.5">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm font-bold text-white">{play.ticker}</span>
+                            <span className="font-mono text-sm font-bold text-[#f4f0e6]">{play.ticker}</span>
                             <span className={`font-mono text-[9px] tracking-wider px-1.5 py-0.5 rounded ${
-                              play.action === "BUY" ? "bg-[#00ffaa]/15 text-[#00ffaa]" :
+                              play.action === "BUY" ? "bg-[#c8ff00]/15 text-[#c8ff00]" :
                               play.action === "SELL" ? "bg-[#f87171]/15 text-[#f87171]" :
                               "bg-[#fb923c]/15 text-[#fb923c]"
                             }`}>
                               {play.action}
                             </span>
                             <span className={`font-mono text-[9px] tracking-wider ${
-                              play.conviction === "HIGH" ? "text-[#00ffaa]" :
+                              play.conviction === "HIGH" ? "text-[#c8ff00]" :
                               play.conviction === "MEDIUM" ? "text-[#fbbf24]" :
-                              "text-[#3d4f6b]"
+                              "text-[#6e6a5e]"
                             }`}>
                               {play.conviction}
                             </span>
                           </div>
                         </div>
-                <div className="font-mono text-[11px] text-[#00e5ff] mb-1">{stripCitations(play.play)}</div>
-                <div className="text-[11px] text-[#d6dff0] mb-1">{stripCitations(play.thesis)}</div>
-                <div className="font-mono text-[9px] text-[#3d4f6b]">CATALYST: {stripCitations(play.catalyst)}</div>
+                <div className="font-mono text-[11px] text-[#c8ff00] mb-1">{stripCitations(play.play)}</div>
+                <div className="text-[11px] text-[#f4f0e6] mb-1">{stripCitations(play.thesis)}</div>
+                <div className="font-mono text-[9px] text-[#6e6a5e]">CATALYST: {stripCitations(play.catalyst)}</div>
                       </div>
                     ))}
                   </div>
@@ -1483,7 +1483,7 @@ export function White80Dashboard({
               loading={loading.vibe}
               label="CHECK THE VIBE"
               loadingLabel="READING THE ROOM..."
-              color="#00e5ff"
+              color="#c8ff00"
               className="mb-4"
             />
 
@@ -1494,7 +1494,7 @@ export function White80Dashboard({
             )}
 
             {!vibe && !loading.vibe && (
-              <div className="font-mono text-center py-10 text-[10px] text-[#3d4f6b] tracking-wider leading-relaxed">
+              <div className="font-mono text-center py-10 text-[10px] text-[#6e6a5e] tracking-wider leading-relaxed">
                 Vibe Check reads the emotional temperature of the market — fear vs. greed, what&apos;s
                 <br />running hot, what&apos;s ice cold, and how to play the mood. Tap to read the room.
               </div>
@@ -1510,12 +1510,12 @@ export function White80Dashboard({
         </Tabs>
 
         {/* Footer */}
-        <div className="mt-10 pt-4 border-t border-[#131c2e] flex justify-between flex-wrap gap-2 items-center">
-          <span className="font-mono text-[9px] text-[#3d4f6b] tracking-wider">
+        <div className="mt-10 pt-4 border-t border-[#262620] flex justify-between flex-wrap gap-2 items-center">
+          <span className="font-mono text-[9px] text-[#6e6a5e] tracking-wider">
             WHITE 80 - PERSONAL ALPHA SYSTEM - POWERED BY CLAUDE
           </span>
           <div className="flex gap-3 items-center flex-wrap">
-            <span className="font-mono text-[9px] text-[#3d4f6b]">
+            <span className="font-mono text-[9px] text-[#6e6a5e]">
               {Object.entries(generatedAt)
                 .map(([k, v]) => `${k}:${v}`)
                 .join(" - ") || "no runs yet"}

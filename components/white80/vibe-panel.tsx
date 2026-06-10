@@ -9,17 +9,17 @@ function stripCitations(text: string): string {
 
 // Map vibe score (0-100) to a color
 function scoreColor(score: number): string {
-  if (score >= 75) return "#00ffaa"
-  if (score >= 60) return "#7dd87d"
+  if (score >= 75) return "#c8ff00"
+  if (score >= 60) return "#c8ff00"
   if (score >= 45) return "#facc15"
   if (score >= 30) return "#fb923c"
   return "#f87171"
 }
 
 const TEMP_CONFIG: Record<string, { color: string; icon: typeof Flame }> = {
-  FREEZING: { color: "#60a5fa", icon: Snowflake },
-  COLD: { color: "#7dd3fc", icon: Snowflake },
-  COOL: { color: "#67e8f9", icon: Snowflake },
+  FREEZING: { color: "#c8ff00", icon: Snowflake },
+  COLD: { color: "#c8ff00", icon: Snowflake },
+  COOL: { color: "#c8ff00", icon: Snowflake },
   WARM: { color: "#facc15", icon: Flame },
   HOT: { color: "#fb923c", icon: Flame },
   "ON FIRE": { color: "#f87171", icon: Flame },
@@ -34,11 +34,11 @@ export function VibePanel({ vibe }: { vibe: VibeCheck }) {
     <div className="animate-in fade-in duration-300 space-y-4">
       {/* Hero: score gauge + headline */}
       <div
-        className="bg-[#0c1020] border rounded-lg p-5"
+        className="bg-[#141411] border rounded-lg p-5"
         style={{ borderColor: `${sColor}40`, background: `linear-gradient(135deg, ${sColor}0d 0%, transparent 60%)` }}
       >
         <div className="flex items-center justify-between mb-1">
-          <div className="font-mono text-[9px] tracking-[2.5px] text-[#3d4f6b]">
+          <div className="font-mono text-[9px] tracking-[2.5px] text-[#6e6a5e]">
             VIBE CHECK — {vibe.session_date} | {vibe.session_time}
           </div>
           <div
@@ -56,7 +56,7 @@ export function VibePanel({ vibe }: { vibe: VibeCheck }) {
             <div className="font-mono text-5xl font-semibold leading-none" style={{ color: sColor }}>
               {vibe.vibe_score}
             </div>
-            <div className="font-mono text-[8px] tracking-[2px] text-[#3d4f6b] mt-1">VIBE / 100</div>
+            <div className="font-mono text-[8px] tracking-[2px] text-[#6e6a5e] mt-1">VIBE / 100</div>
           </div>
 
           {/* Mood + headline */}
@@ -64,19 +64,19 @@ export function VibePanel({ vibe }: { vibe: VibeCheck }) {
             <div className="font-mono text-sm tracking-wider mb-1.5" style={{ color: sColor }}>
               {vibe.mood}
             </div>
-            <div className="text-lg leading-snug text-balance text-[#d6dff0]">{stripCitations(vibe.headline)}</div>
+            <div className="text-lg leading-snug text-balance text-[#f4f0e6]">{stripCitations(vibe.headline)}</div>
           </div>
         </div>
 
         {/* Score bar: fear -> greed */}
         <div className="mt-4">
-          <div className="relative h-2 rounded-full overflow-hidden bg-[#060a10] border border-[#131c2e]">
+          <div className="relative h-2 rounded-full overflow-hidden bg-[#0a0a0a] border border-[#262620]">
             <div
               className="absolute inset-y-0 left-0 rounded-full transition-all"
               style={{ width: `${vibe.vibe_score}%`, background: sColor }}
             />
           </div>
-          <div className="flex justify-between font-mono text-[8px] tracking-wider text-[#3d4f6b] mt-1">
+          <div className="flex justify-between font-mono text-[8px] tracking-wider text-[#6e6a5e] mt-1">
             <span>FEAR</span>
             <span>NEUTRAL</span>
             <span>GREED</span>
@@ -85,20 +85,20 @@ export function VibePanel({ vibe }: { vibe: VibeCheck }) {
       </div>
 
       {/* The read */}
-      <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
-        <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2">THE READ</div>
-        <div className="text-[15px] leading-relaxed text-[#d6dff0]">{stripCitations(vibe.read)}</div>
+      <div className="bg-[#141411] border border-[#262620] rounded-lg p-4">
+        <div className="font-mono text-[9px] tracking-[2px] text-[#6e6a5e] mb-2">THE READ</div>
+        <div className="text-[15px] leading-relaxed text-[#f4f0e6]">{stripCitations(vibe.read)}</div>
       </div>
 
       {/* Drivers */}
       {vibe.drivers?.length > 0 && (
-        <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
-          <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-3 flex items-center gap-1.5">
+        <div className="bg-[#141411] border border-[#262620] rounded-lg p-4">
+          <div className="font-mono text-[9px] tracking-[2px] text-[#6e6a5e] mb-3 flex items-center gap-1.5">
             <Zap className="w-3 h-3" /> WHAT&apos;S MOVING THE MOOD
           </div>
           <div className="space-y-2.5">
             {vibe.drivers.map((d, i) => {
-              const c = d.sentiment === "POSITIVE" ? "#00ffaa" : d.sentiment === "NEGATIVE" ? "#f87171" : "#facc15"
+              const c = d.sentiment === "POSITIVE" ? "#c8ff00" : d.sentiment === "NEGATIVE" ? "#f87171" : "#facc15"
               return (
                 <div key={i} className="flex gap-3">
                   <div className="w-1 rounded-full shrink-0" style={{ background: c }} />
@@ -106,7 +106,7 @@ export function VibePanel({ vibe }: { vibe: VibeCheck }) {
                     <div className="font-mono text-[11px] tracking-wider mb-0.5" style={{ color: c }}>
                       {d.label}
                     </div>
-                    <div className="text-[13px] leading-snug text-[#d6dff0]">{stripCitations(d.detail)}</div>
+                    <div className="text-[13px] leading-snug text-[#f4f0e6]">{stripCitations(d.detail)}</div>
                   </div>
                 </div>
               )
@@ -117,46 +117,46 @@ export function VibePanel({ vibe }: { vibe: VibeCheck }) {
 
       {/* Hot / Cold sectors */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
+        <div className="bg-[#141411] border border-[#262620] rounded-lg p-4">
           <div className="font-mono text-[9px] tracking-[2px] text-[#fb923c] mb-3 flex items-center gap-1.5">
             <Flame className="w-3 h-3" /> RUNNING HOT
           </div>
           {!vibe.hot_sectors?.length ? (
-            <div className="font-mono text-[10px] text-[#3d4f6b]">nothing on fire</div>
+            <div className="font-mono text-[10px] text-[#6e6a5e]">nothing on fire</div>
           ) : (
             <div className="space-y-2.5">
               {vibe.hot_sectors.map((s, i) => (
-                <div key={i} className="border-b border-[#131c2e] last:border-0 pb-2.5 last:pb-0">
+                <div key={i} className="border-b border-[#262620] last:border-0 pb-2.5 last:pb-0">
                   <div className="flex justify-between items-baseline">
-                    <span className="font-mono text-[12px] text-[#d6dff0]">{s.sector}</span>
-                    <span className="font-mono text-[11px] text-[#00ffaa]">
+                    <span className="font-mono text-[12px] text-[#f4f0e6]">{s.sector}</span>
+                    <span className="font-mono text-[11px] text-[#c8ff00]">
                       {s.change_pct >= 0 ? "+" : ""}{s.change_pct?.toFixed(2)}%
                     </span>
                   </div>
-                  <div className="text-[12px] leading-snug text-[#3d4f6b] mt-0.5">{stripCitations(s.vibe)}</div>
+                  <div className="text-[12px] leading-snug text-[#6e6a5e] mt-0.5">{stripCitations(s.vibe)}</div>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
-          <div className="font-mono text-[9px] tracking-[2px] text-[#60a5fa] mb-3 flex items-center gap-1.5">
+        <div className="bg-[#141411] border border-[#262620] rounded-lg p-4">
+          <div className="font-mono text-[9px] tracking-[2px] text-[#c8ff00] mb-3 flex items-center gap-1.5">
             <Snowflake className="w-3 h-3" /> ICE COLD
           </div>
           {!vibe.cold_sectors?.length ? (
-            <div className="font-mono text-[10px] text-[#3d4f6b]">nothing frozen</div>
+            <div className="font-mono text-[10px] text-[#6e6a5e]">nothing frozen</div>
           ) : (
             <div className="space-y-2.5">
               {vibe.cold_sectors.map((s, i) => (
-                <div key={i} className="border-b border-[#131c2e] last:border-0 pb-2.5 last:pb-0">
+                <div key={i} className="border-b border-[#262620] last:border-0 pb-2.5 last:pb-0">
                   <div className="flex justify-between items-baseline">
-                    <span className="font-mono text-[12px] text-[#d6dff0]">{s.sector}</span>
+                    <span className="font-mono text-[12px] text-[#f4f0e6]">{s.sector}</span>
                     <span className="font-mono text-[11px] text-[#f87171]">
                       {s.change_pct >= 0 ? "+" : ""}{s.change_pct?.toFixed(2)}%
                     </span>
                   </div>
-                  <div className="text-[12px] leading-snug text-[#3d4f6b] mt-0.5">{stripCitations(s.vibe)}</div>
+                  <div className="text-[12px] leading-snug text-[#6e6a5e] mt-0.5">{stripCitations(s.vibe)}</div>
                 </div>
               ))}
             </div>
@@ -166,24 +166,24 @@ export function VibePanel({ vibe }: { vibe: VibeCheck }) {
 
       {/* Buzzing tickers */}
       {vibe.buzzing_tickers?.length > 0 && (
-        <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
-          <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-3 flex items-center gap-1.5">
+        <div className="bg-[#141411] border border-[#262620] rounded-lg p-4">
+          <div className="font-mono text-[9px] tracking-[2px] text-[#6e6a5e] mb-3 flex items-center gap-1.5">
             <TrendingUp className="w-3 h-3" /> TALK OF THE TAPE
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {vibe.buzzing_tickers.map((t, i) => {
-              const c = t.vibe === "BULLISH" ? "#00ffaa" : t.vibe === "BEARISH" ? "#f87171" : "#facc15"
+              const c = t.vibe === "BULLISH" ? "#c8ff00" : t.vibe === "BEARISH" ? "#f87171" : "#facc15"
               const VibeIcon = t.vibe === "BEARISH" ? TrendingDown : TrendingUp
               return (
-                <div key={i} className="bg-[#060a10] border border-[#131c2e] rounded p-3">
+                <div key={i} className="bg-[#0a0a0a] border border-[#262620] rounded p-3">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-mono text-[13px] font-medium text-[#d6dff0]">{t.ticker}</span>
+                    <span className="font-mono text-[13px] font-medium text-[#f4f0e6]">{t.ticker}</span>
                     <span className="flex items-center gap-1 font-mono text-[8px] tracking-wider" style={{ color: c }}>
                       <VibeIcon className="w-3 h-3" />
                       {t.vibe}
                     </span>
                   </div>
-                  <div className="text-[12px] leading-snug text-[#3d4f6b]">{stripCitations(t.why)}</div>
+                  <div className="text-[12px] leading-snug text-[#6e6a5e]">{stripCitations(t.why)}</div>
                 </div>
               )
             })}
@@ -193,17 +193,17 @@ export function VibePanel({ vibe }: { vibe: VibeCheck }) {
 
       {/* Social pulse + contrarian note */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
-          <div className="font-mono text-[9px] tracking-[2px] text-[#00e5ff] mb-2 flex items-center gap-1.5">
+        <div className="bg-[#141411] border border-[#262620] rounded-lg p-4">
+          <div className="font-mono text-[9px] tracking-[2px] text-[#c8ff00] mb-2 flex items-center gap-1.5">
             <Users className="w-3 h-3" /> SOCIAL PULSE
           </div>
-          <div className="text-[13px] leading-relaxed text-[#d6dff0]">{stripCitations(vibe.social_pulse)}</div>
+          <div className="text-[13px] leading-relaxed text-[#f4f0e6]">{stripCitations(vibe.social_pulse)}</div>
         </div>
-        <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4">
+        <div className="bg-[#141411] border border-[#262620] rounded-lg p-4">
           <div className="font-mono text-[9px] tracking-[2px] text-[#fb923c] mb-2 flex items-center gap-1.5">
             <Eye className="w-3 h-3" /> CONTRARIAN NOTE
           </div>
-          <div className="text-[13px] leading-relaxed text-[#d6dff0]">{stripCitations(vibe.contrarian_note)}</div>
+          <div className="text-[13px] leading-relaxed text-[#f4f0e6]">{stripCitations(vibe.contrarian_note)}</div>
         </div>
       </div>
 
@@ -215,11 +215,11 @@ export function VibePanel({ vibe }: { vibe: VibeCheck }) {
         <div className="font-mono text-[9px] tracking-[2px] mb-2 flex items-center gap-1.5" style={{ color: sColor }}>
           <Target className="w-3 h-3" /> HOW TO PLAY THE VIBE
         </div>
-        <div className="text-[15px] leading-relaxed text-[#d6dff0]">{stripCitations(vibe.play_it)}</div>
+        <div className="text-[15px] leading-relaxed text-[#f4f0e6]">{stripCitations(vibe.play_it)}</div>
       </div>
 
       {/* Disclaimer */}
-      <div className="font-mono text-[9px] text-[#3d4f6b] text-center leading-relaxed px-4">
+      <div className="font-mono text-[9px] text-[#6e6a5e] text-center leading-relaxed px-4">
         Vibe Check is a sentiment read for entertainment and context — not financial advice. Trade your plan, not the vibes.
       </div>
     </div>

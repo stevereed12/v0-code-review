@@ -40,12 +40,12 @@ export function WatchlistHeader({
   }
 
   return (
-    <div className="bg-[#090c14] border border-[#131c2e] rounded-md p-3 mb-4">
+    <div className="bg-[#0a0a0a] border border-[#262620] rounded-md p-3 mb-4">
       <div className="flex justify-between items-center mb-2">
-        <span className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b]">
+        <span className="font-mono text-[9px] tracking-[2px] text-[#6e6a5e]">
           ACTIVE WATCHLIST - {watchlist.length} NAMES
         </span>
-        <span className="font-mono text-[9px] text-[#3d4f6b]">
+        <span className="font-mono text-[9px] text-[#6e6a5e]">
           {generatedAt ? `curated ${generatedAt}` : "seed list"}
         </span>
       </div>
@@ -58,8 +58,8 @@ export function WatchlistHeader({
               key={t}
               className={`font-mono text-[11px] px-2 py-1 rounded-sm border inline-flex items-center gap-1.5 transition-all ${
                 isPinned
-                  ? "bg-[#00e5ff]/10 border-[#00e5ff] text-[#00e5ff]"
-                  : "bg-[#0c1020] border-[#1a2540] text-[#d6dff0]"
+                  ? "bg-[#c8ff00]/10 border-[#c8ff00] text-[#c8ff00]"
+                  : "bg-[#141411] border-[#1e1e19] text-[#f4f0e6]"
               }`}
             >
               <span
@@ -73,7 +73,7 @@ export function WatchlistHeader({
               <span
                 onClick={() => onRemove(t)}
                 title="Remove from watchlist"
-                className="cursor-pointer text-[#3d4f6b] hover:text-[#f87171] transition-colors"
+                className="cursor-pointer text-[#6e6a5e] hover:text-[#f87171] transition-colors"
               >
                 <X className="w-3 h-3" />
               </span>
@@ -82,7 +82,7 @@ export function WatchlistHeader({
         })}
       </div>
 
-      <div className="flex gap-2 items-center pt-2.5 border-t border-[#131c2e]">
+      <div className="flex gap-2 items-center pt-2.5 border-t border-[#262620]">
         <input
           type="text"
           value={manualTicker}
@@ -95,15 +95,15 @@ export function WatchlistHeader({
           }}
           placeholder="ADD TICKER"
           maxLength={10}
-          className="flex-1 min-w-[100px] max-w-[180px] bg-[#05070e] border border-[#1a2540] text-[#d6dff0] px-2.5 py-1.5 text-[11px] tracking-wider rounded-sm font-mono focus:border-[#00e5ff] focus:outline-none"
+          className="flex-1 min-w-[100px] max-w-[180px] bg-[#0a0a0a] border border-[#1e1e19] text-[#f4f0e6] px-2.5 py-1.5 text-[11px] tracking-wider rounded-sm font-mono focus:border-[#c8ff00] focus:outline-none"
         />
         <button
           onClick={() => addManualTicker(true)}
           disabled={!manualTicker.trim()}
           className={`font-mono text-[10px] tracking-wider px-3 py-1.5 rounded-sm border transition-all ${
             manualTicker.trim()
-              ? "bg-[#00e5ff]/10 border-[#00e5ff] text-[#00e5ff] cursor-pointer"
-              : "border-[#1a2540] text-[#3d4f6b] cursor-default"
+              ? "bg-[#c8ff00]/10 border-[#c8ff00] text-[#c8ff00] cursor-pointer"
+              : "border-[#1e1e19] text-[#6e6a5e] cursor-default"
           }`}
           title="Add and pin (survives curator)"
         >
@@ -114,8 +114,8 @@ export function WatchlistHeader({
           disabled={!manualTicker.trim()}
           className={`font-mono text-[10px] tracking-wider px-2.5 py-1.5 rounded-sm border transition-all ${
             manualTicker.trim()
-              ? "border-[#3d4f6b] text-[#3d4f6b] cursor-pointer hover:text-[#d6dff0]"
-              : "border-[#1a2540] text-[#1a2540] cursor-default"
+              ? "border-[#6e6a5e] text-[#6e6a5e] cursor-pointer hover:text-[#f4f0e6]"
+              : "border-[#1e1e19] text-[#1e1e19] cursor-default"
           }`}
           title="Add temporarily (curator may demote)"
         >

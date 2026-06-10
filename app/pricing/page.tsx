@@ -71,18 +71,18 @@ function PricingPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#060a10]">
+    <div className="min-h-screen bg-[#0a0a0a]">
       {/* Header */}
-      <header className="border-b border-[#131c2e]">
+      <header className="border-b border-[#262620]">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-[#00e5ff] rounded-full animate-pulse" />
-            <span className="font-mono text-lg tracking-wider text-white">WHITE 80</span>
+            <div className="w-3 h-3 bg-[#c8ff00] animate-pulse" />
+            <span className="font-display text-2xl tracking-wide text-[#f4f0e6]">WHITE 80</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link
               href="/auth/login"
-              className="font-mono text-xs sm:text-sm text-[#3d4f6b] hover:text-white transition-colors"
+              className="font-mono text-xs sm:text-sm text-[#6e6a5e] hover:text-white transition-colors"
             >
               Sign In
             </Link>
@@ -95,15 +95,15 @@ function PricingPageContent() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Start Your 7-Day Free Trial
+            <h1 className="font-display text-5xl md:text-6xl text-[#f4f0e6] mb-4 text-balance">
+              SEVEN DAYS. <span className="text-[#c8ff00]">FREE.</span>
             </h1>
-            <p className="text-[#3d4f6b] font-mono text-sm max-w-md mx-auto mb-4">
-              Full access to all features. No charge until your trial ends.
+            <p className="text-[#6e6a5e] font-mono text-sm max-w-md mx-auto mb-6">
+              Full access to the desk. No charge until your trial ends.
             </p>
-            <div className="inline-flex items-center gap-2 bg-[#00ffaa]/10 border border-[#00ffaa]/20 rounded-full px-4 py-1.5">
-              <span className="w-2 h-2 bg-[#00ffaa] rounded-full" />
-              <span className="font-mono text-xs text-[#00ffaa]">CANCEL ANYTIME</span>
+            <div className="inline-flex items-center gap-2 border border-[#c8ff00]/30 px-4 py-1.5">
+              <span className="w-1.5 h-1.5 bg-[#c8ff00]" />
+              <span className="font-mono text-[10px] tracking-[0.25em] text-[#c8ff00]">CANCEL ANYTIME</span>
             </div>
           </div>
 
@@ -112,30 +112,30 @@ function PricingPageContent() {
           {PRODUCTS.map((product) => (
             <div
               key={product.id}
-              className={`bg-[#0c1020] border rounded-lg p-6 ${
+              className={`bg-[#141411] border p-6 ${
                 product.interval === "year"
-                  ? "border-[#00e5ff]/50 relative"
-                  : "border-[#131c2e]"
+                  ? "border-[#c8ff00]/50 relative"
+                  : "border-[#262620]"
               }`}
             >
               {product.interval === "year" && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-[#00e5ff] text-[#060a10] font-mono text-[10px] tracking-wider px-3 py-1 rounded-full">
+                  <span className="bg-[#c8ff00] text-[#0a0a0a] font-mono text-[10px] tracking-wider px-3 py-1">
                     SAVE $98
                   </span>
                 </div>
               )}
 
               <div className="mb-6">
-                <h2 className="font-mono text-lg text-white mb-1">{product.name}</h2>
-                <p className="text-[#3d4f6b] text-sm">{product.description}</p>
+                <h2 className="font-display text-2xl tracking-wide text-[#f4f0e6] mb-1">{product.name}</h2>
+                <p className="text-[#6e6a5e] text-sm">{product.description}</p>
               </div>
 
               <div className="mb-6">
-                <span className="text-4xl font-bold text-white">
+                <span className="font-display text-5xl text-[#f4f0e6]">
                   ${(product.priceInCents / 100).toFixed(0)}
                 </span>
-                <span className="text-[#3d4f6b] font-mono text-sm">
+                <span className="text-[#6e6a5e] font-mono text-sm">
                   /{product.interval}
                 </span>
               </div>
@@ -144,7 +144,7 @@ function PricingPageContent() {
                 {product.features.map((feature, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <svg
-                      className="w-4 h-4 text-[#00ffaa] mt-0.5 flex-shrink-0"
+                      className="w-4 h-4 text-[#c8ff00] mt-0.5 flex-shrink-0"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -156,7 +156,7 @@ function PricingPageContent() {
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    <span className="text-[#d6dff0] text-sm">{feature}</span>
+                    <span className="text-[#f4f0e6] text-sm">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -164,10 +164,10 @@ function PricingPageContent() {
               <button
                 onClick={() => handleSubscribe(product.id)}
                 disabled={loading === product.id || isAuthenticated === null}
-                className={`w-full font-mono text-sm tracking-wider py-3 rounded transition-colors disabled:opacity-50 ${
+                className={`w-full font-mono text-sm tracking-wider py-3 transition-colors disabled:opacity-50 ${
                   product.interval === "year"
-                    ? "bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10]"
-                    : "bg-[#131c2e] hover:bg-[#1a2438] text-white border border-[#00e5ff]/30"
+                    ? "bg-[#c8ff00] hover:bg-[#d9ff4d] text-[#0a0a0a]"
+                    : "bg-transparent hover:bg-[#1e1e19] text-[#f4f0e6] border border-[#c8ff00]/30"
                 }`}
               >
                 {loading === product.id ? "LOADING..." : isAuthenticated === null ? "CHECKING..." : "START FREE TRIAL"}
@@ -178,10 +178,10 @@ function PricingPageContent() {
 
         {/* Footer */}
         <div className="mt-12 text-center space-y-2">
-          <p className="text-[#d6dff0] font-mono text-sm">
+          <p className="text-[#f4f0e6] font-mono text-sm">
             7 days free, then your subscription begins. Cancel anytime.
           </p>
-          <p className="text-[#3d4f6b] font-mono text-xs">
+          <p className="text-[#6e6a5e] font-mono text-xs">
             Requires your own Polygon (free) and Anthropic (pay-as-you-go) API keys.
           </p>
         </div>

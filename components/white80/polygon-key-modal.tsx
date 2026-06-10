@@ -34,27 +34,27 @@ export function PolygonKeyModal({ onKeySet, onClose }: PolygonKeyModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-[#0c1020] border-[#131c2e]">
+      <Card className="w-full max-w-md bg-[#141411] border-[#262620]">
         <CardHeader className="relative">
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 text-[#3d4f6b] hover:text-[#d6dff0] transition-colors"
+            className="absolute right-4 top-4 text-[#6e6a5e] hover:text-[#f4f0e6] transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-lg bg-[#00ffaa]/10 border border-[#00ffaa]/30">
-              <Key className="h-5 w-5 text-[#00ffaa]" />
+            <div className="p-2 rounded-lg bg-[#c8ff00]/10 border border-[#c8ff00]/30">
+              <Key className="h-5 w-5 text-[#c8ff00]" />
             </div>
-            <CardTitle className="text-[#d6dff0]">Polygon API Key Required</CardTitle>
+            <CardTitle className="text-[#f4f0e6]">Polygon API Key Required</CardTitle>
           </div>
-          <CardDescription className="text-[#3d4f6b]">
+          <CardDescription className="text-[#6e6a5e]">
             The Tier 1 Scanner uses Polygon.io for real-time market data, technical indicators, and options flow analysis.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label className="font-mono text-xs text-[#3d4f6b] uppercase tracking-wider">
+            <label className="font-mono text-xs text-[#6e6a5e] uppercase tracking-wider">
               API Key
             </label>
             <input
@@ -63,7 +63,7 @@ export function PolygonKeyModal({ onKeySet, onClose }: PolygonKeyModalProps) {
               onChange={(e) => { setKey(e.target.value); setError(""); }}
               onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
               placeholder="Enter your Polygon API key"
-              className="w-full bg-[#05070e] border border-[#1a2540] rounded px-3 py-2 text-[#d6dff0] font-mono text-sm focus:border-[#00ffaa] focus:outline-none"
+              className="w-full bg-[#0a0a0a] border border-[#1e1e19] rounded px-3 py-2 text-[#f4f0e6] font-mono text-sm focus:border-[#c8ff00] focus:outline-none"
               autoFocus
             />
             {error && (
@@ -71,9 +71,9 @@ export function PolygonKeyModal({ onKeySet, onClose }: PolygonKeyModalProps) {
             )}
           </div>
 
-          <div className="bg-[#05070e] border border-[#1a2540] rounded p-3 space-y-2">
-            <p className="text-sm text-[#d6dff0]">To get a Polygon API key:</p>
-            <ol className="text-xs text-[#3d4f6b] space-y-1 list-decimal list-inside">
+          <div className="bg-[#0a0a0a] border border-[#1e1e19] rounded p-3 space-y-2">
+            <p className="text-sm text-[#f4f0e6]">To get a Polygon API key:</p>
+            <ol className="text-xs text-[#6e6a5e] space-y-1 list-decimal list-inside">
               <li>Visit polygon.io and create a free account</li>
               <li>Go to Dashboard &gt; API Keys</li>
               <li>Copy your API key and paste it here</li>
@@ -82,7 +82,7 @@ export function PolygonKeyModal({ onKeySet, onClose }: PolygonKeyModalProps) {
               href="https://polygon.io/dashboard/api-keys"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs text-[#00ffaa] hover:underline mt-2"
+              className="inline-flex items-center gap-1 text-xs text-[#c8ff00] hover:underline mt-2"
             >
               Open Polygon Dashboard <ExternalLink className="h-3 w-3" />
             </a>
@@ -92,19 +92,19 @@ export function PolygonKeyModal({ onKeySet, onClose }: PolygonKeyModalProps) {
             <Button
               variant="outline"
               onClick={onClose}
-              className="flex-1 border-[#1a2540] text-[#3d4f6b] hover:text-[#d6dff0] hover:border-[#3d4f6b]"
+              className="flex-1 border-[#1e1e19] text-[#6e6a5e] hover:text-[#f4f0e6] hover:border-[#6e6a5e]"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSubmit}
-              className="flex-1 bg-[#00ffaa] text-[#05070e] hover:bg-[#00ffaa]/90"
+              className="flex-1 bg-[#c8ff00] text-[#0a0a0a] hover:bg-[#c8ff00]/90"
             >
               Save Key
             </Button>
           </div>
 
-          <p className="text-xs text-[#3d4f6b] text-center">
+          <p className="text-xs text-[#6e6a5e] text-center">
             Your key is stored locally in your browser and only sent to Polygon&apos;s API.
           </p>
         </CardContent>

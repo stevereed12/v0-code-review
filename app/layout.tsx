@@ -1,23 +1,32 @@
 import type { Metadata, Viewport } from 'next'
-import { Cormorant_Garamond, JetBrains_Mono } from 'next/font/google'
+import { Bebas_Neue, DM_Mono, DM_Sans } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-const cormorant = Cormorant_Garamond({
+const bebasNeue = Bebas_Neue({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-cormorant",
+  weight: "400",
+  variable: "--font-bebas",
+  display: "swap",
 })
 
-const jetbrainsMono = JetBrains_Mono({
+const dmMono = DM_Mono({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
-  variable: "--font-jetbrains",
+  weight: ["300", "400", "500"],
+  variable: "--font-dm-mono",
+  display: "swap",
+})
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-dm-sans",
+  display: "swap",
 })
 
 export const metadata: Metadata = {
-  title: 'White 80 - Personal Alpha System',
-  description: 'AI-powered trading signal engine with watchlist curation, news monitoring, and performance tracking',
+  title: 'White 80 — Intelligence Is The Position',
+  description: 'AI-powered trading intelligence desk. Signal generation, watchlist curation, pre-market briefs, and performance tracking.',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -42,7 +51,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#05070e",
+  themeColor: "#0A0A0A",
 }
 
 export default function RootLayout({
@@ -51,8 +60,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${jetbrainsMono.variable} bg-[#05070e]`}>
-      <body className="font-serif antialiased bg-[#05070e]">
+    <html lang="en" className={`${bebasNeue.variable} ${dmMono.variable} ${dmSans.variable} bg-background`}>
+      <body className="font-sans antialiased bg-background text-foreground">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

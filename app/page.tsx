@@ -1,27 +1,73 @@
 import Link from "next/link"
 import { TrendingUp, Radar, FileText, Search, BarChart3, Crosshair, Shield, Key, Zap } from "lucide-react"
 import { MobileMenu } from "@/components/white80/mobile-menu"
+import { SiteFooter } from "@/components/white80/site-footer"
+
+const FEATURES = [
+  {
+    icon: Crosshair,
+    color: "#fb923c",
+    title: "TIER 1 SCANNER",
+    desc: "Surfaces the highest-conviction setups of the day. Unusual options activity, technical breakouts, catalyst alignment. The plays that earn the call.",
+    points: ["Options flow anomaly detection", "Multi-timeframe technical confluence", "Catalyst proximity scoring"],
+  },
+  {
+    icon: TrendingUp,
+    color: "#c8ff00",
+    title: "AI SIGNALS",
+    desc: "Decisive BUY / SELL / FADE calls on every watchlist name. Strike, expiration, target, stop. No fence-sitting.",
+    points: ["Entry, target, and stop levels", "Options play recommendations", "Risk/reward analysis"],
+  },
+  {
+    icon: FileText,
+    color: "#c8ff00",
+    title: "PRE-MARKET BRIEF",
+    desc: "The session, read before the open. Futures, overnight catalysts, sector rotation, and your top plays — built from live market data.",
+    points: ["Global macro context", "Earnings and economic calendar", "Top 3-5 plays with full thesis"],
+  },
+  {
+    icon: Search,
+    color: "#f4f0e6",
+    title: "DEEP THESIS",
+    desc: "Any ticker, taken apart. Bull case, bear case, key levels, sentiment, and IV-aware options structure for current conditions.",
+    points: ["Bull/bear thesis breakdown", "Key support/resistance levels", "IV-aware options strategies"],
+  },
+  {
+    icon: Radar,
+    color: "#facc15",
+    title: "SCOUT MODE",
+    desc: "Finds the plays you have not heard of yet. Thematic scans across AI infrastructure, energy transition, biotech catalysts, and more.",
+    points: ["Thematic opportunity scanning", "Market cap and horizon filters", "One-click watchlist promotion"],
+  },
+  {
+    icon: BarChart3,
+    color: "#c8ff00",
+    title: "PERFORMANCE TRACKER",
+    desc: "Every signal logged — taken or passed. Win rate, P&L, and the ones that would have hit. The tape does not lie, and neither does this.",
+    points: ["Win/loss/missed tracking", "Realized P&L calculations", "Signal quality analysis"],
+  },
+]
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#060a10]">
+    <div className="min-h-screen bg-[#0a0a0a]">
       {/* Header */}
-      <header className="border-b border-[#131c2e]">
+      <header className="border-b border-[#262620] sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-sm z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-[#00e5ff] rounded-full animate-pulse" />
-            <span className="font-mono text-lg tracking-wider text-white">WHITE 80</span>
+            <div className="w-3 h-3 bg-[#c8ff00] animate-pulse" />
+            <span className="font-display text-2xl tracking-wide text-[#f4f0e6]">WHITE 80</span>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
             <Link
               href="/auth/login"
-              className="font-mono text-xs sm:text-sm text-[#3d4f6b] hover:text-white transition-colors"
+              className="font-mono text-xs sm:text-sm text-[#6e6a5e] hover:text-[#f4f0e6] transition-colors"
             >
               Sign In
             </Link>
             <Link
               href="/pricing"
-              className="hidden sm:block font-mono text-sm bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10] px-4 py-2 rounded transition-colors"
+              className="hidden sm:block font-mono text-sm bg-[#c8ff00] hover:bg-[#d9ff4d] text-[#0a0a0a] px-4 py-2 transition-colors"
             >
               Get Started
             </Link>
@@ -31,97 +77,108 @@ export default function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section className="py-24 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-[#00e5ff]/10 border border-[#00e5ff]/20 rounded-full px-4 py-1.5 mb-8">
-            <span className="w-2 h-2 bg-[#00ffaa] rounded-full animate-pulse" />
-            <span className="font-mono text-xs text-[#00e5ff]">AI-POWERED TRADING INTELLIGENCE</span>
+      <section className="py-24 md:py-32 px-4 relative overflow-hidden">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage:
+              "linear-gradient(#f4f0e6 1px, transparent 1px), linear-gradient(90deg, #f4f0e6 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }}
+        />
+        <div className="max-w-5xl mx-auto relative">
+          <div className="inline-flex items-center gap-2 border border-[#c8ff00]/30 px-3 py-1.5 mb-10">
+            <span className="w-1.5 h-1.5 bg-[#c8ff00] animate-pulse" />
+            <span className="font-mono text-[10px] tracking-[0.25em] text-[#c8ff00]">AI-POWERED TRADING DESK</span>
           </div>
-          
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
-            The AI Trading System<br />
-            <span className="text-[#00e5ff]">Serious Traders Actually Use</span>
+
+          <h1 className="font-display text-6xl sm:text-7xl md:text-8xl lg:text-9xl leading-[0.9] text-[#f4f0e6] mb-8 text-balance">
+            INTELLIGENCE
+            <br />
+            IS THE <span className="text-[#c8ff00]">POSITION</span>
           </h1>
-          
-          <p className="text-lg text-[#3d4f6b] mb-10 max-w-2xl mx-auto">
-            AI-generated trading signals, pre-market briefings, options flow analysis, 
-            and deep thesis research. Everything you need to make informed decisions.
+
+          <p className="font-mono text-sm md:text-base text-[#f4f0e6]/60 mb-12 max-w-xl leading-relaxed">
+            Signals with strikes. Briefs before the bell. A research desk that reads the whole tape — so you call the
+            play, not chase it.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4">
             <Link
               href="/pricing"
-              className="font-mono text-sm bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10] px-8 py-3 rounded transition-colors"
+              className="font-mono text-sm bg-[#c8ff00] hover:bg-[#d9ff4d] text-[#0a0a0a] px-8 py-4 text-center transition-colors"
             >
               START 7-DAY FREE TRIAL
             </Link>
             <Link
               href="#features"
-              className="font-mono text-sm bg-[#131c2e] hover:bg-[#1a2438] text-white border border-[#00e5ff]/30 px-8 py-3 rounded transition-colors"
+              className="font-mono text-sm text-[#f4f0e6] border border-[#262620] hover:border-[#c8ff00]/50 px-8 py-4 text-center transition-colors"
             >
-              SEE FEATURES
+              SEE THE DESK
             </Link>
           </div>
-          <p className="text-sm text-[#3d4f6b] mt-4">
-            No charge for 7 days. Then $49/month. Cancel anytime.
-          </p>
+          <p className="font-mono text-xs text-[#6e6a5e] mt-6">No charge for 7 days. Then $49/month. Cancel anytime.</p>
         </div>
       </section>
 
       {/* What is White 80 */}
-      <section className="py-20 px-4 border-t border-[#131c2e]">
+      <section className="py-20 px-4 border-t border-[#262620]">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white mb-4">What is White 80?</h2>
-            <p className="text-[#3d4f6b]">Information intelligence for the self-directed trader</p>
-          </div>
+          <h2 className="font-display text-4xl md:text-5xl text-[#f4f0e6] mb-2">WHAT IS WHITE 80</h2>
+          <p className="font-mono text-xs tracking-[0.2em] text-[#6e6a5e] mb-10">
+            INFORMATION INTELLIGENCE FOR THE SELF-DIRECTED TRADER
+          </p>
 
-          <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-8">
-            <p className="text-[#d6dff0] text-lg leading-relaxed mb-6">
-              White 80 is an AI-powered research and signal platform built for traders who want to make informed decisions without spending hours on analysis. Think of it as your personal trading analyst that never sleeps.
+          <div className="bg-[#141411] border border-[#262620] p-8">
+            <p className="text-[#f4f0e6] text-lg leading-relaxed mb-6">
+              White 80 is an AI research and signal desk for traders who want informed decisions without hours of
+              manual analysis. A personal analyst that reads everything and never sleeps.
             </p>
-            
+
             <div className="grid md:grid-cols-2 gap-6 mb-6">
-              <div className="bg-[#090c14] border border-[#131c2e] rounded p-4">
-                <h4 className="font-mono text-[#00e5ff] text-sm mb-2">WHAT IT IS</h4>
-                <ul className="text-sm text-[#d6dff0] space-y-2">
+              <div className="bg-[#0a0a0a] border border-[#262620] p-4">
+                <h3 className="font-mono text-[#c8ff00] text-sm tracking-wider mb-3">WHAT IT IS</h3>
+                <ul className="text-sm text-[#f4f0e6] space-y-2">
                   <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 bg-[#00ffaa] rounded-full mt-1.5 flex-shrink-0" />
-                    An information intelligence platform that aggregates market data, news, and technical analysis
+                    <span className="w-1.5 h-1.5 bg-[#c8ff00] mt-1.5 flex-shrink-0" />
+                    An intelligence platform that aggregates market data, news, and technical analysis
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 bg-[#00ffaa] rounded-full mt-1.5 flex-shrink-0" />
-                    AI-generated signals and thesis research to help you spot opportunities
+                    <span className="w-1.5 h-1.5 bg-[#c8ff00] mt-1.5 flex-shrink-0" />
+                    AI-generated signals and thesis research to surface opportunities
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 bg-[#00ffaa] rounded-full mt-1.5 flex-shrink-0" />
-                    A tool to enhance your own research process, not replace your judgment
+                    <span className="w-1.5 h-1.5 bg-[#c8ff00] mt-1.5 flex-shrink-0" />A tool that sharpens your own
+                    process — not a replacement for judgment
                   </li>
                 </ul>
               </div>
-              
-              <div className="bg-[#090c14] border border-[#131c2e] rounded p-4">
-                <h4 className="font-mono text-[#fb923c] text-sm mb-2">WHAT IT ISN&apos;T</h4>
-                <ul className="text-sm text-[#d6dff0] space-y-2">
+
+              <div className="bg-[#0a0a0a] border border-[#262620] p-4">
+                <h3 className="font-mono text-[#fb923c] text-sm tracking-wider mb-3">WHAT IT ISN&apos;T</h3>
+                <ul className="text-sm text-[#f4f0e6] space-y-2">
                   <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 bg-[#f87171] rounded-full mt-1.5 flex-shrink-0" />
+                    <span className="w-1.5 h-1.5 bg-[#f87171] mt-1.5 flex-shrink-0" />
                     Not a financial advisor or investment service
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 bg-[#f87171] rounded-full mt-1.5 flex-shrink-0" />
+                    <span className="w-1.5 h-1.5 bg-[#f87171] mt-1.5 flex-shrink-0" />
                     Not a guarantee of profits or trading success
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 bg-[#f87171] rounded-full mt-1.5 flex-shrink-0" />
+                    <span className="w-1.5 h-1.5 bg-[#f87171] mt-1.5 flex-shrink-0" />
                     Not a replacement for your own due diligence
                   </li>
                 </ul>
               </div>
             </div>
 
-            <div className="bg-[#00e5ff]/5 border border-[#00e5ff]/20 rounded p-4">
-              <p className="text-sm text-[#d6dff0]">
-                <span className="text-[#00e5ff] font-semibold">The name:</span> In football, &quot;White 80&quot; is the audible call - the signal that changes the play at the line of scrimmage when you see something the defense doesn&apos;t. That&apos;s what this platform does: gives you the information edge to call your own plays.
+            <div className="border-l-2 border-[#c8ff00] bg-[#c8ff00]/5 p-4">
+              <p className="text-sm text-[#f4f0e6] leading-relaxed">
+                <span className="text-[#c8ff00] font-semibold">The name:</span> In football, &quot;White 80&quot; is
+                the audible — the call that changes the play at the line when you see something the defense
+                doesn&apos;t. That&apos;s the platform: the information edge to call your own plays.
               </p>
             </div>
           </div>
@@ -129,238 +186,100 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="py-20 px-4 border-t border-[#131c2e]">
+      <section id="features" className="py-20 px-4 border-t border-[#262620]">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-white mb-4">Your Trading Command Center</h2>
-            <p className="text-[#3d4f6b]">Six powerful tools working together to give you an edge</p>
-          </div>
+          <h2 className="font-display text-4xl md:text-5xl text-[#f4f0e6] mb-2">THE DESK</h2>
+          <p className="font-mono text-xs tracking-[0.2em] text-[#6e6a5e] mb-12">
+            SIX TOOLS. ONE EDGE. ZERO GUESSWORK.
+          </p>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Tier 1 Scanner */}
-            <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-6 hover:border-[#fb923c]/30 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-[#fb923c]/15 flex items-center justify-center mb-4">
-                <Crosshair className="w-5 h-5 text-[#fb923c]" />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#262620] border border-[#262620]">
+            {FEATURES.map((f) => (
+              <div key={f.title} className="bg-[#0a0a0a] p-6 hover:bg-[#141411] transition-colors group">
+                <div
+                  className="w-10 h-10 flex items-center justify-center mb-4 border"
+                  style={{ borderColor: `${f.color}40`, backgroundColor: `${f.color}10` }}
+                >
+                  <f.icon className="w-5 h-5" style={{ color: f.color }} aria-hidden="true" />
+                </div>
+                <h3 className="font-display text-xl tracking-wide text-[#f4f0e6] mb-2">{f.title}</h3>
+                <p className="text-sm text-[#6e6a5e] leading-relaxed mb-4">{f.desc}</p>
+                <ul className="font-mono text-[11px] text-[#6e6a5e] space-y-1.5">
+                  {f.points.map((p) => (
+                    <li key={p} className="flex items-center gap-2">
+                      <span className="w-1 h-1 flex-shrink-0" style={{ backgroundColor: f.color }} />
+                      {p}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <h3 className="font-mono text-white mb-2">Tier 1 Scanner</h3>
-              <p className="text-sm text-[#3d4f6b] mb-3">
-                Automatically surfaces the highest-conviction plays of the day. Scans for unusual options activity, 
-                technical breakouts, and catalyst alignment to find setups with asymmetric risk/reward.
-              </p>
-              <ul className="text-xs text-[#3d4f6b] space-y-1">
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#fb923c] rounded-full" />
-                  Options flow anomaly detection
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#fb923c] rounded-full" />
-                  Multi-timeframe technical confluence
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#fb923c] rounded-full" />
-                  Catalyst proximity scoring
-                </li>
-              </ul>
-            </div>
-
-            {/* AI Signals */}
-            <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-6 hover:border-[#00ffaa]/30 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-[#00ffaa]/15 flex items-center justify-center mb-4">
-                <TrendingUp className="w-5 h-5 text-[#00ffaa]" />
-              </div>
-              <h3 className="font-mono text-white mb-2">AI Signals</h3>
-              <p className="text-sm text-[#3d4f6b] mb-3">
-                Generate actionable BUY/SELL/FADE signals for any ticker on your watchlist. 
-                Each signal includes conviction level, price targets, stop losses, and the reasoning behind the call.
-              </p>
-              <ul className="text-xs text-[#3d4f6b] space-y-1">
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#00ffaa] rounded-full" />
-                  Entry, target, and stop levels
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#00ffaa] rounded-full" />
-                  Options play recommendations
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#00ffaa] rounded-full" />
-                  Risk/reward analysis
-                </li>
-              </ul>
-            </div>
-
-            {/* Pre-Market Brief */}
-            <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-6 hover:border-[#00e5ff]/30 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-[#00e5ff]/15 flex items-center justify-center mb-4">
-                <FileText className="w-5 h-5 text-[#00e5ff]" />
-              </div>
-              <h3 className="font-mono text-white mb-2">Pre-Market Brief</h3>
-              <p className="text-sm text-[#3d4f6b] mb-3">
-                Start every trading day with a comprehensive market overview. Futures positioning, overnight catalysts, 
-                sector rotation analysis, and your personalized Top Plays for the session.
-              </p>
-              <ul className="text-xs text-[#3d4f6b] space-y-1">
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#00e5ff] rounded-full" />
-                  Global macro context
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#00e5ff] rounded-full" />
-                  Earnings and economic calendar
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#00e5ff] rounded-full" />
-                  Top 3-5 plays with full thesis
-                </li>
-              </ul>
-            </div>
-
-            {/* Deep Thesis */}
-            <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-6 hover:border-[#a78bfa]/30 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-[#a78bfa]/15 flex items-center justify-center mb-4">
-                <Search className="w-5 h-5 text-[#a78bfa]" />
-              </div>
-              <h3 className="font-mono text-white mb-2">Deep Thesis</h3>
-              <p className="text-sm text-[#3d4f6b] mb-3">
-                Run any ticker through comprehensive AI analysis. Get bull and bear cases, technical levels, 
-                sentiment analysis, and specific options strategies based on current market conditions.
-              </p>
-              <ul className="text-xs text-[#3d4f6b] space-y-1">
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#a78bfa] rounded-full" />
-                  Bull/bear thesis breakdown
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#a78bfa] rounded-full" />
-                  Key support/resistance levels
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#a78bfa] rounded-full" />
-                  IV-aware options strategies
-                </li>
-              </ul>
-            </div>
-
-            {/* Scout */}
-            <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-6 hover:border-[#facc15]/30 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-[#facc15]/15 flex items-center justify-center mb-4">
-                <Radar className="w-5 h-5 text-[#facc15]" />
-              </div>
-              <h3 className="font-mono text-white mb-2">Scout Mode</h3>
-              <p className="text-sm text-[#3d4f6b] mb-3">
-                Discover new opportunities you might have missed. AI-powered thematic scanning finds emerging plays 
-                in sectors like AI infrastructure, energy transition, biotech catalysts, and more.
-              </p>
-              <ul className="text-xs text-[#3d4f6b] space-y-1">
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#facc15] rounded-full" />
-                  Thematic opportunity scanning
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#facc15] rounded-full" />
-                  Market cap and horizon filters
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#facc15] rounded-full" />
-                  One-click watchlist promotion
-                </li>
-              </ul>
-            </div>
-
-            {/* Performance Tracker */}
-            <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-6 hover:border-[#00ffaa]/30 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-[#00ffaa]/15 flex items-center justify-center mb-4">
-                <BarChart3 className="w-5 h-5 text-[#00ffaa]" />
-              </div>
-              <h3 className="font-mono text-white mb-2">Performance Tracker</h3>
-              <p className="text-sm text-[#3d4f6b] mb-3">
-                Track every signal - taken or passed. Measure your execution with win rate, P&L tracking, 
-                and see which signals you missed that would have hit. Learn and improve over time.
-              </p>
-              <ul className="text-xs text-[#3d4f6b] space-y-1">
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#00ffaa] rounded-full" />
-                  Win/loss/missed tracking
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#00ffaa] rounded-full" />
-                  Realized P&L calculations
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#00ffaa] rounded-full" />
-                  Signal quality analysis
-                </li>
-              </ul>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* How It Works - API Keys */}
-      <section className="py-20 px-4 border-t border-[#131c2e] bg-[#080c14]">
+      <section className="py-20 px-4 border-t border-[#262620]">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white mb-4">Your Keys, Your Control</h2>
-            <p className="text-[#3d4f6b] max-w-2xl mx-auto">
-              White 80 uses a bring-your-own-API model. You connect your own data and AI accounts, 
-              keeping you in complete control of your costs and privacy.
-            </p>
-          </div>
+          <h2 className="font-display text-4xl md:text-5xl text-[#f4f0e6] mb-2">YOUR KEYS. YOUR CONTROL.</h2>
+          <p className="font-mono text-xs tracking-[0.2em] text-[#6e6a5e] mb-12 max-w-2xl">
+            BRING-YOUR-OWN-API. YOUR DATA, YOUR COSTS, YOUR PRIVACY.
+          </p>
 
           <div className="grid md:grid-cols-3 gap-6 mb-12">
-            <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-6 text-center">
-              <div className="w-12 h-12 rounded-full bg-[#00e5ff]/15 flex items-center justify-center mx-auto mb-4">
-                <Key className="w-6 h-6 text-[#00e5ff]" />
-              </div>
-              <h3 className="font-mono text-white mb-2">Your API Keys</h3>
-              <p className="text-sm text-[#3d4f6b]">
-                You create accounts with Polygon (market data) and Anthropic (AI). Your keys, your accounts - 
-                we never see your credentials.
+            <div className="bg-[#141411] border border-[#262620] p-6">
+              <Key className="w-6 h-6 text-[#c8ff00] mb-4" aria-hidden="true" />
+              <h3 className="font-mono text-[#f4f0e6] text-sm tracking-wider mb-2">YOUR API KEYS</h3>
+              <p className="text-sm text-[#6e6a5e] leading-relaxed">
+                You connect your own Polygon (market data) and Anthropic (AI) accounts. Your keys, your accounts — we
+                never see your credentials.
               </p>
             </div>
 
-            <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-6 text-center">
-              <div className="w-12 h-12 rounded-full bg-[#00ffaa]/15 flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-6 h-6 text-[#00ffaa]" />
-              </div>
-              <h3 className="font-mono text-white mb-2">100% Private</h3>
-              <p className="text-sm text-[#3d4f6b]">
-                Keys are encrypted at rest and only used to make requests on your behalf. 
-                Full transparency - monitor your usage anytime in each provider&apos;s dashboard.
+            <div className="bg-[#141411] border border-[#262620] p-6">
+              <Shield className="w-6 h-6 text-[#c8ff00] mb-4" aria-hidden="true" />
+              <h3 className="font-mono text-[#f4f0e6] text-sm tracking-wider mb-2">100% PRIVATE</h3>
+              <p className="text-sm text-[#6e6a5e] leading-relaxed">
+                Keys are encrypted at rest and only used to make requests on your behalf. Monitor usage anytime in each
+                provider&apos;s dashboard.
               </p>
             </div>
 
-            <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-6 text-center">
-              <div className="w-12 h-12 rounded-full bg-[#a78bfa]/15 flex items-center justify-center mx-auto mb-4">
-                <Zap className="w-6 h-6 text-[#a78bfa]" />
-              </div>
-              <h3 className="font-mono text-white mb-2">You Control Costs</h3>
-              <p className="text-sm text-[#3d4f6b]">
-                Polygon free tier covers most users. Anthropic runs $5-15/month typical usage. 
-                Set your own spending limits directly with each provider.
+            <div className="bg-[#141411] border border-[#262620] p-6">
+              <Zap className="w-6 h-6 text-[#f4f0e6] mb-4" aria-hidden="true" />
+              <h3 className="font-mono text-[#f4f0e6] text-sm tracking-wider mb-2">YOU CONTROL COSTS</h3>
+              <p className="text-sm text-[#6e6a5e] leading-relaxed">
+                Polygon&apos;s free tier covers most users. Anthropic runs $5-15/month at typical usage. Set spending
+                limits directly with each provider.
               </p>
             </div>
           </div>
 
-          <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-6">
-            <h4 className="font-mono text-[#00e5ff] text-sm tracking-wider mb-4">QUICK SETUP (5 MINUTES)</h4>
+          <div className="bg-[#141411] border border-[#262620] p-6">
+            <h3 className="font-mono text-[#c8ff00] text-sm tracking-[0.2em] mb-6">QUICK SETUP — 5 MINUTES</h3>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="w-6 h-6 rounded-full bg-[#00ffaa]/15 text-[#00ffaa] font-mono text-xs flex items-center justify-center">1</span>
-                  <span className="text-white font-mono text-sm">Polygon.io (Free)</span>
+                  <span className="w-6 h-6 border border-[#c8ff00]/40 text-[#c8ff00] font-mono text-xs flex items-center justify-center">
+                    1
+                  </span>
+                  <span className="text-[#f4f0e6] font-mono text-sm">Polygon.io (Free)</span>
                 </div>
-                <p className="text-sm text-[#3d4f6b] ml-9">
-                  Sign up at polygon.io, get your free API key instantly. Powers all market data, quotes, and options chains.
+                <p className="text-sm text-[#6e6a5e] ml-9 leading-relaxed">
+                  Sign up at polygon.io, get your free API key instantly. Powers all market data, quotes, and options
+                  chains.
                 </p>
               </div>
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="w-6 h-6 rounded-full bg-[#a78bfa]/15 text-[#a78bfa] font-mono text-xs flex items-center justify-center">2</span>
-                  <span className="text-white font-mono text-sm">Anthropic (Pay-as-you-go)</span>
+                  <span className="w-6 h-6 border border-[#f4f0e6]/40 text-[#f4f0e6] font-mono text-xs flex items-center justify-center">
+                    2
+                  </span>
+                  <span className="text-[#f4f0e6] font-mono text-sm">Anthropic (Pay-as-you-go)</span>
                 </div>
-                <p className="text-sm text-[#3d4f6b] ml-9">
-                  Create account at console.anthropic.com, add billing, generate API key. Powers all AI analysis and signals.
+                <p className="text-sm text-[#6e6a5e] ml-9 leading-relaxed">
+                  Create an account at console.anthropic.com, add billing, generate an API key. Powers all AI analysis
+                  and signals.
                 </p>
               </div>
             </div>
@@ -369,36 +288,25 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4 border-t border-[#131c2e]">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Ready to Level Up?</h2>
-          <p className="text-[#3d4f6b] mb-8">
-            Join traders who use White 80 to make smarter, faster decisions.
+      <section className="py-24 px-4 border-t border-[#262620]">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="font-display text-5xl md:text-6xl text-[#f4f0e6] mb-4 text-balance">
+            CALL YOUR <span className="text-[#c8ff00]">OWN PLAYS</span>
+          </h2>
+          <p className="font-mono text-sm text-[#6e6a5e] mb-10">
+            The market opens at 9:30 either way. Walk in with the read.
           </p>
           <Link
             href="/pricing"
-            className="inline-block font-mono text-sm bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10] px-8 py-3 rounded transition-colors"
+            className="inline-block font-mono text-sm bg-[#c8ff00] hover:bg-[#d9ff4d] text-[#0a0a0a] px-10 py-4 transition-colors"
           >
             START 7-DAY FREE TRIAL
           </Link>
-          <p className="text-sm text-[#3d4f6b] mt-4">
-            No credit card charged until trial ends. Cancel anytime.
-          </p>
+          <p className="font-mono text-xs text-[#6e6a5e] mt-6">No credit card charged until trial ends. Cancel anytime.</p>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-[#131c2e] py-8 px-4">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-[#00e5ff] rounded-full" />
-            <span className="font-mono text-sm text-[#3d4f6b]">WHITE 80</span>
-          </div>
-          <p className="font-mono text-xs text-[#3d4f6b]">
-            Information intelligence platform. Not financial advice. Trade at your own risk.
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

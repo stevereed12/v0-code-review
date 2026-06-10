@@ -17,7 +17,7 @@ export function ActionButton({ onClick, loading, label, loadingLabel, color, cla
       onClick={onClick}
       disabled={loading}
       className={`w-full font-mono py-3 px-4 text-[11px] tracking-[2px] rounded border transition-all relative overflow-hidden ${
-        loading ? "bg-[#151e30] cursor-wait" : "bg-transparent cursor-pointer"
+        loading ? "bg-[#1e1e19] cursor-wait" : "bg-transparent cursor-pointer"
       } ${className}`}
       style={{ borderColor: color, color: color }}
     >
