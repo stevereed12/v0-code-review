@@ -24,17 +24,17 @@ export function DisclaimerModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-[#0a0e1a] border border-[#131c2e] rounded-lg max-w-lg w-full p-6 shadow-2xl">
+      <div className="bg-[#0a0a0a] border border-[#262620] rounded-lg max-w-lg w-full p-6 shadow-2xl">
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-full bg-[#fb923c]/20 flex items-center justify-center">
             <AlertTriangle className="w-5 h-5 text-[#fb923c]" />
           </div>
           <div>
-            <h2 className="font-mono text-lg font-bold text-white tracking-wide">
+            <h2 className="font-mono text-lg font-bold text-[#f4f0e6] tracking-wide">
               IMPORTANT DISCLAIMER
             </h2>
-            <p className="font-mono text-[10px] text-[#3d4f6b] tracking-wider">
+            <p className="font-mono text-[10px] text-[#6e6a5e] tracking-wider">
               PLEASE READ BEFORE CONTINUING
             </p>
           </div>
@@ -42,21 +42,21 @@ export function DisclaimerModal() {
 
         {/* Content */}
         <div className="space-y-4 mb-6">
-          <p className="text-[13px] text-[#d6dff0] leading-relaxed">
-            White 80 is an <span className="text-[#00e5ff] font-medium">information intelligence platform</span>. 
-            The signals, analysis, and data presented are for <span className="text-[#00e5ff] font-medium">informational 
+          <p className="text-[13px] text-[#f4f0e6] leading-relaxed">
+            White 80 is an <span className="text-[#c8ff00] font-medium">information intelligence platform</span>. 
+            The signals, analysis, and data presented are for <span className="text-[#c8ff00] font-medium">informational 
             and educational purposes only</span>.
           </p>
           
-          <div className="bg-[#0c1020] border border-[#131c2e] rounded p-4">
-            <p className="text-[12px] text-[#d6dff0] leading-relaxed">
+          <div className="bg-[#141411] border border-[#262620] rounded p-4">
+            <p className="text-[12px] text-[#f4f0e6] leading-relaxed">
               <span className="text-[#fb923c] font-bold">This is not investment advice.</span> Nothing 
               contained herein constitutes a solicitation, recommendation, endorsement, or offer to 
               buy or sell any securities or other financial instruments.
             </p>
           </div>
 
-          <p className="text-[12px] text-[#3d4f6b] leading-relaxed">
+          <p className="text-[12px] text-[#6e6a5e] leading-relaxed">
             All investments involve risk, including the possible loss of principal. Past performance 
             does not guarantee future results. You are solely responsible for your own investment 
             decisions. Always conduct your own research and consult with a qualified financial 
@@ -67,12 +67,12 @@ export function DisclaimerModal() {
         {/* Action */}
         <button
           onClick={handleAcknowledge}
-          className="w-full font-mono text-[11px] tracking-wider py-3 rounded bg-[#00e5ff]/20 border border-[#00e5ff]/40 text-[#00e5ff] hover:bg-[#00e5ff]/30 transition-colors"
+          className="w-full font-mono text-[11px] tracking-wider py-3 rounded bg-[#c8ff00]/20 border border-[#c8ff00]/40 text-[#c8ff00] hover:bg-[#c8ff00]/30 transition-colors"
         >
           I UNDERSTAND AND ACKNOWLEDGE
         </button>
 
-        <p className="text-center text-[10px] text-[#3d4f6b] mt-3 font-mono">
+        <p className="text-center text-[10px] text-[#6e6a5e] mt-3 font-mono">
           By clicking above, you confirm you have read and understood this disclaimer.
         </p>
       </div>

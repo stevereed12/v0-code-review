@@ -143,10 +143,10 @@ export function ExportModal({
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-5 max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-[#141411] border border-[#262620] rounded-lg p-5 max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-[#d6dff0]">Export / Import Data</h2>
-          <button onClick={onClose} className="text-[#3d4f6b] hover:text-[#d6dff0] transition-colors">
+          <h2 className="text-lg font-semibold text-[#f4f0e6]">Export / Import Data</h2>
+          <button onClick={onClose} className="text-[#6e6a5e] hover:text-[#f4f0e6] transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -155,12 +155,12 @@ export function ExportModal({
           {/* Full Export */}
           <button
             onClick={handleExportJSON}
-            className="w-full flex items-center gap-3 p-3 bg-[#00e5ff]/10 border border-[#00e5ff] text-[#00e5ff] rounded transition-all hover:bg-[#00e5ff]/20"
+            className="w-full flex items-center gap-3 p-3 bg-[#c8ff00]/10 border border-[#c8ff00] text-[#c8ff00] rounded transition-all hover:bg-[#c8ff00]/20"
           >
             <Download className="w-5 h-5" />
             <div className="text-left">
               <div className="font-mono text-sm">Export All (JSON)</div>
-              <div className="text-xs text-[#00e5ff]/70">
+              <div className="text-xs text-[#c8ff00]/70">
                 Everything: watchlist, signals, research, settings
               </div>
             </div>
@@ -168,12 +168,12 @@ export function ExportModal({
 
           <button
             onClick={handleExportCSV}
-            className="w-full flex items-center gap-3 p-3 bg-[#00ffaa]/10 border border-[#00ffaa] text-[#00ffaa] rounded transition-all hover:bg-[#00ffaa]/20"
+            className="w-full flex items-center gap-3 p-3 bg-[#c8ff00]/10 border border-[#c8ff00] text-[#c8ff00] rounded transition-all hover:bg-[#c8ff00]/20"
           >
             <FileSpreadsheet className="w-5 h-5" />
             <div className="text-left">
               <div className="font-mono text-sm">Export Tracker (CSV)</div>
-              <div className="text-xs text-[#00ffaa]/70">
+              <div className="text-xs text-[#c8ff00]/70">
                 Signal history for spreadsheets
               </div>
             </div>
@@ -182,8 +182,8 @@ export function ExportModal({
           {/* Research Data Exports */}
           {hasResearchData && (
             <>
-              <div className="border-t border-[#131c2e] pt-3 mt-3">
-                <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-2">RESEARCH DATA</div>
+              <div className="border-t border-[#262620] pt-3 mt-3">
+                <div className="font-mono text-[9px] tracking-[2px] text-[#6e6a5e] mb-2">RESEARCH DATA</div>
               </div>
 
               {brief && (
@@ -204,12 +204,12 @@ export function ExportModal({
               {signals && signals.length > 0 && (
                 <button
                   onClick={handleExportSignals}
-                  className="w-full flex items-center gap-3 p-3 bg-[#a78bfa]/10 border border-[#a78bfa] text-[#a78bfa] rounded transition-all hover:bg-[#a78bfa]/20"
+                  className="w-full flex items-center gap-3 p-3 bg-[#f4f0e6]/10 border border-[#f4f0e6] text-[#f4f0e6] rounded transition-all hover:bg-[#f4f0e6]/20"
                 >
                   <FileSpreadsheet className="w-5 h-5" />
                   <div className="text-left">
                     <div className="font-mono text-sm">Export Tier 1 Signals (CSV)</div>
-                    <div className="text-xs text-[#a78bfa]/70">
+                    <div className="text-xs text-[#f4f0e6]/70">
                       {signals.length} watchlist signals
                     </div>
                   </div>
@@ -219,12 +219,12 @@ export function ExportModal({
               {scoutResults && scoutResults.length > 0 && (
                 <button
                   onClick={handleExportScout}
-                  className="w-full flex items-center gap-3 p-3 bg-[#f472b6]/10 border border-[#f472b6] text-[#f472b6] rounded transition-all hover:bg-[#f472b6]/20"
+                  className="w-full flex items-center gap-3 p-3 bg-[#f87171]/10 border border-[#f87171] text-[#f87171] rounded transition-all hover:bg-[#f87171]/20"
                 >
                   <FileSpreadsheet className="w-5 h-5" />
                   <div className="text-left">
                     <div className="font-mono text-sm">Export Scout Ideas (CSV)</div>
-                    <div className="text-xs text-[#f472b6]/70">
+                    <div className="text-xs text-[#f87171]/70">
                       {scoutResults.length} discovery picks
                     </div>
                   </div>
@@ -234,12 +234,12 @@ export function ExportModal({
               {buyHoldPicks && buyHoldPicks.length > 0 && (
                 <button
                   onClick={handleExportBuyHold}
-                  className="w-full flex items-center gap-3 p-3 bg-[#4ade80]/10 border border-[#4ade80] text-[#4ade80] rounded transition-all hover:bg-[#4ade80]/20"
+                  className="w-full flex items-center gap-3 p-3 bg-[#c8ff00]/10 border border-[#c8ff00] text-[#c8ff00] rounded transition-all hover:bg-[#c8ff00]/20"
                 >
                   <FileSpreadsheet className="w-5 h-5" />
                   <div className="text-left">
                     <div className="font-mono text-sm">Export Buy & Hold (CSV)</div>
-                    <div className="text-xs text-[#4ade80]/70">
+                    <div className="text-xs text-[#c8ff00]/70">
                       {buyHoldPicks.length} long-term picks
                     </div>
                   </div>
@@ -249,12 +249,12 @@ export function ExportModal({
               {vibe && (
                 <button
                   onClick={handleExportVibe}
-                  className="w-full flex items-center gap-3 p-3 bg-[#22d3ee]/10 border border-[#22d3ee] text-[#22d3ee] rounded transition-all hover:bg-[#22d3ee]/20"
+                  className="w-full flex items-center gap-3 p-3 bg-[#c8ff00]/10 border border-[#c8ff00] text-[#c8ff00] rounded transition-all hover:bg-[#c8ff00]/20"
                 >
                   <FileText className="w-5 h-5" />
                   <div className="text-left">
                     <div className="font-mono text-sm">Export Vibe Check (CSV)</div>
-                    <div className="text-xs text-[#22d3ee]/70">
+                    <div className="text-xs text-[#c8ff00]/70">
                       Mood read, score {vibe.vibe_score}/100, drivers
                     </div>
                   </div>
@@ -264,15 +264,15 @@ export function ExportModal({
           )}
 
           {/* Import */}
-          <div className="border-t border-[#131c2e] pt-3 mt-3">
+          <div className="border-t border-[#262620] pt-3 mt-3">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="w-full flex items-center gap-3 p-3 bg-[#131c2e] border border-[#3d4f6b] text-[#d6dff0] rounded transition-all hover:bg-[#1a2438]"
+              className="w-full flex items-center gap-3 p-3 bg-[#262620] border border-[#6e6a5e] text-[#f4f0e6] rounded transition-all hover:bg-[#1e1e19]"
             >
               <Upload className="w-5 h-5" />
               <div className="text-left">
                 <div className="font-mono text-sm">Import from JSON</div>
-                <div className="text-xs text-[#3d4f6b]">Restore from a previous export</div>
+                <div className="text-xs text-[#6e6a5e]">Restore from a previous export</div>
               </div>
             </button>
           </div>
@@ -285,8 +285,8 @@ export function ExportModal({
           />
         </div>
 
-        <div className="mt-4 pt-3 border-t border-[#131c2e]">
-          <p className="font-mono text-[9px] text-[#3d4f6b] tracking-wide">
+        <div className="mt-4 pt-3 border-t border-[#262620]">
+          <p className="font-mono text-[9px] text-[#6e6a5e] tracking-wide">
             DATA: {watchlist.length} tickers • {trackerLog.length} tracked • {signals?.length || 0} signals • {brief ? "1 brief" : "no brief"}
           </p>
         </div>

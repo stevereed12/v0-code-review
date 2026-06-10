@@ -123,21 +123,21 @@ export function SettingsPanel({
   }
 
   return (
-    <div className="bg-[#090c14] border border-[#131c2e] rounded-md p-3 mb-4">
-      <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-3">SETTINGS</div>
+    <div className="bg-[#0a0a0a] border border-[#262620] rounded-md p-3 mb-4">
+      <div className="font-mono text-[9px] tracking-[2px] text-[#6e6a5e] mb-3">SETTINGS</div>
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2 text-sm text-[#d6dff0]">
-            <Volume2 className="w-4 h-4 text-[#00e5ff]" />
+          <label className="flex items-center gap-2 text-sm text-[#f4f0e6]">
+            <Volume2 className="w-4 h-4 text-[#c8ff00]" />
             Sound alerts
           </label>
           <Switch checked={soundEnabled} onCheckedChange={onSoundToggle} />
         </div>
 
         <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2 text-sm text-[#d6dff0]">
-            <Bell className="w-4 h-4 text-[#a78bfa]" />
+          <label className="flex items-center gap-2 text-sm text-[#f4f0e6]">
+            <Bell className="w-4 h-4 text-[#f4f0e6]" />
             Desktop notifications
           </label>
           <Switch checked={notificationsEnabled} onCheckedChange={onNotificationsToggle} />
@@ -145,16 +145,16 @@ export function SettingsPanel({
 
         {/* API Keys Section */}
         {userId && (
-          <div className="pt-2 border-t border-[#131c2e]">
+          <div className="pt-2 border-t border-[#262620]">
             <button
               onClick={() => setShowApiKeys(!showApiKeys)}
-              className="w-full flex items-center justify-between py-1 text-sm text-[#d6dff0] hover:text-white transition-colors"
+              className="w-full flex items-center justify-between py-1 text-sm text-[#f4f0e6] hover:text-[#f4f0e6] transition-colors"
             >
               <span className="flex items-center gap-2">
                 <Key className="w-4 h-4 text-[#fb923c]" />
                 API Keys
                 {(hasKeys.polygon && hasKeys.anthropic) && (
-                  <span className="text-[8px] text-[#00ffaa] font-mono bg-[#00ffaa]/10 px-1.5 py-0.5 rounded">CONFIGURED</span>
+                  <span className="text-[8px] text-[#c8ff00] font-mono bg-[#c8ff00]/10 px-1.5 py-0.5 rounded">CONFIGURED</span>
                 )}
               </span>
               {showApiKeys ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -164,9 +164,9 @@ export function SettingsPanel({
               <div className="mt-3 space-y-3">
                 {/* Polygon API Key */}
                 <div>
-                  <label className="flex items-center gap-2 text-[10px] text-[#3d4f6b] mb-1 font-mono tracking-wider">
+                  <label className="flex items-center gap-2 text-[10px] text-[#6e6a5e] mb-1 font-mono tracking-wider">
                     POLYGON KEY
-                    {hasKeys.polygon && <Check className="w-3 h-3 text-[#00ffaa]" />}
+                    {hasKeys.polygon && <Check className="w-3 h-3 text-[#c8ff00]" />}
                   </label>
                   <div className="relative">
                     <input
@@ -175,12 +175,12 @@ export function SettingsPanel({
                       onChange={(e) => setPolygonKey(e.target.value)}
                       onFocus={() => handleKeyFocus(setPolygonKey, polygonKey)}
                       placeholder="Enter key..."
-                      className="w-full bg-[#060a10] border border-[#131c2e] rounded px-3 py-1.5 text-xs text-[#d6dff0] font-mono placeholder:text-[#3d4f6b] focus:outline-none focus:border-[#00e5ff]/50"
+                      className="w-full bg-[#0a0a0a] border border-[#262620] rounded px-3 py-1.5 text-xs text-[#f4f0e6] font-mono placeholder:text-[#6e6a5e] focus:outline-none focus:border-[#c8ff00]/50"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPolygon(!showPolygon)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3d4f6b] hover:text-[#d6dff0]"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6e6a5e] hover:text-[#f4f0e6]"
                     >
                       {showPolygon ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </button>
@@ -189,9 +189,9 @@ export function SettingsPanel({
 
                 {/* Anthropic API Key */}
                 <div>
-                  <label className="flex items-center gap-2 text-[10px] text-[#3d4f6b] mb-1 font-mono tracking-wider">
+                  <label className="flex items-center gap-2 text-[10px] text-[#6e6a5e] mb-1 font-mono tracking-wider">
                     ANTHROPIC KEY
-                    {hasKeys.anthropic && <Check className="w-3 h-3 text-[#00ffaa]" />}
+                    {hasKeys.anthropic && <Check className="w-3 h-3 text-[#c8ff00]" />}
                   </label>
                   <div className="relative">
                     <input
@@ -200,12 +200,12 @@ export function SettingsPanel({
                       onChange={(e) => setAnthropicKey(e.target.value)}
                       onFocus={() => handleKeyFocus(setAnthropicKey, anthropicKey)}
                       placeholder="Enter key..."
-                      className="w-full bg-[#060a10] border border-[#131c2e] rounded px-3 py-1.5 text-xs text-[#d6dff0] font-mono placeholder:text-[#3d4f6b] focus:outline-none focus:border-[#a78bfa]/50"
+                      className="w-full bg-[#0a0a0a] border border-[#262620] rounded px-3 py-1.5 text-xs text-[#f4f0e6] font-mono placeholder:text-[#6e6a5e] focus:outline-none focus:border-[#f4f0e6]/50"
                     />
                     <button
                       type="button"
                       onClick={() => setShowAnthropic(!showAnthropic)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3d4f6b] hover:text-[#d6dff0]"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6e6a5e] hover:text-[#f4f0e6]"
                     >
                       {showAnthropic ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </button>
@@ -224,7 +224,7 @@ export function SettingsPanel({
                   disabled={saving}
                   className={`w-full flex items-center justify-center gap-2 py-1.5 text-[9px] font-mono tracking-wider rounded transition-all ${
                     saved
-                      ? "bg-[#00ffaa]/20 border border-[#00ffaa] text-[#00ffaa]"
+                      ? "bg-[#c8ff00]/20 border border-[#c8ff00] text-[#c8ff00]"
                       : "bg-[#fb923c]/10 border border-[#fb923c] text-[#fb923c] hover:bg-[#fb923c]/20"
                   } disabled:opacity-50`}
                 >
@@ -235,17 +235,17 @@ export function SettingsPanel({
           </div>
         )}
 
-        <div className="flex gap-2 pt-2 border-t border-[#131c2e]">
+        <div className="flex gap-2 pt-2 border-t border-[#262620]">
           <button
             onClick={onShowGuide}
-            className="flex items-center justify-center gap-2 py-2 px-3 bg-[#a78bfa]/10 border border-[#a78bfa]/50 text-[#a78bfa] text-[10px] font-mono tracking-wider rounded transition-all hover:bg-[#a78bfa]/20 hover:border-[#a78bfa]"
+            className="flex items-center justify-center gap-2 py-2 px-3 bg-[#f4f0e6]/10 border border-[#f4f0e6]/50 text-[#f4f0e6] text-[10px] font-mono tracking-wider rounded transition-all hover:bg-[#f4f0e6]/20 hover:border-[#f4f0e6]"
           >
             <HelpCircle className="w-3.5 h-3.5" />
             GUIDE
           </button>
           <button
             onClick={onOpenExport}
-            className="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-[#00e5ff]/10 border border-[#00e5ff] text-[#00e5ff] text-[10px] font-mono tracking-wider rounded transition-all hover:bg-[#00e5ff]/20"
+            className="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-[#c8ff00]/10 border border-[#c8ff00] text-[#c8ff00] text-[10px] font-mono tracking-wider rounded transition-all hover:bg-[#c8ff00]/20"
           >
             <Download className="w-3.5 h-3.5" />
             EXPORT / IMPORT

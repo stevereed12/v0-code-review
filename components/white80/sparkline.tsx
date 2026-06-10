@@ -45,7 +45,7 @@ export function Sparkline({ ticker, width = 60, height = 24, className }: Sparkl
   const first = data[0]?.close || 0
   const last = data[data.length - 1]?.close || 0
   const isUp = last >= first
-  const color = isUp ? "#00ffaa" : "#f87171"
+  const color = isUp ? "#c8ff00" : "#f87171"
 
   return (
     <div className={className} style={{ width, height }}>

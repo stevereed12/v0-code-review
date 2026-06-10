@@ -1,4 +1,5 @@
 import { PageHeader } from "@/components/white80/page-header"
+import { SiteFooter } from "@/components/white80/site-footer"
 import { Sparkles, Bug, Zap, Shield, BarChart3 } from "lucide-react"
 
 const CHANGELOG_ENTRIES = [
@@ -54,21 +55,21 @@ const CHANGELOG_ENTRIES = [
 ]
 
 const TYPE_CONFIG = {
-  feature: { icon: Sparkles, color: "text-[#00e5ff]", bg: "bg-[#00e5ff]/10" },
-  improvement: { icon: Zap, color: "text-[#a78bfa]", bg: "bg-[#a78bfa]/10" },
+  feature: { icon: Sparkles, color: "text-[#c8ff00]", bg: "bg-[#c8ff00]/10" },
+  improvement: { icon: Zap, color: "text-[#f4f0e6]", bg: "bg-[#f4f0e6]/10" },
   fix: { icon: Bug, color: "text-[#fb923c]", bg: "bg-[#fb923c]/10" },
-  security: { icon: Shield, color: "text-[#00ffaa]", bg: "bg-[#00ffaa]/10" },
+  security: { icon: Shield, color: "text-[#c8ff00]", bg: "bg-[#c8ff00]/10" },
 }
 
 export default function ChangelogPage() {
   return (
-    <div className="min-h-screen bg-[#060a10]">
+    <div className="min-h-screen bg-[#0a0a0a]">
       <PageHeader currentPath="/changelog" />
       
       <div className="max-w-3xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-white mb-4">Changelog</h1>
-          <p className="text-[#3d4f6b] font-mono text-sm">
+          <h1 className="font-display text-5xl md:text-6xl text-[#f4f0e6] mb-4">CHANGELOG</h1>
+          <p className="text-[#6e6a5e] font-mono text-sm">
             New features, improvements, and fixes
           </p>
         </div>
@@ -79,18 +80,18 @@ export default function ChangelogPage() {
             const Icon = config.icon
             
             return (
-              <div key={i} className="bg-[#090c14] border border-[#131c2e] rounded-lg p-5">
+              <div key={i} className="bg-[#0a0a0a] border border-[#262620] rounded-lg p-5">
                 <div className="flex items-start gap-4">
                   <div className={`w-10 h-10 ${config.bg} rounded-lg flex items-center justify-center shrink-0`}>
                     <Icon className={`w-5 h-5 ${config.color}`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2 flex-wrap">
-                      <span className="font-mono text-xs text-[#3d4f6b]">v{entry.version}</span>
-                      <span className="font-mono text-xs text-[#3d4f6b]">{entry.date}</span>
+                      <span className="font-mono text-xs text-[#6e6a5e]">v{entry.version}</span>
+                      <span className="font-mono text-xs text-[#6e6a5e]">{entry.date}</span>
                     </div>
                     <h3 className="text-lg font-bold text-white mb-2">{entry.title}</h3>
-                    <p className="text-sm text-[#3d4f6b] leading-relaxed">{entry.description}</p>
+                    <p className="text-sm text-[#6e6a5e] leading-relaxed">{entry.description}</p>
                   </div>
                 </div>
               </div>
@@ -98,6 +99,7 @@ export default function ChangelogPage() {
           })}
         </div>
       </div>
+      <SiteFooter />
     </div>
   )
 }

@@ -105,17 +105,17 @@ export function ApiKeysManager({ userId }: ApiKeysManagerProps) {
   }
 
   return (
-    <div className="bg-[#090c14] border border-[#131c2e] rounded-md p-3 mb-4">
-      <div className="font-mono text-[9px] tracking-[2px] text-[#3d4f6b] mb-3">API KEYS</div>
+    <div className="bg-[#0a0a0a] border border-[#262620] rounded-md p-3 mb-4">
+      <div className="font-mono text-[9px] tracking-[2px] text-[#6e6a5e] mb-3">API KEYS</div>
       
       <div className="space-y-3">
         {/* Polygon API Key */}
         <div>
-          <label className="flex items-center gap-2 text-xs text-[#d6dff0] mb-1.5">
-            <Key className="w-3.5 h-3.5 text-[#00e5ff]" />
+          <label className="flex items-center gap-2 text-xs text-[#f4f0e6] mb-1.5">
+            <Key className="w-3.5 h-3.5 text-[#c8ff00]" />
             Polygon API Key
             {hasKeys.polygon && (
-              <span className="text-[9px] text-[#00ffaa] font-mono">CONFIGURED</span>
+              <span className="text-[9px] text-[#c8ff00] font-mono">CONFIGURED</span>
             )}
           </label>
           <div className="relative">
@@ -125,12 +125,12 @@ export function ApiKeysManager({ userId }: ApiKeysManagerProps) {
               onChange={(e) => setPolygonKey(e.target.value)}
               onFocus={() => handleKeyFocus(setPolygonKey, polygonKey)}
               placeholder="Enter Polygon API key..."
-              className="w-full bg-[#060a10] border border-[#131c2e] rounded px-3 py-2 text-sm text-[#d6dff0] font-mono placeholder:text-[#3d4f6b] focus:outline-none focus:border-[#00e5ff]/50"
+              className="w-full bg-[#0a0a0a] border border-[#262620] rounded px-3 py-2 text-sm text-[#f4f0e6] font-mono placeholder:text-[#6e6a5e] focus:outline-none focus:border-[#c8ff00]/50"
             />
             <button
               type="button"
               onClick={() => setShowPolygon(!showPolygon)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3d4f6b] hover:text-[#d6dff0] transition-colors"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6e6a5e] hover:text-[#f4f0e6] transition-colors"
             >
               {showPolygon ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -139,11 +139,11 @@ export function ApiKeysManager({ userId }: ApiKeysManagerProps) {
 
         {/* Anthropic API Key */}
         <div>
-          <label className="flex items-center gap-2 text-xs text-[#d6dff0] mb-1.5">
-            <Key className="w-3.5 h-3.5 text-[#a78bfa]" />
+          <label className="flex items-center gap-2 text-xs text-[#f4f0e6] mb-1.5">
+            <Key className="w-3.5 h-3.5 text-[#f4f0e6]" />
             Anthropic API Key
             {hasKeys.anthropic && (
-              <span className="text-[9px] text-[#00ffaa] font-mono">CONFIGURED</span>
+              <span className="text-[9px] text-[#c8ff00] font-mono">CONFIGURED</span>
             )}
           </label>
           <div className="relative">
@@ -153,12 +153,12 @@ export function ApiKeysManager({ userId }: ApiKeysManagerProps) {
               onChange={(e) => setAnthropicKey(e.target.value)}
               onFocus={() => handleKeyFocus(setAnthropicKey, anthropicKey)}
               placeholder="Enter Anthropic API key..."
-              className="w-full bg-[#060a10] border border-[#131c2e] rounded px-3 py-2 text-sm text-[#d6dff0] font-mono placeholder:text-[#3d4f6b] focus:outline-none focus:border-[#a78bfa]/50"
+              className="w-full bg-[#0a0a0a] border border-[#262620] rounded px-3 py-2 text-sm text-[#f4f0e6] font-mono placeholder:text-[#6e6a5e] focus:outline-none focus:border-[#f4f0e6]/50"
             />
             <button
               type="button"
               onClick={() => setShowAnthropic(!showAnthropic)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-[#3d4f6b] hover:text-[#d6dff0] transition-colors"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6e6a5e] hover:text-[#f4f0e6] transition-colors"
             >
               {showAnthropic ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -179,13 +179,13 @@ export function ApiKeysManager({ userId }: ApiKeysManagerProps) {
           disabled={saving}
           className={`w-full flex items-center justify-center gap-2 py-2 px-3 text-[10px] font-mono tracking-wider rounded transition-all ${
             saved
-              ? "bg-[#00ffaa]/20 border border-[#00ffaa] text-[#00ffaa]"
-              : "bg-[#00e5ff]/10 border border-[#00e5ff] text-[#00e5ff] hover:bg-[#00e5ff]/20"
+              ? "bg-[#c8ff00]/20 border border-[#c8ff00] text-[#c8ff00]"
+              : "bg-[#c8ff00]/10 border border-[#c8ff00] text-[#c8ff00] hover:bg-[#c8ff00]/20"
           } disabled:opacity-50`}
         >
           {saving ? (
             <>
-              <div className="w-3.5 h-3.5 border-2 border-[#00e5ff]/30 border-t-[#00e5ff] rounded-full animate-spin" />
+              <div className="w-3.5 h-3.5 border-2 border-[#c8ff00]/30 border-t-[#c8ff00] rounded-full animate-spin" />
               SAVING...
             </>
           ) : saved ? (
@@ -201,7 +201,7 @@ export function ApiKeysManager({ userId }: ApiKeysManagerProps) {
           )}
         </button>
 
-        <p className="text-[10px] text-[#3d4f6b] leading-relaxed">
+        <p className="text-[10px] text-[#6e6a5e] leading-relaxed">
           Your API keys are stored securely and used to power AI features. 
           Keys are encrypted and never shared.
         </p>

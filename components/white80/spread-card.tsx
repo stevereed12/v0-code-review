@@ -134,25 +134,25 @@ function generateSpread(signal: Signal) {
 export function SpreadCard({ signal }: SpreadCardProps) {
   const spread = generateSpread(signal)
   
-  const dirColor = spread.direction === "BULLISH" ? "#00ffaa" : spread.direction === "BEARISH" ? "#f87171" : "#facc15"
-  const stratColor = spread.strategy === "CREDIT" ? "#a78bfa" : "#00e5ff"
+  const dirColor = spread.direction === "BULLISH" ? "#c8ff00" : spread.direction === "BEARISH" ? "#f87171" : "#facc15"
+  const stratColor = spread.strategy === "CREDIT" ? "#f4f0e6" : "#c8ff00"
   
   return (
     <div
-      className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-4 mb-3 animate-in fade-in slide-in-from-bottom-1 duration-300"
+      className="bg-[#141411] border border-[#262620] rounded-lg p-4 mb-3 animate-in fade-in slide-in-from-bottom-1 duration-300"
       style={{ borderLeft: `3px solid ${dirColor}` }}
     >
       {/* Header */}
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center gap-3">
           <div>
-            <span className="font-mono text-lg text-[#d6dff0] font-medium tracking-wide">
+            <span className="font-mono text-lg text-[#f4f0e6] font-medium tracking-wide">
               {signal.ticker}
             </span>
-            <span className="font-mono text-xs text-[#3d4f6b] ml-2">
+            <span className="font-mono text-xs text-[#6e6a5e] ml-2">
               ${signal.price?.toFixed(2)}
             </span>
-            <span className={`font-mono text-[11px] ml-1.5 ${signal.change_pct >= 0 ? "text-[#00ffaa]" : "text-[#f87171]"}`}>
+            <span className={`font-mono text-[11px] ml-1.5 ${signal.change_pct >= 0 ? "text-[#c8ff00]" : "text-[#f87171]"}`}>
               {signal.change_pct >= 0 ? "+" : ""}{signal.change_pct?.toFixed(2)}%
             </span>
           </div>
@@ -176,24 +176,24 @@ export function SpreadCard({ signal }: SpreadCardProps) {
       </div>
 
       {/* Strategy Name */}
-      <div className="font-mono text-sm text-[#00e5ff] tracking-wider mb-3 flex items-center gap-2">
+      <div className="font-mono text-sm text-[#c8ff00] tracking-wider mb-3 flex items-center gap-2">
         <Shield className="w-4 h-4" />
         {spread.type}
       </div>
 
       {/* Legs */}
-      <div className="bg-[#060a10] rounded p-3 mb-3">
-        <div className="font-mono text-[9px] text-[#3d4f6b] tracking-wider mb-2">LEGS</div>
+      <div className="bg-[#0a0a0a] rounded p-3 mb-3">
+        <div className="font-mono text-[9px] text-[#6e6a5e] tracking-wider mb-2">LEGS</div>
         <div className="space-y-1.5">
           {spread.legs.map((leg, i) => (
             <div key={i} className="flex items-center gap-2 font-mono text-[12px]">
-              <span className={`px-1.5 py-0.5 rounded text-[9px] ${leg.action === "BUY" ? "bg-[#00ffaa]/15 text-[#00ffaa]" : "bg-[#f87171]/15 text-[#f87171]"}`}>
+              <span className={`px-1.5 py-0.5 rounded text-[9px] ${leg.action === "BUY" ? "bg-[#c8ff00]/15 text-[#c8ff00]" : "bg-[#f87171]/15 text-[#f87171]"}`}>
                 {leg.action}
               </span>
-              <span className="text-[#d6dff0]">${leg.strike}</span>
-              <span className={leg.type === "CALL" ? "text-[#00e5ff]" : "text-[#fb923c]"}>{leg.type}</span>
-              <span className="text-[#3d4f6b] text-[10px]">exp {leg.exp}</span>
-              {i < spread.legs.length - 1 && <ArrowRight className="w-3 h-3 text-[#3d4f6b]" />}
+              <span className="text-[#f4f0e6]">${leg.strike}</span>
+              <span className={leg.type === "CALL" ? "text-[#c8ff00]" : "text-[#fb923c]"}>{leg.type}</span>
+              <span className="text-[#6e6a5e] text-[10px]">exp {leg.exp}</span>
+              {i < spread.legs.length - 1 && <ArrowRight className="w-3 h-3 text-[#6e6a5e]" />}
             </div>
           ))}
         </div>
@@ -202,30 +202,30 @@ export function SpreadCard({ signal }: SpreadCardProps) {
       {/* Risk/Reward */}
       <div className="grid grid-cols-3 gap-3 mb-3">
         <div>
-          <div className="font-mono text-[9px] text-[#3d4f6b] tracking-wider mb-1">MAX PROFIT</div>
-          <div className="text-[11px] text-[#00ffaa]">{spread.maxProfit}</div>
+          <div className="font-mono text-[9px] text-[#6e6a5e] tracking-wider mb-1">MAX PROFIT</div>
+          <div className="text-[11px] text-[#c8ff00]">{spread.maxProfit}</div>
         </div>
         <div>
-          <div className="font-mono text-[9px] text-[#3d4f6b] tracking-wider mb-1">MAX LOSS</div>
+          <div className="font-mono text-[9px] text-[#6e6a5e] tracking-wider mb-1">MAX LOSS</div>
           <div className="text-[11px] text-[#f87171]">{spread.maxLoss}</div>
         </div>
         <div>
-          <div className="font-mono text-[9px] text-[#3d4f6b] tracking-wider mb-1">BREAKEVEN</div>
-          <div className="text-[11px] text-[#d6dff0]">{spread.breakeven}</div>
+          <div className="font-mono text-[9px] text-[#6e6a5e] tracking-wider mb-1">BREAKEVEN</div>
+          <div className="text-[11px] text-[#f4f0e6]">{spread.breakeven}</div>
         </div>
       </div>
 
       {/* Thesis */}
-      <div className="text-[12px] leading-relaxed text-[#d6dff0] opacity-85 border-t border-[#131c2e] pt-3">
+      <div className="text-[12px] leading-relaxed text-[#f4f0e6] opacity-85 border-t border-[#262620] pt-3">
         {spread.thesis}
       </div>
 
       {/* Original Signal Reference */}
-      <div className="mt-3 pt-2 border-t border-[#131c2e]/50">
-        <div className="font-mono text-[9px] text-[#3d4f6b] tracking-wider">
-          BASED ON: <span className="text-[#00e5ff]">{signal.play}</span>
+      <div className="mt-3 pt-2 border-t border-[#262620]/50">
+        <div className="font-mono text-[9px] text-[#6e6a5e] tracking-wider">
+          BASED ON: <span className="text-[#c8ff00]">{signal.play}</span>
           {signal.catalyst && signal.catalyst.toLowerCase() !== "none" && (
-            <span className="ml-2 text-[#a78bfa]">* {signal.catalyst}</span>
+            <span className="ml-2 text-[#f4f0e6]">* {signal.catalyst}</span>
           )}
         </div>
       </div>

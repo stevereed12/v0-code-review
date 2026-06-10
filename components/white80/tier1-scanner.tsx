@@ -12,15 +12,15 @@ import type { Tier1Signal } from "@/lib/tier1-types"
 // ─── COLORS ──────────────────────────────────────────────────────────────────
 
 const C = {
-  accent: "#00e5ff",
-  green: "#00ffaa",
-  purple: "#a78bfa",
+  accent: "#c8ff00",
+  green: "#c8ff00",
+  purple: "#f4f0e6",
   orange: "#fb923c",
   red: "#f87171",
   yellow: "#facc15",
-  muted: "#3d4f6b",
-  card: "#0c1020",
-  border: "#131c2e",
+  muted: "#6e6a5e",
+  card: "#141411",
+  border: "#262620",
 }
 
 // ─── SIGNAL INDICATOR ────────────────────────────────────────────────────────
@@ -32,9 +32,9 @@ function SignalDot({ active, label }: { active: boolean; label: string }) {
       title={label}
     >
       <div 
-        className={`w-2 h-2 rounded-full ${active ? "bg-[#00ffaa]" : "bg-[#3d4f6b]"}`}
+        className={`w-2 h-2 rounded-full ${active ? "bg-[#c8ff00]" : "bg-[#6e6a5e]"}`}
       />
-      <span className="font-mono text-[9px] text-[#3d4f6b] uppercase tracking-wider">
+      <span className="font-mono text-[9px] text-[#6e6a5e] uppercase tracking-wider">
         {label.slice(0, 3)}
       </span>
     </div>
@@ -71,7 +71,7 @@ function Tier1Card({
   const { ticker, name, sector, score, signals, price, changePercent, catalyst, thesis, suggestedPlay, reasoning, optionsData } = signal
   
   return (
-    <Card className="bg-[#0c1020] border-[#131c2e] hover:border-[#00e5ff]/30 transition-colors">
+    <Card className="bg-[#141411] border-[#262620] hover:border-[#c8ff00]/30 transition-colors">
       <CardContent className="p-4">
         <div className="flex gap-4">
           {/* Score */}
@@ -82,11 +82,11 @@ function Tier1Card({
             {/* Header */}
             <div className="flex items-baseline justify-between gap-2 mb-2">
               <div className="flex items-baseline gap-2">
-                <span className="font-mono text-base font-semibold text-[#d6dff0]">{ticker}</span>
-                <span className="text-sm text-[#3d4f6b] truncate">{name}</span>
+                <span className="font-mono text-base font-semibold text-[#f4f0e6]">{ticker}</span>
+                <span className="text-sm text-[#6e6a5e] truncate">{name}</span>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <span className="font-mono text-sm text-[#d6dff0]">${price?.toFixed(2)}</span>
+                <span className="font-mono text-sm text-[#f4f0e6]">${price?.toFixed(2)}</span>
                 <span 
                   className="font-mono text-xs"
                   style={{ color: changePercent >= 0 ? C.green : C.red }}
@@ -98,7 +98,7 @@ function Tier1Card({
             
             {/* Reasoning blurb - Why this ticker */}
             {reasoning && (
-              <p className="text-[13px] text-[#d6dff0]/90 mb-3 leading-relaxed capitalize">
+              <p className="text-[13px] text-[#f4f0e6]/90 mb-3 leading-relaxed capitalize">
                 {reasoning}
               </p>
             )}
@@ -121,11 +121,11 @@ function Tier1Card({
               >
                 <div className="flex items-center gap-1.5">
                   <span className="text-[#fb923c] font-mono">C/P:</span>
-                  <span className="text-[#d6dff0] font-mono">{optionsData.callPutRatio.toFixed(1)}x</span>
+                  <span className="text-[#f4f0e6] font-mono">{optionsData.callPutRatio.toFixed(1)}x</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-[#fb923c] font-mono">ATM:</span>
-                  <span className="text-[#d6dff0] font-mono">{optionsData.atmCallSkew.toFixed(0)}%</span>
+                  <span className="text-[#f4f0e6] font-mono">{optionsData.atmCallSkew.toFixed(0)}%</span>
                 </div>
                 {optionsData.unusualCallActivity && (
                   <span className="text-[#fb923c] text-[10px] font-mono uppercase tracking-wider">Unusual</span>
@@ -139,10 +139,10 @@ function Tier1Card({
                 className="mb-3 p-2 rounded text-xs"
                 style={{ background: `${C.purple}10`, border: `1px solid ${C.purple}30` }}
               >
-                <span className="text-[#a78bfa] font-mono uppercase tracking-wider">
+                <span className="text-[#f4f0e6] font-mono uppercase tracking-wider">
                   {catalyst.type}
                 </span>
-                <span className="text-[#d6dff0] ml-2">
+                <span className="text-[#f4f0e6] ml-2">
                   {catalyst.description} - {catalyst.daysUntil} days
                 </span>
               </div>
@@ -150,7 +150,7 @@ function Tier1Card({
             
             {/* Thesis (from Claude enrichment) */}
             {thesis && (
-              <p className="text-sm text-[#d6dff0]/80 mb-2 leading-relaxed">{thesis}</p>
+              <p className="text-sm text-[#f4f0e6]/80 mb-2 leading-relaxed">{thesis}</p>
             )}
             
             {/* Suggested play */}
@@ -159,14 +159,14 @@ function Tier1Card({
             )}
             
             {/* Actions */}
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#131c2e]">
-              <Badge variant="outline" className="font-mono text-[10px] text-[#3d4f6b] border-[#131c2e]">
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#262620]">
+              <Badge variant="outline" className="font-mono text-[10px] text-[#6e6a5e] border-[#262620]">
                 {sector}
               </Badge>
               <Button 
                 variant="ghost" 
                 size="sm"
-                className="h-7 px-3 text-xs font-mono text-[#00e5ff] hover:bg-[#00e5ff]/10"
+                className="h-7 px-3 text-xs font-mono text-[#c8ff00] hover:bg-[#c8ff00]/10"
                 onClick={() => onPromote(ticker)}
               >
                 + WATCHLIST
@@ -353,19 +353,19 @@ function Tier1Card({
       )}
 
       {/* Header */}
-      <Card className="bg-[#090c14] border-[#131c2e]">
+      <Card className="bg-[#0a0a0a] border-[#262620]">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg font-serif text-[#d6dff0]">
+              <CardTitle className="text-lg font-serif text-[#f4f0e6]">
                 Tier 1 Alpha Scanner
               </CardTitle>
-              <p className="text-xs text-[#3d4f6b] mt-1 font-mono tracking-wide">
+              <p className="text-xs text-[#6e6a5e] mt-1 font-mono tracking-wide">
                 S&P 500 + NASDAQ 100 | 6-SIGNAL SCORING
               </p>
             </div>
             {lastScan && (
-              <span className="text-xs text-[#3d4f6b] font-mono">
+              <span className="text-xs text-[#6e6a5e] font-mono">
                 Last scan: {lastScan}
               </span>
             )}
@@ -376,7 +376,7 @@ function Tier1Card({
           <div className="flex flex-wrap items-center gap-4 mb-4">
             {/* Min score selector - now starts at 1 for maximum visibility */}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-[#3d4f6b] font-mono">MIN SCORE:</span>
+              <span className="text-xs text-[#6e6a5e] font-mono">MIN SCORE:</span>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5, 6].map(s => (
                   <button
@@ -384,15 +384,15 @@ function Tier1Card({
                     onClick={() => setMinScore(s)}
                     className={`w-7 h-7 rounded font-mono text-sm transition-colors ${
                       minScore === s 
-                        ? "bg-[#00e5ff]/20 text-[#00e5ff] border border-[#00e5ff]" 
-                        : "bg-[#0c1020] text-[#3d4f6b] border border-[#131c2e] hover:border-[#3d4f6b]"
+                        ? "bg-[#c8ff00]/20 text-[#c8ff00] border border-[#c8ff00]" 
+                        : "bg-[#141411] text-[#6e6a5e] border border-[#262620] hover:border-[#6e6a5e]"
                     }`}
                   >
                     {s}
                   </button>
                 ))}
               </div>
-              <span className="text-[10px] text-[#3d4f6b] ml-1">
+              <span className="text-[10px] text-[#6e6a5e] ml-1">
                 {minScore <= 2 ? "(wide net)" : minScore >= 5 ? "(very selective)" : "(balanced)"}
               </span>
             </div>
@@ -401,7 +401,7 @@ function Tier1Card({
             <Button
               onClick={runScan}
               disabled={loading}
-              className="ml-auto bg-transparent border border-[#00e5ff] text-[#00e5ff] hover:bg-[#00e5ff]/10 font-mono tracking-wider"
+              className="ml-auto bg-transparent border border-[#c8ff00] text-[#c8ff00] hover:bg-[#c8ff00]/10 font-mono tracking-wider"
             >
               {loading ? (
                 <>
@@ -416,8 +416,8 @@ function Tier1Card({
           
           {/* Loading phase indicator */}
           {loading && loadingPhase && (
-            <div className="mb-4 p-3 rounded bg-[#00e5ff]/5 border border-[#00e5ff]/20">
-              <p className="text-xs text-[#00e5ff] font-mono">{loadingPhase}</p>
+            <div className="mb-4 p-3 rounded bg-[#c8ff00]/5 border border-[#c8ff00]/20">
+              <p className="text-xs text-[#c8ff00] font-mono">{loadingPhase}</p>
             </div>
           )}
           
@@ -425,12 +425,12 @@ function Tier1Card({
           {scanStats && !loading && (
             <div className="flex gap-6 mb-4">
               <div>
-                <span className="text-xs text-[#3d4f6b] font-mono">SCANNED</span>
-                <p className="text-lg font-mono text-[#d6dff0]">{scanStats.total}</p>
+                <span className="text-xs text-[#6e6a5e] font-mono">SCANNED</span>
+                <p className="text-lg font-mono text-[#f4f0e6]">{scanStats.total}</p>
               </div>
               <div>
-                <span className="text-xs text-[#3d4f6b] font-mono">MATCHES</span>
-                <p className="text-lg font-mono text-[#00ffaa]">{results.length}</p>
+                <span className="text-xs text-[#6e6a5e] font-mono">MATCHES</span>
+                <p className="text-lg font-mono text-[#c8ff00]">{results.length}</p>
               </div>
             </div>
           )}
@@ -443,8 +443,8 @@ function Tier1Card({
           )}
           
           {/* Signal legend */}
-          <div className="flex flex-wrap gap-4 p-3 rounded bg-[#0c1020] border border-[#131c2e]">
-            <div className="text-[10px] text-[#3d4f6b] font-mono uppercase tracking-wider">
+          <div className="flex flex-wrap gap-4 p-3 rounded bg-[#141411] border border-[#262620]">
+            <div className="text-[10px] text-[#6e6a5e] font-mono uppercase tracking-wider">
               SIGNALS:
             </div>
             {[
@@ -456,8 +456,8 @@ function Tier1Card({
               { key: "VOL", label: "Volume Building" },
             ].map(s => (
               <div key={s.key} className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-[#00ffaa]" />
-                <span className="text-[10px] text-[#3d4f6b]">{s.key}: {s.label}</span>
+                <div className="w-2 h-2 rounded-full bg-[#c8ff00]" />
+                <span className="text-[10px] text-[#6e6a5e]">{s.key}: {s.label}</span>
               </div>
             ))}
           </div>
@@ -467,10 +467,10 @@ function Tier1Card({
       {/* Results */}
       {!loading && results.length === 0 && lastScan && (
         <div className="text-center py-12">
-          <p className="text-sm text-[#3d4f6b] font-mono">
+          <p className="text-sm text-[#6e6a5e] font-mono">
             No setups found matching {minScore}+ signals.
           </p>
-          <p className="text-xs text-[#3d4f6b] mt-2">
+          <p className="text-xs text-[#6e6a5e] mt-2">
             Try lowering the minimum score or check back later.
           </p>
         </div>
@@ -478,10 +478,10 @@ function Tier1Card({
       
       {!loading && results.length === 0 && !lastScan && (
         <div className="text-center py-12">
-          <p className="text-sm text-[#3d4f6b] font-mono">
+          <p className="text-sm text-[#6e6a5e] font-mono">
             Run a scan to find coiled-spring setups across 150+ names.
           </p>
-          <p className="text-xs text-[#3d4f6b] mt-2">
+          <p className="text-xs text-[#6e6a5e] mt-2">
             Scans S&P 500 + Nasdaq 100 for the 6-signal alpha pattern.
           </p>
         </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { PageHeader } from "@/components/white80/page-header"
+import { SiteFooter } from "@/components/white80/site-footer"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import Link from "next/link"
 
@@ -52,20 +53,20 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [isOpen, setIsOpen] = useState(false)
   
   return (
-    <div className="border border-[#131c2e] rounded-lg overflow-hidden">
+    <div className="border border-[#262620] overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-4 text-left hover:bg-[#090c14] transition-colors"
+        className="w-full flex items-center justify-between p-4 text-left hover:bg-[#0a0a0a] transition-colors"
       >
-        <span className="font-mono text-sm text-[#d6dff0]">{question}</span>
+        <span className="font-mono text-sm text-[#f4f0e6]">{question}</span>
         {isOpen ? (
-          <ChevronUp className="w-4 h-4 text-[#00e5ff] shrink-0" />
+          <ChevronUp className="w-4 h-4 text-[#c8ff00] shrink-0" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-[#3d4f6b] shrink-0" />
+          <ChevronDown className="w-4 h-4 text-[#6e6a5e] shrink-0" />
         )}
       </button>
       {isOpen && (
-        <div className="px-4 pb-4 text-sm text-[#3d4f6b] leading-relaxed">
+        <div className="px-4 pb-4 text-sm text-[#6e6a5e] leading-relaxed">
           {answer}
         </div>
       )}
@@ -75,14 +76,14 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen bg-[#060a10]">
+    <div className="min-h-screen bg-[#0a0a0a]">
       <PageHeader currentPath="/faq" />
       
       <div className="max-w-3xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-white mb-4">Frequently Asked Questions</h1>
-          <p className="text-[#3d4f6b] font-mono text-sm">
-            Everything you need to know about White 80
+          <h1 className="font-display text-5xl md:text-6xl text-[#f4f0e6] mb-4">QUESTIONS</h1>
+          <p className="text-[#6e6a5e] font-mono text-xs tracking-[0.2em]">
+            EVERYTHING YOU NEED TO KNOW ABOUT WHITE 80
           </p>
         </div>
 
@@ -93,15 +94,16 @@ export default function FAQPage() {
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-[#3d4f6b] text-sm mb-4">Still have questions?</p>
+          <p className="text-[#6e6a5e] text-sm mb-4">Still have questions?</p>
           <Link
             href="/contact"
-            className="inline-block font-mono text-sm bg-[#00e5ff]/10 border border-[#00e5ff] text-[#00e5ff] px-6 py-2.5 rounded hover:bg-[#00e5ff]/20 transition-colors"
+            className="inline-block font-mono text-sm bg-[#c8ff00]/10 border border-[#c8ff00] text-[#c8ff00] px-6 py-2.5 hover:bg-[#c8ff00]/20 transition-colors"
           >
             CONTACT US
           </Link>
         </div>
       </div>
+      <SiteFooter />
     </div>
   )
 }

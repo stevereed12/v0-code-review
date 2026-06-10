@@ -9,11 +9,11 @@ import { buildQuickThesisPrompt, type QuickThesis } from "@/lib/prompts"
 import { Search, TrendingUp, TrendingDown, Minus, Target, Shield, Zap, Plus } from "lucide-react"
 
 const C = {
-  accent: "#00e5ff",
-  green: "#00ffaa",
+  accent: "#c8ff00",
+  green: "#c8ff00",
   red: "#f87171",
   orange: "#fb923c",
-  purple: "#a78bfa",
+  purple: "#f4f0e6",
   yellow: "#facc15",
 }
 
@@ -91,7 +91,7 @@ export function QuickThesisSearch({ onAddToWatchlist, onApiKeyRequired }: QuickT
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case "UPTREND": return <TrendingUp className="w-4 h-4 text-[#00ffaa]" />
+      case "UPTREND": return <TrendingUp className="w-4 h-4 text-[#c8ff00]" />
       case "DOWNTREND": return <TrendingDown className="w-4 h-4 text-[#f87171]" />
       default: return <Minus className="w-4 h-4 text-[#facc15]" />
     }
@@ -102,19 +102,19 @@ export function QuickThesisSearch({ onAddToWatchlist, onApiKeyRequired }: QuickT
       {/* Search Bar */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#3d4f6b]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6e6a5e]" />
           <Input
             value={ticker}
             onChange={(e) => setTicker(e.target.value.toUpperCase())}
             onKeyDown={(e) => e.key === "Enter" && runThesis()}
             placeholder="Enter ticker symbol (e.g., NVDA)"
-            className="pl-10 bg-[#0c1020] border-[#131c2e] text-[#d6dff0] font-mono placeholder:text-[#3d4f6b]"
+            className="pl-10 bg-[#141411] border-[#262620] text-[#f4f0e6] font-mono placeholder:text-[#6e6a5e]"
           />
         </div>
         <Button
           onClick={runThesis}
           disabled={loading || !ticker.trim()}
-          className="bg-[#00e5ff]/10 border border-[#00e5ff] text-[#00e5ff] hover:bg-[#00e5ff]/20 font-mono"
+          className="bg-[#c8ff00]/10 border border-[#c8ff00] text-[#c8ff00] hover:bg-[#c8ff00]/20 font-mono"
         >
           {loading ? "ANALYZING..." : "GET THESIS"}
         </Button>
@@ -130,8 +130,8 @@ export function QuickThesisSearch({ onAddToWatchlist, onApiKeyRequired }: QuickT
       {/* Loading */}
       {loading && (
         <div className="text-center py-12">
-          <div className="inline-block w-8 h-8 border-2 border-[#00e5ff] border-t-transparent rounded-full animate-spin" />
-          <div className="mt-3 font-mono text-xs text-[#3d4f6b]">
+          <div className="inline-block w-8 h-8 border-2 border-[#c8ff00] border-t-transparent rounded-full animate-spin" />
+          <div className="mt-3 font-mono text-xs text-[#6e6a5e]">
             Running deep research on {ticker}...
           </div>
         </div>
@@ -144,13 +144,13 @@ export function QuickThesisSearch({ onAddToWatchlist, onApiKeyRequired }: QuickT
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3">
-                <span className="font-mono text-xl font-bold text-[#d6dff0]">{thesis.ticker}</span>
-                <span className="text-[#3d4f6b]">{thesis.name}</span>
+                <span className="font-mono text-xl font-bold text-[#f4f0e6]">{thesis.ticker}</span>
+                <span className="text-[#6e6a5e]">{thesis.name}</span>
               </div>
               <div className="flex items-center gap-4 mt-1 text-sm">
-                <span className="text-[#d6dff0] font-mono">${thesis.price?.toFixed(2)}</span>
-                <span className="text-[#3d4f6b]">{thesis.sector}</span>
-                <span className="text-[#3d4f6b]">{thesis.market_cap}</span>
+                <span className="text-[#f4f0e6] font-mono">${thesis.price?.toFixed(2)}</span>
+                <span className="text-[#6e6a5e]">{thesis.sector}</span>
+                <span className="text-[#6e6a5e]">{thesis.market_cap}</span>
               </div>
             </div>
             {onAddToWatchlist && (
@@ -158,7 +158,7 @@ export function QuickThesisSearch({ onAddToWatchlist, onApiKeyRequired }: QuickT
                 onClick={() => onAddToWatchlist(thesis.ticker)}
                 size="sm"
                 variant="outline"
-                className="border-[#00ffaa]/40 text-[#00ffaa] hover:bg-[#00ffaa]/10"
+                className="border-[#c8ff00]/40 text-[#c8ff00] hover:bg-[#c8ff00]/10"
               >
                 <Plus className="w-4 h-4 mr-1" /> Add to Watchlist
               </Button>
@@ -183,46 +183,46 @@ export function QuickThesisSearch({ onAddToWatchlist, onApiKeyRequired }: QuickT
               >
                 {thesis.verdict.action}
               </span>
-              <span className="text-xs text-[#3d4f6b] font-mono">
+              <span className="text-xs text-[#6e6a5e] font-mono">
                 {thesis.verdict.conviction} CONVICTION | {thesis.verdict.timeframe}
               </span>
             </div>
-            <p className="text-[15px] leading-relaxed text-[#d6dff0]">{thesis.verdict.summary}</p>
+            <p className="text-[15px] leading-relaxed text-[#f4f0e6]">{thesis.verdict.summary}</p>
           </div>
 
           {/* Core Thesis */}
-          <Card className="bg-[#0c1020] border-[#131c2e]">
+          <Card className="bg-[#141411] border-[#262620]">
             <CardContent className="p-4">
-              <div className="font-mono text-[10px] tracking-[2px] text-[#00e5ff] mb-2">THESIS</div>
-              <p className="text-[14px] leading-relaxed text-[#d6dff0]">{thesis.thesis}</p>
+              <div className="font-mono text-[10px] tracking-[2px] text-[#c8ff00] mb-2">THESIS</div>
+              <p className="text-[14px] leading-relaxed text-[#f4f0e6]">{thesis.thesis}</p>
             </CardContent>
           </Card>
 
           {/* Bull / Bear Cases */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="bg-[#0c1020] border-[#131c2e]">
+            <Card className="bg-[#141411] border-[#262620]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-4 h-4 text-[#00ffaa]" />
-                  <span className="font-mono text-[10px] tracking-[2px] text-[#00ffaa]">BULL CASE</span>
+                  <TrendingUp className="w-4 h-4 text-[#c8ff00]" />
+                  <span className="font-mono text-[10px] tracking-[2px] text-[#c8ff00]">BULL CASE</span>
                 </div>
-                <p className="text-[13px] leading-relaxed text-[#d6dff0]">{thesis.bull_case}</p>
+                <p className="text-[13px] leading-relaxed text-[#f4f0e6]">{thesis.bull_case}</p>
               </CardContent>
             </Card>
-            <Card className="bg-[#0c1020] border-[#131c2e]">
+            <Card className="bg-[#141411] border-[#262620]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingDown className="w-4 h-4 text-[#f87171]" />
                   <span className="font-mono text-[10px] tracking-[2px] text-[#f87171]">BEAR CASE</span>
                 </div>
-                <p className="text-[13px] leading-relaxed text-[#d6dff0]">{thesis.bear_case}</p>
+                <p className="text-[13px] leading-relaxed text-[#f4f0e6]">{thesis.bear_case}</p>
               </CardContent>
             </Card>
           </div>
 
           {/* Catalysts */}
           {thesis.catalysts && thesis.catalysts.length > 0 && (
-            <Card className="bg-[#0c1020] border-[#131c2e]">
+            <Card className="bg-[#141411] border-[#262620]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Zap className="w-4 h-4 text-[#fb923c]" />
@@ -230,10 +230,10 @@ export function QuickThesisSearch({ onAddToWatchlist, onApiKeyRequired }: QuickT
                 </div>
                 <div className="space-y-2">
                   {thesis.catalysts.map((cat, i) => (
-                    <div key={i} className="flex items-center justify-between bg-[#090c14] rounded px-3 py-2">
-                      <span className="text-[13px] text-[#d6dff0]">{cat.event}</span>
+                    <div key={i} className="flex items-center justify-between bg-[#0a0a0a] rounded px-3 py-2">
+                      <span className="text-[13px] text-[#f4f0e6]">{cat.event}</span>
                       <div className="flex items-center gap-3">
-                        <span className="font-mono text-[11px] text-[#3d4f6b]">{cat.date}</span>
+                        <span className="font-mono text-[11px] text-[#6e6a5e]">{cat.date}</span>
                         <span
                           className="font-mono text-[9px] px-2 py-0.5 rounded"
                           style={{
@@ -254,38 +254,38 @@ export function QuickThesisSearch({ onAddToWatchlist, onApiKeyRequired }: QuickT
           {/* Technicals & Options */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Technicals */}
-            <Card className="bg-[#0c1020] border-[#131c2e]">
+            <Card className="bg-[#141411] border-[#262620]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <Target className="w-4 h-4 text-[#a78bfa]" />
-                  <span className="font-mono text-[10px] tracking-[2px] text-[#a78bfa]">TECHNICALS</span>
+                  <Target className="w-4 h-4 text-[#f4f0e6]" />
+                  <span className="font-mono text-[10px] tracking-[2px] text-[#f4f0e6]">TECHNICALS</span>
                 </div>
                 <div className="space-y-2 text-[13px]">
                   <div className="flex justify-between">
-                    <span className="text-[#3d4f6b]">Trend</span>
-                    <span className="flex items-center gap-1.5 text-[#d6dff0]">
+                    <span className="text-[#6e6a5e]">Trend</span>
+                    <span className="flex items-center gap-1.5 text-[#f4f0e6]">
                       {getTrendIcon(thesis.technicals.trend)}
                       {thesis.technicals.trend}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#3d4f6b]">Support</span>
-                    <span className="text-[#00ffaa] font-mono">${thesis.technicals.support?.toFixed(2)}</span>
+                    <span className="text-[#6e6a5e]">Support</span>
+                    <span className="text-[#c8ff00] font-mono">${thesis.technicals.support?.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#3d4f6b]">Resistance</span>
+                    <span className="text-[#6e6a5e]">Resistance</span>
                     <span className="text-[#f87171] font-mono">${thesis.technicals.resistance?.toFixed(2)}</span>
                   </div>
-                  <div className="pt-2 border-t border-[#131c2e]">
-                    <span className="text-[#3d4f6b] text-[11px]">RSI: </span>
-                    <span className="text-[#d6dff0] text-[12px]">{thesis.technicals.rsi_read}</span>
+                  <div className="pt-2 border-t border-[#262620]">
+                    <span className="text-[#6e6a5e] text-[11px]">RSI: </span>
+                    <span className="text-[#f4f0e6] text-[12px]">{thesis.technicals.rsi_read}</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Options Take */}
-            <Card className="bg-[#0c1020] border-[#131c2e]">
+            <Card className="bg-[#141411] border-[#262620]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Shield className="w-4 h-4 text-[#facc15]" />
@@ -303,9 +303,9 @@ export function QuickThesisSearch({ onAddToWatchlist, onApiKeyRequired }: QuickT
                       {thesis.options_take.sentiment}
                     </span>
                   </div>
-                  <div className="bg-[#090c14] rounded px-3 py-2">
-                    <div className="font-mono text-[12px] text-[#00e5ff] mb-1">{thesis.options_take.suggested_play}</div>
-                    <div className="text-[11px] text-[#3d4f6b]">{thesis.options_take.reasoning}</div>
+                  <div className="bg-[#0a0a0a] rounded px-3 py-2">
+                    <div className="font-mono text-[12px] text-[#c8ff00] mb-1">{thesis.options_take.suggested_play}</div>
+                    <div className="text-[11px] text-[#6e6a5e]">{thesis.options_take.reasoning}</div>
                   </div>
                 </div>
               </CardContent>
@@ -316,7 +316,7 @@ export function QuickThesisSearch({ onAddToWatchlist, onApiKeyRequired }: QuickT
 
       {/* Empty State */}
       {!thesis && !loading && !error && (
-        <div className="text-center py-12 text-[#3d4f6b]">
+        <div className="text-center py-12 text-[#6e6a5e]">
           <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <div className="font-mono text-sm">Enter any ticker to get a full thesis</div>
           <div className="text-xs mt-1">Price, catalysts, technicals, options plays, bull/bear cases</div>

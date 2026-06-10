@@ -65,7 +65,7 @@ export function MobileMenu({ isLoggedIn = false, currentPath = "/" }: MobileMenu
       {/* Hamburger Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="p-2 text-[#3d4f6b] hover:text-white transition-colors"
+        className="p-2 text-[#6e6a5e] hover:text-[#f4f0e6] transition-colors"
         aria-label="Open menu"
       >
         <Menu className="w-6 h-6" />
@@ -81,19 +81,19 @@ export function MobileMenu({ isLoggedIn = false, currentPath = "/" }: MobileMenu
 
       {/* Side Drawer */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-sm bg-[#060a10] border-l border-[#131c2e] z-50 transform transition-transform duration-300 ease-out overflow-y-auto ${
+        className={`fixed top-0 right-0 h-full w-full max-w-sm bg-[#0a0a0a] border-l border-[#262620] z-50 transform transition-transform duration-300 ease-out overflow-y-auto ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[#131c2e]">
+        <div className="flex items-center justify-between p-4 border-b border-[#262620]">
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 bg-[#00e5ff] rounded-full animate-pulse" />
-            <span className="font-mono text-sm tracking-wider text-white">WHITE 80</span>
+            <div className="w-2.5 h-2.5 bg-[#c8ff00] rounded-full animate-pulse" />
+            <span className="font-display text-xl tracking-wide text-[#f4f0e6]">WHITE 80</span>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-2 text-[#3d4f6b] hover:text-white transition-colors"
+            className="p-2 text-[#6e6a5e] hover:text-[#f4f0e6] transition-colors"
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />
@@ -104,7 +104,7 @@ export function MobileMenu({ isLoggedIn = false, currentPath = "/" }: MobileMenu
         <div className="p-4 space-y-6">
           {MENU_SECTIONS.map((section, sectionIndex) => (
             <div key={section.title}>
-              <div className="font-mono text-[10px] tracking-[2px] text-[#3d4f6b] mb-3">
+              <div className="font-mono text-[10px] tracking-[2px] text-[#6e6a5e] mb-3">
                 {section.title}
               </div>
               <div className="space-y-1">
@@ -120,16 +120,16 @@ export function MobileMenu({ isLoggedIn = false, currentPath = "/" }: MobileMenu
                       onClick={() => setIsOpen(false)}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
                         isActive
-                          ? "bg-[#00e5ff]/10 text-[#00e5ff] border border-[#00e5ff]/30"
-                          : "text-[#d6dff0] hover:bg-[#131c2e] hover:text-white"
+                          ? "bg-[#c8ff00]/10 text-[#c8ff00] border border-[#c8ff00]/30"
+                          : "text-[#f4f0e6] hover:bg-[#262620] hover:text-[#f4f0e6]"
                       }`}
                       style={{
                         animation: isOpen ? `slideIn 0.3s ease-out ${delay}ms both` : "none",
                       }}
                     >
-                      <Icon className={`w-4 h-4 ${isActive ? "text-[#00e5ff]" : "text-[#3d4f6b] group-hover:text-[#00e5ff]"}`} />
+                      <Icon className={`w-4 h-4 ${isActive ? "text-[#c8ff00]" : "text-[#6e6a5e] group-hover:text-[#c8ff00]"}`} />
                       <span className="font-mono text-sm flex-1">{item.name}</span>
-                      <ChevronRight className={`w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ${isActive ? "opacity-100 text-[#00e5ff]" : "text-[#3d4f6b]"}`} />
+                      <ChevronRight className={`w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ${isActive ? "opacity-100 text-[#c8ff00]" : "text-[#6e6a5e]"}`} />
                     </Link>
                   )
                 })}
@@ -139,13 +139,13 @@ export function MobileMenu({ isLoggedIn = false, currentPath = "/" }: MobileMenu
         </div>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#131c2e] bg-[#060a10]">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#262620] bg-[#0a0a0a]">
           {!isLoggedIn ? (
             <>
               <Link
                 href="/pricing"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center justify-center gap-2 w-full bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10] font-mono text-sm py-3 rounded-lg transition-colors mb-3"
+                className="flex items-center justify-center gap-2 w-full bg-[#c8ff00] hover:bg-[#c8ff00]/90 text-[#0a0a0a] font-mono text-sm py-3 rounded-lg transition-colors mb-3"
               >
                 <Sparkles className="w-4 h-4" />
                 START FREE TRIAL
@@ -154,14 +154,14 @@ export function MobileMenu({ isLoggedIn = false, currentPath = "/" }: MobileMenu
                 <Link
                   href="/auth/login"
                   onClick={() => setIsOpen(false)}
-                  className="flex-1 text-center font-mono text-sm text-[#d6dff0] hover:text-white py-2 transition-colors border border-[#131c2e] rounded-lg"
+                  className="flex-1 text-center font-mono text-sm text-[#f4f0e6] hover:text-[#f4f0e6] py-2 transition-colors border border-[#262620] rounded-lg"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/pricing"
                   onClick={() => setIsOpen(false)}
-                  className="flex-1 text-center font-mono text-sm text-[#00e5ff] hover:text-[#00e5ff]/80 py-2 transition-colors border border-[#00e5ff]/30 rounded-lg"
+                  className="flex-1 text-center font-mono text-sm text-[#c8ff00] hover:text-[#c8ff00]/80 py-2 transition-colors border border-[#c8ff00]/30 rounded-lg"
                 >
                   Sign Up
                 </Link>
@@ -171,7 +171,7 @@ export function MobileMenu({ isLoggedIn = false, currentPath = "/" }: MobileMenu
             <Link
               href="/dashboard"
               onClick={() => setIsOpen(false)}
-              className="flex items-center justify-center gap-2 w-full bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10] font-mono text-sm py-3 rounded-lg transition-colors"
+              className="flex items-center justify-center gap-2 w-full bg-[#c8ff00] hover:bg-[#c8ff00]/90 text-[#0a0a0a] font-mono text-sm py-3 rounded-lg transition-colors"
             >
               GO TO DASHBOARD
             </Link>

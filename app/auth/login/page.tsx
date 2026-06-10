@@ -58,20 +58,20 @@ function LoginPageContent() {
 
   if (checkingSession) {
     return (
-      <div className="min-h-screen bg-[#060a10] flex items-center justify-center">
-        <div className="w-3 h-3 bg-[#00e5ff] rounded-full animate-pulse" />
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-3 h-3 bg-[#c8ff00] rounded-full animate-pulse" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#060a10] flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
       {/* Header */}
-      <header className="border-b border-[#131c2e]">
+      <header className="border-b border-[#262620]">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <Link href="/" className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
-            <div className="w-3 h-3 bg-[#00e5ff] rounded-full animate-pulse" />
-            <span className="font-mono text-lg tracking-wider text-white">WHITE 80</span>
+            <div className="w-3 h-3 bg-[#c8ff00] rounded-full animate-pulse" />
+            <span className="font-display text-2xl tracking-wide text-[#f4f0e6]">WHITE 80</span>
           </Link>
         </div>
       </header>
@@ -80,13 +80,13 @@ function LoginPageContent() {
         <div className="w-full max-w-md">
           {/* Existing session warning */}
           {existingSession && (
-            <div className="bg-[#131c2e] border border-[#00e5ff]/30 rounded-lg p-4 mb-4">
-              <p className="text-[#d6dff0] font-mono text-sm mb-3">
+            <div className="bg-[#262620] border border-[#c8ff00]/30 rounded-lg p-4 mb-4">
+              <p className="text-[#f4f0e6] font-mono text-sm mb-3">
                 You&apos;re currently signed in to another account.
               </p>
               <button
                 onClick={handleSignOut}
-                className="w-full bg-[#00e5ff]/10 hover:bg-[#00e5ff]/20 text-[#00e5ff] font-mono text-sm py-2 rounded transition-colors border border-[#00e5ff]/30"
+                className="w-full bg-[#c8ff00]/10 hover:bg-[#c8ff00]/20 text-[#c8ff00] font-mono text-sm py-2 rounded transition-colors border border-[#c8ff00]/30"
               >
                 SIGN OUT & CONTINUE
               </button>
@@ -94,33 +94,41 @@ function LoginPageContent() {
           )}
 
           {/* Form */}
-          <div className="bg-[#0c1020] border border-[#131c2e] rounded-lg p-6">
-            <h1 className="font-mono text-lg text-white mb-6">Sign In</h1>
+          <div className="bg-[#141411] border border-[#262620] rounded-lg p-6">
+            <h1 className="font-display text-4xl text-[#f4f0e6] mb-6">SIGN IN</h1>
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block font-mono text-[10px] tracking-wider text-[#3d4f6b] mb-2">
+                <label className="block font-mono text-[10px] tracking-wider text-[#6e6a5e] mb-2">
                   EMAIL
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-[#090c14] border border-[#131c2e] rounded px-3 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#00e5ff]/50"
+                  className="w-full bg-[#0a0a0a] border border-[#262620] rounded px-3 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#c8ff00]/50"
                   placeholder="you@example.com"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-mono text-[10px] tracking-wider text-[#3d4f6b] mb-2">
-                  PASSWORD
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block font-mono text-[10px] tracking-wider text-[#6e6a5e]">
+                    PASSWORD
+                  </label>
+                  <Link
+                    href="/auth/forgot-password"
+                    className="font-mono text-[10px] text-[#6e6a5e] hover:text-[#c8ff00] transition-colors"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-[#090c14] border border-[#131c2e] rounded px-3 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#00e5ff]/50"
+                  className="w-full bg-[#0a0a0a] border border-[#262620] rounded px-3 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-[#c8ff00]/50"
                   placeholder="••••••••"
                   required
                 />
@@ -135,16 +143,16 @@ function LoginPageContent() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#00e5ff] hover:bg-[#00e5ff]/90 text-[#060a10] font-mono text-sm tracking-wider py-2.5 rounded transition-colors disabled:opacity-50"
+                className="w-full bg-[#c8ff00] hover:bg-[#c8ff00]/90 text-[#0a0a0a] font-mono text-sm tracking-wider py-2.5 rounded transition-colors disabled:opacity-50"
               >
                 {loading ? "SIGNING IN..." : "SIGN IN"}
               </button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-[#131c2e] text-center">
-              <p className="text-[#3d4f6b] font-mono text-xs">
+            <div className="mt-6 pt-6 border-t border-[#262620] text-center">
+              <p className="text-[#6e6a5e] font-mono text-xs">
                 Don&apos;t have an account?{" "}
-                <Link href="/auth/signup" className="text-[#00e5ff] hover:underline">
+                <Link href="/auth/signup" className="text-[#c8ff00] hover:underline">
                   Sign up
                 </Link>
               </p>

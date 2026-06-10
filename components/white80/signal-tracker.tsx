@@ -330,23 +330,23 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
       {/* Metrics Dashboard */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         <MetricCard label="TOTAL SIGNALS" value={metrics.total} />
-        <MetricCard label="TOOK" value={metrics.took} color="#00e5ff" />
-        <MetricCard label="PASSED" value={metrics.passed} color="#3d4f6b" />
+        <MetricCard label="TOOK" value={metrics.took} color="#c8ff00" />
+        <MetricCard label="PASSED" value={metrics.passed} color="#6e6a5e" />
         <MetricCard label="OPEN" value={metrics.open} color="#fbbf24" />
-        <MetricCard label="WIN RATE" value={`${metrics.winRate}%`} color="#00ffaa" />
+        <MetricCard label="WIN RATE" value={`${metrics.winRate}%`} color="#c8ff00" />
         <MetricCard 
           label="TOTAL P/L" 
           value={`$${metrics.totalPnL.toFixed(0)}`} 
-          color={metrics.totalPnL >= 0 ? "#00ffaa" : "#f87171"} 
+          color={metrics.totalPnL >= 0 ? "#c8ff00" : "#f87171"} 
         />
       </div>
 
       {/* Secondary Metrics */}
       <div className="grid grid-cols-4 gap-3">
-        <MetricCard label="WINS" value={metrics.wins} color="#00ffaa" small />
+        <MetricCard label="WINS" value={metrics.wins} color="#c8ff00" small />
         <MetricCard label="LOSSES" value={metrics.losses} color="#f87171" small />
         <MetricCard label="MISSED WINS" value={metrics.missedWins} color="#fb923c" small />
-        <MetricCard label="GOOD PASSES" value={metrics.goodPasses} color="#00e5ff" small />
+        <MetricCard label="GOOD PASSES" value={metrics.goodPasses} color="#c8ff00" small />
       </div>
 
       {/* Action Buttons */}
@@ -355,7 +355,7 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
           variant="outline"
           size="sm"
           onClick={() => setShowAddSignal(!showAddSignal)}
-          className="bg-[#0c1020] border-[#131c2e] text-[#00e5ff] hover:bg-[#131c2e] font-mono text-[10px]"
+          className="bg-[#141411] border-[#262620] text-[#c8ff00] hover:bg-[#262620] font-mono text-[10px]"
         >
           <Plus className="w-3 h-3 mr-1" /> ADD SIGNAL
         </Button>
@@ -364,7 +364,7 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
             variant="outline"
             size="sm"
             onClick={importFromWatchlist}
-            className="bg-[#0c1020] border-[#131c2e] text-[#00ffaa] hover:bg-[#131c2e] font-mono text-[10px]"
+            className="bg-[#141411] border-[#262620] text-[#c8ff00] hover:bg-[#262620] font-mono text-[10px]"
           >
             <Upload className="w-3 h-3 mr-1" /> IMPORT WATCHLIST ({signals.length})
           </Button>
@@ -374,7 +374,7 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
             variant="outline"
             size="sm"
             onClick={importFromTopPlays}
-            className="bg-[#0c1020] border-[#131c2e] text-[#fb923c] hover:bg-[#131c2e] font-mono text-[10px]"
+            className="bg-[#141411] border-[#262620] text-[#fb923c] hover:bg-[#262620] font-mono text-[10px]"
           >
             <Upload className="w-3 h-3 mr-1" /> IMPORT TOP PLAYS ({brief.top_plays.length})
           </Button>
@@ -386,14 +386,14 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
             <div className="flex items-center gap-1.5 text-[10px] font-mono">
               {syncing ? (
                 <>
-                  <div className="w-3 h-3 border border-[#00e5ff] border-t-transparent rounded-full animate-spin" />
-                  <span className="text-[#00e5ff]">Syncing...</span>
+                  <div className="w-3 h-3 border border-[#c8ff00] border-t-transparent rounded-full animate-spin" />
+                  <span className="text-[#c8ff00]">Syncing...</span>
                 </>
               ) : (
                 <>
-                  <Cloud className="w-3 h-3 text-[#00ffaa]" />
-                  <span className="text-[#00ffaa]">Synced</span>
-                  {lastSynced && <span className="text-[#3d4f6b]">({lastSynced})</span>}
+                  <Cloud className="w-3 h-3 text-[#c8ff00]" />
+                  <span className="text-[#c8ff00]">Synced</span>
+                  {lastSynced && <span className="text-[#6e6a5e]">({lastSynced})</span>}
                 </>
               )}
             </div>
@@ -408,34 +408,34 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
 
       {/* Add Signal Form */}
       {showAddSignal && (
-        <Card className="bg-[#0c1020] border-[#131c2e]">
+        <Card className="bg-[#141411] border-[#262620]">
           <CardContent className="p-4 space-y-3">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div>
-                <label className="font-mono text-[9px] text-[#3d4f6b] tracking-wider">TICKER</label>
+                <label className="font-mono text-[9px] text-[#6e6a5e] tracking-wider">TICKER</label>
                 <Input
                   value={newSignal.ticker}
                   onChange={e => setNewSignal(p => ({ ...p, ticker: e.target.value.toUpperCase() }))}
-                  className="bg-[#090c14] border-[#131c2e] text-white font-mono text-sm h-8"
+                  className="bg-[#0a0a0a] border-[#262620] text-[#f4f0e6] font-mono text-sm h-8"
                   placeholder="AAPL"
                 />
               </div>
               <div>
-                <label className="font-mono text-[9px] text-[#3d4f6b] tracking-wider">SOURCE</label>
+                <label className="font-mono text-[9px] text-[#6e6a5e] tracking-wider">SOURCE</label>
                 <select
                   value={newSignal.source}
                   onChange={e => setNewSignal(p => ({ ...p, source: e.target.value as TrackedSignal["source"] }))}
-                  className="w-full bg-[#090c14] border border-[#131c2e] rounded text-white font-mono text-xs h-8 px-2"
+                  className="w-full bg-[#0a0a0a] border border-[#262620] rounded text-[#f4f0e6] font-mono text-xs h-8 px-2"
                 >
                   {SOURCES.map(s => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
                 </select>
               </div>
               <div>
-                <label className="font-mono text-[9px] text-[#3d4f6b] tracking-wider">TYPE</label>
+                <label className="font-mono text-[9px] text-[#6e6a5e] tracking-wider">TYPE</label>
                 <select
                   value={newSignal.signalType}
                   onChange={e => setNewSignal(p => ({ ...p, signalType: e.target.value as TrackedSignal["signalType"] }))}
-                  className="w-full bg-[#090c14] border border-[#131c2e] rounded text-white font-mono text-xs h-8 px-2"
+                  className="w-full bg-[#0a0a0a] border border-[#262620] rounded text-[#f4f0e6] font-mono text-xs h-8 px-2"
                 >
                   <option value="BUY">BUY</option>
                   <option value="SELL">SELL</option>
@@ -443,11 +443,11 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
                 </select>
               </div>
               <div>
-                <label className="font-mono text-[9px] text-[#3d4f6b] tracking-wider">CONVICTION</label>
+                <label className="font-mono text-[9px] text-[#6e6a5e] tracking-wider">CONVICTION</label>
                 <select
                   value={newSignal.conviction}
                   onChange={e => setNewSignal(p => ({ ...p, conviction: e.target.value as TrackedSignal["conviction"] }))}
-                  className="w-full bg-[#090c14] border border-[#131c2e] rounded text-white font-mono text-xs h-8 px-2"
+                  className="w-full bg-[#0a0a0a] border border-[#262620] rounded text-[#f4f0e6] font-mono text-xs h-8 px-2"
                 >
                   <option value="HIGH">HIGH</option>
                   <option value="MEDIUM">MEDIUM</option>
@@ -457,21 +457,21 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="font-mono text-[9px] text-[#3d4f6b] tracking-wider">PLAY</label>
+                <label className="font-mono text-[9px] text-[#6e6a5e] tracking-wider">PLAY</label>
                 <Input
                   value={newSignal.play}
                   onChange={e => setNewSignal(p => ({ ...p, play: e.target.value }))}
-                  className="bg-[#090c14] border-[#131c2e] text-white font-mono text-xs h-8"
+                  className="bg-[#0a0a0a] border-[#262620] text-[#f4f0e6] font-mono text-xs h-8"
                   placeholder="$185 calls exp 5/23"
                 />
               </div>
               <div>
-                <label className="font-mono text-[9px] text-[#3d4f6b] tracking-wider">SIGNAL PRICE</label>
+                <label className="font-mono text-[9px] text-[#6e6a5e] tracking-wider">SIGNAL PRICE</label>
                 <Input
                   type="number"
                   value={newSignal.signalPrice || ""}
                   onChange={e => setNewSignal(p => ({ ...p, signalPrice: parseFloat(e.target.value) || 0 }))}
-                  className="bg-[#090c14] border-[#131c2e] text-white font-mono text-xs h-8"
+                  className="bg-[#0a0a0a] border-[#262620] text-[#f4f0e6] font-mono text-xs h-8"
                   placeholder="185.50"
                 />
               </div>
@@ -481,7 +481,7 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
                 size="sm"
                 onClick={addSignal}
                 disabled={!newSignal.ticker}
-                className="bg-[#00ffaa]/20 text-[#00ffaa] hover:bg-[#00ffaa]/30 font-mono text-[10px]"
+                className="bg-[#c8ff00]/20 text-[#c8ff00] hover:bg-[#c8ff00]/30 font-mono text-[10px]"
               >
                 ADD
               </Button>
@@ -489,7 +489,7 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
                 size="sm"
                 variant="ghost"
                 onClick={() => setShowAddSignal(false)}
-                className="text-[#3d4f6b] hover:text-white font-mono text-[10px]"
+                className="text-[#6e6a5e] hover:text-[#f4f0e6] font-mono text-[10px]"
               >
                 CANCEL
               </Button>
@@ -501,29 +501,29 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
       {/* Signals by Date */}
       <div className="space-y-2">
         {signalsByDate.map(([date, daySignals]) => (
-          <div key={date} className="bg-[#0c1020] border border-[#131c2e] rounded-lg overflow-hidden">
+          <div key={date} className="bg-[#141411] border border-[#262620] rounded-lg overflow-hidden">
             <button
               onClick={() => toggleDate(date)}
-              className="w-full flex items-center justify-between p-3 hover:bg-[#131c2e]/50 transition-colors"
+              className="w-full flex items-center justify-between p-3 hover:bg-[#262620]/50 transition-colors"
             >
               <div className="flex items-center gap-3">
                 {expandedDates.has(date) ? (
-                  <ChevronDown className="w-4 h-4 text-[#3d4f6b]" />
+                  <ChevronDown className="w-4 h-4 text-[#6e6a5e]" />
                 ) : (
-                  <ChevronRight className="w-4 h-4 text-[#3d4f6b]" />
+                  <ChevronRight className="w-4 h-4 text-[#6e6a5e]" />
                 )}
-                <span className="font-mono text-sm text-white">
+                <span className="font-mono text-sm text-[#f4f0e6]">
                   {new Date(date + "T00:00:00").toLocaleDateString("en-US", { 
                     weekday: "short", month: "short", day: "numeric" 
                   })}
                 </span>
-                <span className="font-mono text-[10px] text-[#3d4f6b]">
+                <span className="font-mono text-[10px] text-[#6e6a5e]">
                   {daySignals.length} signal{daySignals.length !== 1 ? "s" : ""}
                 </span>
               </div>
               <div className="flex gap-2">
                 {daySignals.filter(s => s.outcome === "WIN").length > 0 && (
-                  <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-[#00ffaa]/15 text-[#00ffaa]">
+                  <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-[#c8ff00]/15 text-[#c8ff00]">
                     {daySignals.filter(s => s.outcome === "WIN").length}W
                   </span>
                 )}
@@ -536,7 +536,7 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
             </button>
 
             {expandedDates.has(date) && (
-              <div className="border-t border-[#131c2e] p-3 space-y-2">
+              <div className="border-t border-[#262620] p-3 space-y-2">
                 {daySignals.map(signal => (
                   <SignalRow
                     key={signal.id}
@@ -552,9 +552,9 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
 
         {trackedSignals.length === 0 && (
           <div className="text-center py-12">
-            <TrendingUp className="w-10 h-10 text-[#3d4f6b] mx-auto mb-3" />
-            <p className="text-[#3d4f6b] font-mono text-sm">No signals tracked yet</p>
-            <p className="text-[#3d4f6b]/60 font-mono text-xs mt-1">
+            <TrendingUp className="w-10 h-10 text-[#6e6a5e] mx-auto mb-3" />
+            <p className="text-[#6e6a5e] font-mono text-sm">No signals tracked yet</p>
+            <p className="text-[#6e6a5e]/60 font-mono text-xs mt-1">
               Add signals manually or import from Watchlist / Top Plays
             </p>
           </div>
@@ -564,21 +564,21 @@ export function SignalTracker({ signals, brief }: SignalTrackerProps) {
   )
 }
 
-function MetricCard({ label, value, color = "#d6dff0", small = false }: { 
+function MetricCard({ label, value, color = "#f4f0e6", small = false }: { 
   label: string
   value: string | number
   color?: string
   small?: boolean
 }) {
   return (
-    <div className={`bg-[#0c1020] border border-[#131c2e] rounded p-${small ? "2" : "3"} text-center`}>
+    <div className={`bg-[#141411] border border-[#262620] rounded p-${small ? "2" : "3"} text-center`}>
       <div 
         className={`font-mono font-bold ${small ? "text-lg" : "text-xl"}`}
         style={{ color }}
       >
         {value}
       </div>
-      <div className={`font-mono ${small ? "text-[8px]" : "text-[9px]"} tracking-wider text-[#3d4f6b]`}>
+      <div className={`font-mono ${small ? "text-[8px]" : "text-[9px]"} tracking-wider text-[#6e6a5e]`}>
         {label}
       </div>
     </div>
@@ -626,24 +626,24 @@ function SignalRow({ signal, onUpdate, onDelete }: {
   }
 
   return (
-    <div className="bg-[#090c14] border border-[#131c2e] rounded p-3">
+    <div className="bg-[#0a0a0a] border border-[#262620] rounded p-3">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-sm font-bold text-white">{signal.ticker}</span>
+          <span className="font-mono text-sm font-bold text-[#f4f0e6]">{signal.ticker}</span>
           <span className={`font-mono text-[9px] tracking-wider px-1.5 py-0.5 rounded ${
-            signal.signalType === "BUY" ? "bg-[#00ffaa]/15 text-[#00ffaa]" :
+            signal.signalType === "BUY" ? "bg-[#c8ff00]/15 text-[#c8ff00]" :
             signal.signalType === "SELL" ? "bg-[#f87171]/15 text-[#f87171]" :
             "bg-[#fb923c]/15 text-[#fb923c]"
           }`}>
             {signal.signalType}
           </span>
-          <span className="font-mono text-[9px] tracking-wider px-1.5 py-0.5 rounded bg-[#3d4f6b]/20 text-[#3d4f6b]">
+          <span className="font-mono text-[9px] tracking-wider px-1.5 py-0.5 rounded bg-[#6e6a5e]/20 text-[#6e6a5e]">
             {signal.source.replace("_", " ")}
           </span>
           <span className={`font-mono text-[9px] tracking-wider ${
-            signal.conviction === "HIGH" ? "text-[#00ffaa]" :
+            signal.conviction === "HIGH" ? "text-[#c8ff00]" :
             signal.conviction === "MEDIUM" ? "text-[#fbbf24]" :
-            "text-[#3d4f6b]"
+            "text-[#6e6a5e]"
           }`}>
             {signal.conviction}
           </span>
@@ -653,11 +653,11 @@ function SignalRow({ signal, onUpdate, onDelete }: {
           {/* Outcome Badge */}
           {signal.outcome && signal.outcome !== "OPEN" && (
             <span className={`font-mono text-[9px] tracking-wider px-2 py-0.5 rounded ${
-              signal.outcome === "WIN" ? "bg-[#00ffaa]/15 text-[#00ffaa]" :
+              signal.outcome === "WIN" ? "bg-[#c8ff00]/15 text-[#c8ff00]" :
               signal.outcome === "LOSS" ? "bg-[#f87171]/15 text-[#f87171]" :
-              signal.outcome === "EVEN" ? "bg-[#3d4f6b]/15 text-[#3d4f6b]" :
+              signal.outcome === "EVEN" ? "bg-[#6e6a5e]/15 text-[#6e6a5e]" :
               signal.outcome === "MISSED_WIN" ? "bg-[#fb923c]/15 text-[#fb923c]" :
-              "bg-[#00e5ff]/15 text-[#00e5ff]"
+              "bg-[#c8ff00]/15 text-[#c8ff00]"
             }`}>
               {signal.outcome.replace("_", " ")}
               {signal.pnlDollars !== undefined && signal.pnlDollars !== 0 && (
@@ -668,14 +668,14 @@ function SignalRow({ signal, onUpdate, onDelete }: {
           
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="text-[#3d4f6b] hover:text-white transition-colors"
+            className="text-[#6e6a5e] hover:text-[#f4f0e6] transition-colors"
           >
             {showDetails ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
           
           <button
             onClick={() => onDelete(signal.id)}
-            className="text-[#3d4f6b] hover:text-[#f87171] transition-colors"
+            className="text-[#6e6a5e] hover:text-[#f87171] transition-colors"
           >
             <Trash2 className="w-3 h-3" />
           </button>
@@ -683,14 +683,14 @@ function SignalRow({ signal, onUpdate, onDelete }: {
       </div>
 
       {/* Play Info */}
-      <div className="text-[11px] text-[#00e5ff] font-mono mb-2">{signal.play}</div>
+      <div className="text-[11px] text-[#c8ff00] font-mono mb-2">{signal.play}</div>
       
       {/* Decision Row */}
       {signal.took === null && (
         <div className="flex gap-2 mb-2">
           <button
             onClick={() => handleTook(true)}
-            className="flex items-center gap-1 font-mono text-[9px] tracking-wider px-2 py-1 rounded bg-[#00ffaa]/10 text-[#00ffaa] hover:bg-[#00ffaa]/20 transition-colors"
+            className="flex items-center gap-1 font-mono text-[9px] tracking-wider px-2 py-1 rounded bg-[#c8ff00]/10 text-[#c8ff00] hover:bg-[#c8ff00]/20 transition-colors"
           >
             <Check className="w-3 h-3" /> TOOK IT
           </button>
@@ -705,43 +705,43 @@ function SignalRow({ signal, onUpdate, onDelete }: {
 
       {/* Expanded Details */}
       {showDetails && (
-        <div className="mt-3 pt-3 border-t border-[#131c2e] space-y-3">
+        <div className="mt-3 pt-3 border-t border-[#262620] space-y-3">
           {signal.took === true && signal.outcome === "OPEN" && (
             <>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="font-mono text-[8px] text-[#3d4f6b]">ENTRY $</label>
+                  <label className="font-mono text-[8px] text-[#6e6a5e]">ENTRY $</label>
                   <Input
                     type="number"
                     value={entryPrice}
                     onChange={e => setEntryPrice(e.target.value)}
-                    className="bg-[#0c1020] border-[#131c2e] text-white font-mono text-xs h-7"
+                    className="bg-[#141411] border-[#262620] text-[#f4f0e6] font-mono text-xs h-7"
                     placeholder={signal.signalPrice.toString()}
                   />
                 </div>
                 <div>
-                  <label className="font-mono text-[8px] text-[#3d4f6b]">EXIT $</label>
+                  <label className="font-mono text-[8px] text-[#6e6a5e]">EXIT $</label>
                   <Input
                     type="number"
                     value={exitPrice}
                     onChange={e => setExitPrice(e.target.value)}
-                    className="bg-[#0c1020] border-[#131c2e] text-white font-mono text-xs h-7"
+                    className="bg-[#141411] border-[#262620] text-[#f4f0e6] font-mono text-xs h-7"
                   />
                 </div>
                 <div>
-                  <label className="font-mono text-[8px] text-[#3d4f6b]">QTY</label>
+                  <label className="font-mono text-[8px] text-[#6e6a5e]">QTY</label>
                   <Input
                     type="number"
                     value={quantity}
                     onChange={e => setQuantity(e.target.value)}
-                    className="bg-[#0c1020] border-[#131c2e] text-white font-mono text-xs h-7"
+                    className="bg-[#141411] border-[#262620] text-[#f4f0e6] font-mono text-xs h-7"
                   />
                 </div>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleOutcome("WIN")}
-                  className="font-mono text-[9px] tracking-wider px-3 py-1 rounded bg-[#00ffaa]/10 text-[#00ffaa] hover:bg-[#00ffaa]/20"
+                  className="font-mono text-[9px] tracking-wider px-3 py-1 rounded bg-[#c8ff00]/10 text-[#c8ff00] hover:bg-[#c8ff00]/20"
                 >
                   WIN
                 </button>
@@ -753,7 +753,7 @@ function SignalRow({ signal, onUpdate, onDelete }: {
                 </button>
                 <button
                   onClick={() => handleOutcome("EVEN")}
-                  className="font-mono text-[9px] tracking-wider px-3 py-1 rounded bg-[#3d4f6b]/10 text-[#3d4f6b] hover:bg-[#3d4f6b]/20"
+                  className="font-mono text-[9px] tracking-wider px-3 py-1 rounded bg-[#6e6a5e]/10 text-[#6e6a5e] hover:bg-[#6e6a5e]/20"
                 >
                   EVEN
                 </button>
@@ -771,7 +771,7 @@ function SignalRow({ signal, onUpdate, onDelete }: {
               </button>
               <button
                 onClick={() => handleOutcome("GOOD_PASS")}
-                className="font-mono text-[9px] tracking-wider px-3 py-1 rounded bg-[#00e5ff]/10 text-[#00e5ff] hover:bg-[#00e5ff]/20"
+                className="font-mono text-[9px] tracking-wider px-3 py-1 rounded bg-[#c8ff00]/10 text-[#c8ff00] hover:bg-[#c8ff00]/20"
               >
                 GOOD PASS
               </button>
@@ -782,7 +782,7 @@ function SignalRow({ signal, onUpdate, onDelete }: {
           {signal.took !== null && (
             <button
               onClick={() => onUpdate(signal.id, { took: null, outcome: null, pnlDollars: undefined, pnlPercent: undefined })}
-              className="font-mono text-[8px] text-[#3d4f6b] hover:text-white"
+              className="font-mono text-[8px] text-[#6e6a5e] hover:text-[#f4f0e6]"
             >
               UNDO DECISION
             </button>
