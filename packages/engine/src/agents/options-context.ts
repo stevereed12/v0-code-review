@@ -52,7 +52,7 @@ function formatExpiry(iso: string): string {
   return `${month}/${day}`
 }
 
-const MIN_DTE_MS = 14 * 24 * 60 * 60 * 1000
+const MIN_DTE_MS = 7 * 24 * 60 * 60 * 1000
 
 function distill(ticker: string, contracts: OptionContract[]): OptionsContext {
   let callVolume = 0

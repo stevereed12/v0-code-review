@@ -127,9 +127,9 @@ When suggesting options plays:
   const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", timeZoneName: "short" })
 
   // Calculate valid options expiration dates (Fridays).
-  // Only Fridays at least 14 days out are eligible — front-week weeklies (0DTE/1DTE)
+  // Only Fridays at least 7 days out are eligible — front-week weeklies (0DTE–6DTE)
   // are not appropriate for this brief and were the root cause of 1-day-expiry signals.
-  const MIN_DTE = 14
+  const MIN_DTE = 7
   const getNextFridays = (count: number): string[] => {
     const fridays: string[] = []
     const d = new Date(now)
@@ -212,15 +212,13 @@ STRICT OPTIONS STRIKE RULES — FOLLOW EXACTLY:
 
 6. STOP LOSS: Set stop at 5-8% below entry for calls, 5-8% above entry for puts.
 
-7. EXPIRY DATE RULES — CRITICAL:
-   - MINIMUM expiry: 14 days from today
-   - TARGET expiry: 30-45 days from today (standard conviction plays)
-   - HIGH conviction plays: 45-60 days from today
-   - NEVER recommend an expiry less than 14 days out — 0DTE and 1DTE plays are not appropriate for this brief
-   - Always select the standard monthly expiry (3rd Friday of the month) when possible
+7. EXPIRY DATE RULES:
+   - MINIMUM expiry: 7 days from today (hard floor — never recommend under 7 DTE)
+   - SWEET SPOT: 7-28 days from today (1-4 weeks) — this is the preferred range for most plays
+   - HIGH conviction, longer thesis: 30-45 days is also acceptable
+   - Never recommend an expiry under 7 days — 0DTE through 6DTE plays are not appropriate for this brief
    - Today's date is: ${todayStr}. Calculate all expiries from this date.
-   - Example: if today is June 11, the minimum expiry is June 25, target is July 11-25 range, ideal is the July 18 monthly expiry
-   - DO NOT use any weekly expiry that falls less than 14 days from today — prefer the monthly expirations listed above
+   - Example: if today is June 11, the minimum expiry is June 18, sweet spot is June 18 – July 9
 
 Example of CORRECT output for PANW at $270.50, 30 DTE, high conviction:
 - Direction: CALL

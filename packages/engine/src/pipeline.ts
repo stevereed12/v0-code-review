@@ -26,7 +26,7 @@ import { fetchOptionsContext } from "./agents/options-context"
 
 const PREMARKET_SNAPSHOT_PATH = "/tmp/white80-premarket-snapshot.json"
 
-const MIN_DTE = 14
+const MIN_DTE = 7
 
 const MONTH_ABBREVS = [
   "jan", "feb", "mar", "apr", "may", "jun",
@@ -52,26 +52,16 @@ function parseExpiryToken(month: string, day: string, from: Date): Date | null {
   return candidate
 }
 
-/** Calculate the next standard monthly expiry (3rd Friday) at least `minDays` out. */
-function getNextMonthlyExpiry(from: Date, minDays: number): Date {
+/**
+ * Find the nearest weekly expiry (any Friday) at least `minDays` out. Weekly
+ * expiries land every Friday, so we walk forward from the minimum date to the
+ * first Friday on or after it.
+ */
+function getNearestValidExpiry(from: Date, minDays: number): Date {
   const minDate = new Date(from.getTime() + minDays * 24 * 60 * 60 * 1000)
-  for (let monthOffset = 0; monthOffset <= 2; monthOffset++) {
-    const year = minDate.getFullYear()
-    const month = minDate.getMonth() + monthOffset
-    let fridayCount = 0
-    const daysInMonth = new Date(year, month + 1, 0).getDate()
-    for (let day = 1; day <= daysInMonth; day++) {
-      const d = new Date(year, month, day)
-      if (d.getDay() === 5) {
-        fridayCount++
-        if (fridayCount === 3) {
-          if (d >= minDate) return d
-          break
-        }
-      }
-    }
-  }
-  return new Date(from.getTime() + 30 * 24 * 60 * 60 * 1000)
+  const day = minDate.getDay() // 0=Sun, 5=Fri
+  const daysUntilFriday = day <= 5 ? 5 - day : 6 // days until next Friday
+  return new Date(minDate.getTime() + daysUntilFriday * 24 * 60 * 60 * 1000)
 }
 
 /** Format a Date as "Mon D" (e.g. "Jul 18") to match the play-string expiry style. */
@@ -83,7 +73,7 @@ function formatPlayExpiry(d: Date): string {
  * Enforce the minimum-DTE floor on a signal's play string. The expiry lives inside
  * the freeform `play` text (e.g. "Buy $130 calls exp Jun 25") — there is no separate
  * expiry field on Signal. If the play references an expiry under MIN_DTE days out,
- * rewrite that token to the next monthly expiry at least MIN_DTE days out.
+ * rewrite that token to the nearest weekly expiry at least MIN_DTE days out.
  */
 function enforceMinDte(play: string, ticker: string, from: Date): string {
   const match = play.match(/\bexp\s+([A-Za-z]{3,})\s+(\d{1,2})\b/)
@@ -92,7 +82,7 @@ function enforceMinDte(play: string, ticker: string, from: Date): string {
   if (!expiry) return play
   const dte = Math.round((expiry.getTime() - from.getTime()) / (1000 * 60 * 60 * 24))
   if (dte >= MIN_DTE) return play
-  const corrected = getNextMonthlyExpiry(from, MIN_DTE)
+  const corrected = getNearestValidExpiry(from, MIN_DTE)
   const correctedStr = formatPlayExpiry(corrected)
   console.warn(`[expiry-gate] ${ticker} had ${dte} DTE — corrected to ${correctedStr}`)
   return play.replace(match[0], `exp ${correctedStr}`)
@@ -303,9 +293,9 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
   })
 
   // ── Expiry gate: no signal may carry an expiry under MIN_DTE days out ──
-  // Safety net behind the prompt rules + options-context filter. 0DTE/1DTE plays
-  // are unusable; any sub-14-day expiry in a play string is rewritten to the next
-  // standard monthly expiry (3rd Friday) at least MIN_DTE days out.
+  // Safety net behind the prompt rules + options-context filter. Sub-7-DTE plays
+  // are unusable; any such expiry in a play string is rewritten to the nearest
+  // weekly expiry (Friday) at least MIN_DTE days out.
   const expiryGateNow = new Date()
   signals = signals.map((signal) =>
     signal.play
