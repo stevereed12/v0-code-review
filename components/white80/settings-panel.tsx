@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Bell, Volume2, Download, RotateCcw, HelpCircle, Key, Eye, EyeOff, Save, Check, AlertCircle, ChevronDown, ChevronUp } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { createClient } from "@/lib/supabase/client"
+import { setStoredApiKey, setStoredPolygonKey } from "@/lib/api"
 
 interface SettingsPanelProps {
   userId?: string
@@ -94,6 +95,14 @@ export function SettingsPanel({
         .eq("id", userId)
 
       if (updateError) throw updateError
+
+      // Keep localStorage in sync so askClaude()/scan calls use the new key immediately
+      if (updates.anthropic_api_key) {
+        setStoredApiKey(updates.anthropic_api_key)
+      }
+      if (updates.polygon_api_key) {
+        setStoredPolygonKey(updates.polygon_api_key)
+      }
 
       setSaved(true)
       setHasKeys({

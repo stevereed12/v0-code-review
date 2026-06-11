@@ -95,18 +95,18 @@ export function White80Dashboard({
 
   // Check for API key and set date on mount (client-side only to avoid hydration mismatch)
   useEffect(() => {
-    // Use passed Anthropic key if available, otherwise check localStorage
-    const storedKey = getStoredApiKey()
-    const effectiveKey = anthropicKey || storedKey
-    setHasApiKey(!!effectiveKey)
-    
-    // Store the server-provided key locally using the correct storage key
-    if (anthropicKey && !storedKey) {
+    // The server-provided key (from Supabase) is the source of truth.
+    // Always sync it into localStorage so askClaude() reads the current key,
+    // overwriting any stale/empty value left from a previous key or user.
+    if (anthropicKey) {
       setStoredApiKey(anthropicKey)
     }
     if (polygonKey) {
       setStoredPolygonKey(polygonKey)
     }
+
+    const effectiveKey = anthropicKey || getStoredApiKey()
+    setHasApiKey(!!effectiveKey)
     
     setCurrentDate(
       new Date()

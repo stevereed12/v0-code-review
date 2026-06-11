@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Key, Eye, EyeOff, Save, Check, AlertCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { setStoredApiKey, setStoredPolygonKey } from "@/lib/api"
 
 interface ApiKeysManagerProps {
   userId: string
@@ -74,6 +75,14 @@ export function ApiKeysManager({ userId }: ApiKeysManagerProps) {
         .eq("id", userId)
 
       if (updateError) throw updateError
+
+      // Keep localStorage in sync so scan/thesis calls use the new key immediately
+      if (updates.anthropic_api_key) {
+        setStoredApiKey(updates.anthropic_api_key)
+      }
+      if (updates.polygon_api_key) {
+        setStoredPolygonKey(updates.polygon_api_key)
+      }
 
       setSaved(true)
       setHasKeys({
