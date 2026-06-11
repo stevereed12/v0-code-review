@@ -126,12 +126,14 @@ When suggesting options plays:
   const todayStr = now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
   const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", timeZoneName: "short" })
 
-  // Calculate valid options expiration dates (Fridays)
+  // Calculate valid options expiration dates (Fridays).
+  // Only Fridays at least 14 days out are eligible — front-week weeklies (0DTE/1DTE)
+  // are not appropriate for this brief and were the root cause of 1-day-expiry signals.
+  const MIN_DTE = 14
   const getNextFridays = (count: number): string[] => {
     const fridays: string[] = []
     const d = new Date(now)
-    // Move to next day to avoid suggesting today if it's Friday afternoon
-    d.setDate(d.getDate() + 1)
+    d.setDate(d.getDate() + MIN_DTE)
     while (fridays.length < count) {
       if (d.getDay() === 5) { // Friday
         fridays.push(d.toLocaleDateString("en-US", { month: "short", day: "numeric" }))
@@ -209,6 +211,16 @@ STRICT OPTIONS STRIKE RULES — FOLLOW EXACTLY:
 5. ALWAYS ANCHOR TO THE LIVE PRICE IN CONTEXT: The live price injected above is the ONLY correct current price. Do NOT use any price from your training data. If the live price says PANW = $270.50, then ALL strike prices, targets, and stops must be calculated from $270.50.
 
 6. STOP LOSS: Set stop at 5-8% below entry for calls, 5-8% above entry for puts.
+
+7. EXPIRY DATE RULES — CRITICAL:
+   - MINIMUM expiry: 14 days from today
+   - TARGET expiry: 30-45 days from today (standard conviction plays)
+   - HIGH conviction plays: 45-60 days from today
+   - NEVER recommend an expiry less than 14 days out — 0DTE and 1DTE plays are not appropriate for this brief
+   - Always select the standard monthly expiry (3rd Friday of the month) when possible
+   - Today's date is: ${todayStr}. Calculate all expiries from this date.
+   - Example: if today is June 11, the minimum expiry is June 25, target is July 11-25 range, ideal is the July 18 monthly expiry
+   - DO NOT use any weekly expiry that falls less than 14 days from today — prefer the monthly expirations listed above
 
 Example of CORRECT output for PANW at $270.50, 30 DTE, high conviction:
 - Direction: CALL

@@ -52,16 +52,28 @@ function formatExpiry(iso: string): string {
   return `${month}/${day}`
 }
 
+const MIN_DTE_MS = 14 * 24 * 60 * 60 * 1000
+
 function distill(ticker: string, contracts: OptionContract[]): OptionsContext {
   let callVolume = 0
   let putVolume = 0
   let totalVolume = 0
   let totalOI = 0
 
+  let underlyingPrice = 0
+
+  // Volume/OI aggregates use the full chain, but the dominant expiry/strike must
+  // skip front-week (0DTE/1DTE) contracts — those carry the most OI on any given
+  // day and were anchoring the Signals Engine to 1-day expiries.
+  const minExpiry = new Date(Date.now() + MIN_DTE_MS)
+  const validContracts = contracts.filter((c) => {
+    if (!c.details?.expiration_date) return false
+    return new Date(c.details.expiration_date) >= minExpiry
+  })
+  const contractsForDominant = validContracts.length > 0 ? validContracts : contracts
+
   let topOIContract: OptionContract | null = null
   let topOI = -1
-
-  let underlyingPrice = 0
 
   for (const c of contracts) {
     const type = c.details?.contract_type
@@ -71,11 +83,15 @@ function distill(ticker: string, contracts: OptionContract[]): OptionsContext {
     totalOI += oi
     if (type === "call") callVolume += vol
     else if (type === "put") putVolume += vol
+    if (!underlyingPrice && c.underlying_asset?.price) underlyingPrice = c.underlying_asset.price
+  }
+
+  for (const c of contractsForDominant) {
+    const oi = c.open_interest ?? 0
     if (oi > topOI) {
       topOI = oi
       topOIContract = c
     }
-    if (!underlyingPrice && c.underlying_asset?.price) underlyingPrice = c.underlying_asset.price
   }
 
   const callPutRatio = putVolume > 0 ? callVolume / putVolume : callVolume > 0 ? 5 : 1

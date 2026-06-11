@@ -26,6 +26,78 @@ import { fetchOptionsContext } from "./agents/options-context"
 
 const PREMARKET_SNAPSHOT_PATH = "/tmp/white80-premarket-snapshot.json"
 
+const MIN_DTE = 14
+
+const MONTH_ABBREVS = [
+  "jan", "feb", "mar", "apr", "may", "jun",
+  "jul", "aug", "sep", "oct", "nov", "dec",
+]
+
+/**
+ * Parse an expiry token of the form "Jun 25" (short month + day, no year) into a
+ * Date. The year is inferred relative to `from`: if the resulting date would be in
+ * the past, it rolls forward to next year. Returns null if the token is unparseable.
+ */
+function parseExpiryToken(month: string, day: string, from: Date): Date | null {
+  const monthIdx = MONTH_ABBREVS.indexOf(month.slice(0, 3).toLowerCase())
+  const dayNum = parseInt(day, 10)
+  if (monthIdx === -1 || isNaN(dayNum)) return null
+  let year = from.getFullYear()
+  let candidate = new Date(year, monthIdx, dayNum)
+  // Roll into next year if the month/day already passed (e.g. "Jan 16" seen in December).
+  if (candidate.getTime() < from.getTime() - 24 * 60 * 60 * 1000) {
+    year += 1
+    candidate = new Date(year, monthIdx, dayNum)
+  }
+  return candidate
+}
+
+/** Calculate the next standard monthly expiry (3rd Friday) at least `minDays` out. */
+function getNextMonthlyExpiry(from: Date, minDays: number): Date {
+  const minDate = new Date(from.getTime() + minDays * 24 * 60 * 60 * 1000)
+  for (let monthOffset = 0; monthOffset <= 2; monthOffset++) {
+    const year = minDate.getFullYear()
+    const month = minDate.getMonth() + monthOffset
+    let fridayCount = 0
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+    for (let day = 1; day <= daysInMonth; day++) {
+      const d = new Date(year, month, day)
+      if (d.getDay() === 5) {
+        fridayCount++
+        if (fridayCount === 3) {
+          if (d >= minDate) return d
+          break
+        }
+      }
+    }
+  }
+  return new Date(from.getTime() + 30 * 24 * 60 * 60 * 1000)
+}
+
+/** Format a Date as "Mon D" (e.g. "Jul 18") to match the play-string expiry style. */
+function formatPlayExpiry(d: Date): string {
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+}
+
+/**
+ * Enforce the minimum-DTE floor on a signal's play string. The expiry lives inside
+ * the freeform `play` text (e.g. "Buy $130 calls exp Jun 25") — there is no separate
+ * expiry field on Signal. If the play references an expiry under MIN_DTE days out,
+ * rewrite that token to the next monthly expiry at least MIN_DTE days out.
+ */
+function enforceMinDte(play: string, ticker: string, from: Date): string {
+  const match = play.match(/\bexp\s+([A-Za-z]{3,})\s+(\d{1,2})\b/)
+  if (!match) return play
+  const expiry = parseExpiryToken(match[1], match[2], from)
+  if (!expiry) return play
+  const dte = Math.round((expiry.getTime() - from.getTime()) / (1000 * 60 * 60 * 24))
+  if (dte >= MIN_DTE) return play
+  const corrected = getNextMonthlyExpiry(from, MIN_DTE)
+  const correctedStr = formatPlayExpiry(corrected)
+  console.warn(`[expiry-gate] ${ticker} had ${dte} DTE — corrected to ${correctedStr}`)
+  return play.replace(match[0], `exp ${correctedStr}`)
+}
+
 /** Read the 8:00 AM pre-market snapshot (if present) into a compact context string. */
 function loadPremarketContext(): string {
   if (!existsSync(PREMARKET_SNAPSHOT_PATH)) return ""
@@ -229,6 +301,17 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<BriefO
     }
     return true
   })
+
+  // ── Expiry gate: no signal may carry an expiry under MIN_DTE days out ──
+  // Safety net behind the prompt rules + options-context filter. 0DTE/1DTE plays
+  // are unusable; any sub-14-day expiry in a play string is rewritten to the next
+  // standard monthly expiry (3rd Friday) at least MIN_DTE days out.
+  const expiryGateNow = new Date()
+  signals = signals.map((signal) =>
+    signal.play
+      ? { ...signal, play: enforceMinDte(signal.play, signal.ticker, expiryGateNow) }
+      : signal
+  )
 
   // ── 5d. Overwrite each signal's displayed price/change with the authoritative
   //        Polygon snapshot. The LLM is told the live price but still emits the
