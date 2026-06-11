@@ -124,6 +124,18 @@ export function White80Dashboard({
     
     // Clear stale daily data if it's a new day
     clearDailyDataIfNewDay()
+
+    // IMPORTANT: the clear functions above call storage.clear(), which wipes every
+    // "white80:"-prefixed entry — including the API keys. Re-sync the server-provided
+    // keys (source of truth) into localStorage AFTER clearing so askClaude()/scans
+    // always have the current user's key.
+    if (anthropicKey) {
+      setStoredApiKey(anthropicKey)
+      setHasApiKey(true)
+    }
+    if (polygonKey) {
+      setStoredPolygonKey(polygonKey)
+    }
     
     // Check if first visit - show guide
     const hasSeen = localStorage.getItem("white80_seen_guide")
