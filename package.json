@@ -2,20 +2,14 @@
   "name": "my-project",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
-    "build:engine": "npm run build --workspace=@white80/engine",
-    "build:routine": "npm run build --workspace=@white80/routine",
-    "build:all": "npm run build:engine && npm run build:routine"
+    "lint": "eslint ."
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.96.0",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-alert-dialog": "1.1.15",
@@ -58,7 +52,6 @@
     "lucide-react": "^0.564.0",
     "next": "16.2.4",
     "next-themes": "^0.4.6",
-    "openai": "^4.104.0",
     "react": "^19",
     "react-day-picker": "9.13.2",
     "react-dom": "^19",

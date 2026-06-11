@@ -15,7 +15,3 @@ node_modules
 .next/
 .DS_Store
 .vercel
-
-# Workspace build output
-dist/
-*.tsbuildinfo

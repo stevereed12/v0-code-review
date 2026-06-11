@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import { askModel, MODELS } from "@white80/engine"
+import { CLAUDE_MODEL } from "@/lib/ai-config"
 
 // ─── CATALYST DETECTION API ──────────────────────────────────────────────────
-// Finds upcoming catalysts for a batch of tickers. Routed through the Watchlist
-// model (perplexity/sonar) because catalyst discovery needs live, grounded news
-// retrieval per ticker — sonar has web search built in.
+// Uses Claude to find upcoming catalysts for a batch of tickers
+
+const ANTHROPIC_API = "https://api.anthropic.com/v1/messages"
 
 interface CatalystInfo {
   ticker: string
@@ -19,6 +19,12 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const tickers: string[] = body.tickers || []
+    // Each user must supply their own Anthropic key. No shared server fallback.
+    const apiKey = body.clientApiKey?.trim()
+
+    if (!apiKey) {
+      return NextResponse.json({ error: "API_KEY_REQUIRED" }, { status: 401 })
+    }
 
     if (tickers.length === 0) {
       return NextResponse.json({ error: "tickers array required" }, { status: 400 })
@@ -55,22 +61,46 @@ Return ONLY a JSON array with no explanation. Each object:
 If no catalyst found in next 4 weeks, set hasCatalyst: false and omit other fields.
 Return the array for all ${tickerBatch.length} tickers.`
 
+    const res = await fetch(ANTHROPIC_API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: CLAUDE_MODEL,
+        max_tokens: 4000,
+        tools: [{ type: "web_search_20250305", name: "web_search" }],
+        messages: [{ role: "user", content: prompt }],
+      }),
+    })
+    
+    if (!res.ok) {
+      const errText = await res.text()
+      if (res.status === 429) {
+        return NextResponse.json({ 
+          error: "Rate limit reached on your Anthropic API key. Please wait a minute and try again, or upgrade your Anthropic plan for higher limits." 
+        }, { status: 429 })
+      }
+      throw new Error(`Claude API error ${res.status}: ${errText.slice(0, 200)}`)
+    }
+    
+    const data = await res.json()
+    const textBlocks = (data.content || []).filter((b: { type: string }) => b.type === "text")
+    const text = textBlocks.map((b: { text: string }) => b.text).join("\n").trim()
+    
+    // Parse JSON from response
     let catalysts: CatalystInfo[] = []
     try {
-      const data = await askModel<CatalystInfo[]>(MODELS.WATCHLIST, "", prompt)
-      if (Array.isArray(data)) catalysts = data
-    } catch (err) {
-      const message = (err as Error).message || ""
-      if (/rate limit/i.test(message)) {
-        return NextResponse.json({ error: message }, { status: 429 })
+      const jsonMatch = text.match(/\[[\s\S]*\]/)
+      if (jsonMatch) {
+        catalysts = JSON.parse(jsonMatch[0])
       }
-      if (message === "API_KEY_REQUIRED") {
-        return NextResponse.json({ error: "API_KEY_REQUIRED" }, { status: 401 })
-      }
-      // A parse/transport failure shouldn't 500 the whole scan — return none.
-      console.error("Catalyst model call failed:", err)
+    } catch {
+      console.error("Failed to parse catalyst JSON:", text.slice(0, 500))
     }
-
+    
     // Create map for easy lookup
     const catalystMap: Record<string, CatalystInfo> = {}
     for (const c of catalysts) {
