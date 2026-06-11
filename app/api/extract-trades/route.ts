@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
 import type { ExtractedTrade } from "@/lib/types"
-import { extractJSON, MODELS } from "@white80/engine"
+import { extractJSON, MODELS } from "@/lib/model"
 
 export const maxDuration = 60
 
@@ -9,10 +9,18 @@ export const maxDuration = 60
 // text-only askModel() helper. It calls the same Perplexity Agent API directly
 // (OpenAI-SDK compatible, single PERPLEXITY_API_KEY) with an image_url content
 // block, then reuses the engine's extractJSON for byte-identical parsing.
-const perplexity = new OpenAI({
-  apiKey: process.env.PERPLEXITY_API_KEY,
-  baseURL: "https://api.perplexity.ai",
-})
+// Lazily constructed so the OpenAI SDK doesn't throw on a missing key during
+// Next.js build-time page-data collection. Only built when a request needs it.
+let perplexity: OpenAI | null = null
+function getPerplexity(): OpenAI {
+  if (!perplexity) {
+    perplexity = new OpenAI({
+      apiKey: process.env.PERPLEXITY_API_KEY,
+      baseURL: "https://api.perplexity.ai",
+    })
+  }
+  return perplexity
+}
 
 const EXTRACTION_PROMPT = `You are a trade extraction assistant. Analyze this content and extract all trades/transactions.
 
@@ -192,7 +200,7 @@ export async function POST(req: NextRequest) {
       const imageData = Buffer.from(await file.arrayBuffer()).toString("base64")
       const dataUrl = `data:${file.type};base64,${imageData}`
 
-      const response = await perplexity.chat.completions.create({
+      const response = await getPerplexity().chat.completions.create({
         model: MODELS.CURATOR,
         messages: [
           {

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
-import { askModel, MODELS } from "@white80/engine"
+import { askModel, MODELS } from "@/lib/model"
 
 // ─── GENERIC MODEL HANDLER ───────────────────────────────────────────────────
 // Model-aware passthrough used by the web app's client (lib/api.ts askClaude).
-// All transport, retry, and JSON extraction live in @white80/engine.askModel,
+// All transport, retry, and JSON extraction live in lib/model.askModel,
 // which calls the Perplexity Agent API with the single PERPLEXITY_API_KEY.
 // Defaults to the Daily Brief model. `useSearch` is accepted for backwards
 // compatibility but ignored — sonar models search natively, others don't need it.

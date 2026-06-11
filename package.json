@@ -2,18 +2,11 @@
   "name": "my-project",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
-    "build:engine": "npm run build --workspace=@white80/engine",
-    "build:routine": "npm run build --workspace=@white80/routine",
-    "build:all": "npm run build:engine && npm run build:routine"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { askModel, MODELS } from "@white80/engine"
+import { askModel, MODELS } from "@/lib/model"
 
 // ─── CATALYST DETECTION API ──────────────────────────────────────────────────
 // Finds upcoming catalysts for a batch of tickers. Routed through the Watchlist

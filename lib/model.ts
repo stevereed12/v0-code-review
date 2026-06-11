@@ -1,16 +1,25 @@
 // ─── MODEL CALL + JSON EXTRACTION ────────────────────────────────────────────
-// Two APIs, one function:
+// Self-contained Perplexity client for the web API routes. Previously lived in
+// @white80/engine; inlined here so the Next.js build has no workspace dependency
+// on the (separately deployed) trading engine.
 //   Sonar models (no "/" in name): Perplexity /chat/completions via OpenAI SDK
 //   Agent API models (xai/*, anthropic/*, google/*): POST /v1/agent via fetch
-//     - Takes { model, input } not { messages[] }
-//     - Returns response.output_text not choices[0].message.content
 
 import OpenAI from "openai"
 
-const sonarClient = new OpenAI({
-  apiKey: process.env.PERPLEXITY_API_KEY,
-  baseURL: "https://api.perplexity.ai",
-})
+// Lazily constructed so the OpenAI SDK doesn't throw on a missing key at module
+// load (which happens during Next.js build-time page-data collection). The key
+// is only needed when a request actually calls the model.
+let sonarClient: OpenAI | null = null
+function getSonarClient(): OpenAI {
+  if (!sonarClient) {
+    sonarClient = new OpenAI({
+      apiKey: process.env.PERPLEXITY_API_KEY,
+      baseURL: "https://api.perplexity.ai",
+    })
+  }
+  return sonarClient
+}
 
 function isSonarModel(model: string): boolean {
   return !model.includes("/")
@@ -96,7 +105,7 @@ export async function askModel<T>(
       let text: string
 
       if (isSonarModel(model)) {
-        const completion = await sonarClient.chat.completions.create({
+        const completion = await getSonarClient().chat.completions.create({
           model,
           messages: [
             { role: "system", content: system },
@@ -138,3 +147,14 @@ export async function askModel<T>(
 export function resolvePolygonKey(explicit?: string): string {
   return (explicit || process.env.POLYGON_API_KEY || "").trim()
 }
+
+// ─── MODEL ROUTING ───────────────────────────────────────────────────────────
+export const MODELS = {
+  TIER1_SCANNER:  "xai/grok-4.20-reasoning",
+  SCOUT:          "xai/grok-4.20-reasoning",
+  CURATOR:        "sonar",
+  WATCHLIST:      "sonar",
+  DAILY_BRIEF:    "anthropic/claude-sonnet-4-6",
+  VIBE_ENGINE:    "sonar",
+  SIGNALS_ENGINE: "xai/grok-4.3",
+} as const
