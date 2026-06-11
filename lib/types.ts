@@ -1,8 +1,4 @@
 // ─── WHITE 80 TYPES ─────────────────────────────────────────────────────────
-// The shared agent/pipeline types and constants. These mirror the shapes the
-// trading engine (deployed separately at stevereed12/white80-engine) produces,
-// and are defined here so the web app builds with no workspace dependency on it.
-// The web-app-only trade/tracker types follow below.
 
 export interface Signal {
   ticker: string
@@ -137,98 +133,6 @@ export interface BuyHoldPick {
   bear_case: string
 }
 
-export interface LivePrice {
-  price: number
-  change: number
-  change_pct: number
-  prev_close: number
-  day_high: number
-  day_low: number
-  volume: number
-  market_state: string
-  session: string
-  ts: number
-  age_seconds: number | null
-  name: string
-}
-
-export interface PriceHistory {
-  date: string
-  close: number
-}
-
-export interface OptionsChainSummary {
-  ticker: string
-  currentPrice: number
-  callPutRatio: number
-  totalCallVolume: number
-  totalPutVolume: number
-  totalCallOI: number
-  totalPutOI: number
-  atmCallsVolume: number
-  atmPutsVolume: number
-  atmSkew: number
-  hotStrikes: Array<{
-    strike: number
-    expiration: string
-    type: "call" | "put"
-    volume: number
-    openInterest: number
-    unusual: boolean
-    reason: string
-  }>
-  unusualActivity: boolean
-  sentiment: "BULLISH" | "BEARISH" | "NEUTRAL"
-  summary: string
-}
-
-// ─── CONSTANTS (verbatim) ────────────────────────────────────────────────────
-
-export const SEED_WATCHLIST: string[] = [] // Start empty - user builds their own watchlist
-
-export const THEMES = [
-  { id: "ai_compute", label: "AI / Compute", weight: 1.0 },
-  { id: "semis", label: "Semis", weight: 1.0 },
-  { id: "crypto_adj", label: "Crypto-Adjacent", weight: 0.9 },
-  { id: "macro_proxy", label: "Macro Proxies (SPY/QQQ)", weight: 0.7 },
-] as const
-
-export const SCOUT_THEMES = [
-  { id: "ai_infra", label: "AI Infrastructure" },
-  { id: "ai_apps", label: "AI Applications" },
-  { id: "energy_transition", label: "Energy Transition" },
-  { id: "nuclear_uranium", label: "Nuclear / Uranium" },
-  { id: "biotech", label: "Biotech Catalysts" },
-  { id: "defense", label: "Defense / Aerospace" },
-  { id: "fintech", label: "Fintech / Payments" },
-  { id: "crypto_picks", label: "Crypto Plays" },
-  { id: "robotics", label: "Robotics / Automation" },
-  { id: "rare_earth", label: "Rare Earth / Critical Minerals" },
-  { id: "cybersecurity", label: "Cybersecurity" },
-  { id: "space", label: "Space / Satellites" },
-] as const
-
-export const CAP_TIERS = {
-  micro: { label: "Micro-Cap", range: "$50M - $300M", desc: "highest risk/reward" },
-  small: { label: "Small-Cap", range: "$300M - $2B", desc: "high upside, less coverage" },
-  mid: { label: "Mid-Cap", range: "$2B - $10B", desc: "balanced growth" },
-  mixed: { label: "Mixed", range: "$50M - $10B", desc: "anywhere with conviction" },
-} as const
-
-export const HORIZONS = {
-  "1-3mo": "Short swing (catalysts in next 3 months)",
-  "3-6mo": "Medium hold (build-out / earnings cycles)",
-  "6-12mo": "Long buy-and-hold (story stocks, secular themes)",
-  "12mo+": "LEAPS / multi-year (asymmetric long-term bets)",
-} as const
-
-export type CapTier = keyof typeof CAP_TIERS
-export type Horizon = keyof typeof HORIZONS
-
-// ─── WEB-APP-ONLY TYPES (trade ingestion + signal tracking) ──────────────────
-// These power the dashboard's trade-tracking features and are not part of the
-// agent pipeline, so they stay in the web app.
-
 export interface ExtractedTrade {
   ticker: string
   action: "BUY" | "SELL"
@@ -305,3 +209,91 @@ export interface TrackerLog {
   outcome: "WIN" | "LOSS" | "EVEN" | null
   notes: string
 }
+
+export interface LivePrice {
+  price: number
+  change: number
+  change_pct: number
+  prev_close: number
+  day_high: number
+  day_low: number
+  volume: number
+  market_state: string
+  session: string
+  ts: number
+  age_seconds: number | null
+  name: string
+}
+
+export interface PriceHistory {
+  date: string
+  close: number
+}
+
+export interface OptionsChainSummary {
+  ticker: string
+  currentPrice: number
+  callPutRatio: number
+  totalCallVolume: number
+  totalPutVolume: number
+  totalCallOI: number
+  totalPutOI: number
+  atmCallsVolume: number
+  atmPutsVolume: number
+  atmSkew: number
+  hotStrikes: Array<{
+    strike: number
+    expiration: string
+    type: "call" | "put"
+    volume: number
+    openInterest: number
+    unusual: boolean
+    reason: string
+  }>
+  unusualActivity: boolean
+  sentiment: "BULLISH" | "BEARISH" | "NEUTRAL"
+  summary: string
+}
+
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+
+export const SEED_WATCHLIST: string[] = [] // Start empty - user builds their own watchlist
+
+export const THEMES = [
+  { id: "ai_compute", label: "AI / Compute", weight: 1.0 },
+  { id: "semis", label: "Semis", weight: 1.0 },
+  { id: "crypto_adj", label: "Crypto-Adjacent", weight: 0.9 },
+  { id: "macro_proxy", label: "Macro Proxies (SPY/QQQ)", weight: 0.7 },
+] as const
+
+export const SCOUT_THEMES = [
+  { id: "ai_infra", label: "AI Infrastructure" },
+  { id: "ai_apps", label: "AI Applications" },
+  { id: "energy_transition", label: "Energy Transition" },
+  { id: "nuclear_uranium", label: "Nuclear / Uranium" },
+  { id: "biotech", label: "Biotech Catalysts" },
+  { id: "defense", label: "Defense / Aerospace" },
+  { id: "fintech", label: "Fintech / Payments" },
+  { id: "crypto_picks", label: "Crypto Plays" },
+  { id: "robotics", label: "Robotics / Automation" },
+  { id: "rare_earth", label: "Rare Earth / Critical Minerals" },
+  { id: "cybersecurity", label: "Cybersecurity" },
+  { id: "space", label: "Space / Satellites" },
+] as const
+
+export const CAP_TIERS = {
+  micro: { label: "Micro-Cap", range: "$50M - $300M", desc: "highest risk/reward" },
+  small: { label: "Small-Cap", range: "$300M - $2B", desc: "high upside, less coverage" },
+  mid: { label: "Mid-Cap", range: "$2B - $10B", desc: "balanced growth" },
+  mixed: { label: "Mixed", range: "$50M - $10B", desc: "anywhere with conviction" },
+} as const
+
+export const HORIZONS = {
+  "1-3mo": "Short swing (catalysts in next 3 months)",
+  "3-6mo": "Medium hold (build-out / earnings cycles)",
+  "6-12mo": "Long buy-and-hold (story stocks, secular themes)",
+  "12mo+": "LEAPS / multi-year (asymmetric long-term bets)",
+} as const
+
+export type CapTier = keyof typeof CAP_TIERS
+export type Horizon = keyof typeof HORIZONS

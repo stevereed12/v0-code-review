@@ -95,18 +95,18 @@ export function White80Dashboard({
 
   // Check for API key and set date on mount (client-side only to avoid hydration mismatch)
   useEffect(() => {
-    // Use passed Anthropic key if available, otherwise check localStorage
-    const storedKey = getStoredApiKey()
-    const effectiveKey = anthropicKey || storedKey
-    setHasApiKey(!!effectiveKey)
-    
-    // Store the server-provided key locally using the correct storage key
-    if (anthropicKey && !storedKey) {
+    // The server-provided key (from Supabase) is the source of truth.
+    // Always sync it into localStorage so askClaude() reads the current key,
+    // overwriting any stale/empty value left from a previous key or user.
+    if (anthropicKey) {
       setStoredApiKey(anthropicKey)
     }
     if (polygonKey) {
       setStoredPolygonKey(polygonKey)
     }
+
+    const effectiveKey = anthropicKey || getStoredApiKey()
+    setHasApiKey(!!effectiveKey)
     
     setCurrentDate(
       new Date()
@@ -124,6 +124,18 @@ export function White80Dashboard({
     
     // Clear stale daily data if it's a new day
     clearDailyDataIfNewDay()
+
+    // IMPORTANT: the clear functions above call storage.clear(), which wipes every
+    // "white80:"-prefixed entry — including the API keys. Re-sync the server-provided
+    // keys (source of truth) into localStorage AFTER clearing so askClaude()/scans
+    // always have the current user's key.
+    if (anthropicKey) {
+      setStoredApiKey(anthropicKey)
+      setHasApiKey(true)
+    }
+    if (polygonKey) {
+      setStoredPolygonKey(polygonKey)
+    }
     
     // Check if first visit - show guide
     const hasSeen = localStorage.getItem("white80_seen_guide")

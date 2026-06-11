@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { askModel, MODELS } from "@/lib/model"
+import { CLAUDE_MODEL } from "@/lib/ai-config"
 
 const POLYGON_BASE = "https://api.polygon.io"
 
@@ -132,7 +132,11 @@ async function getMostActive(apiKey: string): Promise<MarketSnapshot[]> {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { tickers = [], polygonKey } = body
+    const { tickers = [], apiKey, polygonKey } = body
+    
+    if (!apiKey) {
+      return NextResponse.json({ error: "Anthropic API key required" }, { status: 400 })
+    }
 
     // ── Step 1: Pull Polygon market data if key available ──
     let marketContext = ""
@@ -206,18 +210,62 @@ IMPORTANT FOR TOP PLAYS:
       `Use web search to get CURRENT real-time data\n\n${marketContext}`
     )
 
-    // ── Step 3: Generate the brief via the Daily Brief model (strict JSON) ──
-    // askModel applies the default strict-JSON system prompt and runs extractJSON,
-    // which strips code fences and sonar [n] citation markers before parsing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parsed = await askModel<any>(MODELS.DAILY_BRIEF, "", fullPrompt)
+    // ── Step 3: Call Claude with system prompt for strict JSON ──
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: CLAUDE_MODEL,
+        max_tokens: 8000,
+        system: "You are a JSON API. You MUST respond with valid JSON only. No prose, no explanations, no markdown. Your entire response must be parseable JSON starting with { and ending with }. Never start with phrases like 'Based on' or 'Here is' - output raw JSON immediately.",
+        tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 10 }],
+        messages: [{ role: "user", content: fullPrompt }],
+      }),
+    })
+
+    if (!response.ok) {
+      const errText = await response.text()
+      if (response.status === 429) {
+        return NextResponse.json({ 
+          error: "Rate limit reached on your Anthropic API key. Please wait a minute and try again, or upgrade your Anthropic plan for higher limits." 
+        }, { status: 429 })
+      }
+      return NextResponse.json({ error: `Claude API error: ${errText.slice(0, 200)}` }, { status: 500 })
+    }
+
+    const result = await response.json()
+    
+    // Extract text from response
+    let text = ""
+    for (const block of result.content || []) {
+      if (block.type === "text") text += block.text
+    }
+    
+    // Clean and parse JSON
+    text = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
+    // Strip citation markup
+    text = text.replace(/<\/?cite[^>]*>/g, "").replace(/\[\d+\]/g, "")
+    // Remove any prose prefix before JSON (e.g., "Based on my search, here is the data:")
+    const jsonStart = text.indexOf("{")
+    if (jsonStart > 0) {
+      text = text.slice(jsonStart)
+    }
+    // Remove any prose suffix after JSON
+    const jsonEnd = text.lastIndexOf("}")
+    if (jsonEnd !== -1 && jsonEnd < text.length - 1) {
+      text = text.slice(0, jsonEnd + 1)
+    }
+    
+    const parsed = JSON.parse(text)
     
     // ── Step 4: Validate and fix strike prices using Polygon data ──
     if (parsed.top_plays && Array.isArray(parsed.top_plays) && polygonKey) {
       // Get unique tickers from top plays
-      const topPlayTickers: string[] = [
-        ...new Set(parsed.top_plays.map((p: { ticker: string }) => p.ticker) as string[]),
-      ]
+      const topPlayTickers = [...new Set(parsed.top_plays.map((p: { ticker: string }) => p.ticker))]
       
       // Fetch current prices for these tickers
       const tickerPrices: Record<string, number> = {}
@@ -291,14 +339,10 @@ IMPORTANT FOR TOP PLAYS:
     
     return NextResponse.json(parsed)
   } catch (err) {
-    const message = (err as Error).message || "Failed to generate brief"
-    if (/rate limit/i.test(message)) {
-      return NextResponse.json({ error: message }, { status: 429 })
-    }
-    if (message === "API_KEY_REQUIRED") {
-      return NextResponse.json({ error: "API_KEY_REQUIRED" }, { status: 401 })
-    }
     console.error("Brief generation error:", err)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json(
+      { error: (err as Error).message || "Failed to generate brief" },
+      { status: 500 }
+    )
   }
 }
