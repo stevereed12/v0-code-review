@@ -2,6 +2,8 @@ import Link from "next/link"
 import { TrendingUp, Radar, FileText, Search, BarChart3, Crosshair, Shield, Key, Zap } from "lucide-react"
 import { MobileMenu } from "@/components/white80/mobile-menu"
 import { SiteFooter } from "@/components/white80/site-footer"
+import { ThesisShowcase } from "@/components/white80/thesis-showcase"
+import { Testimonials } from "@/components/white80/testimonials"
 
 const FEATURES = [
   {
@@ -218,6 +220,9 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Sample output / proof of quality */}
+      <ThesisShowcase />
+
       {/* How It Works - API Keys */}
       <section className="py-20 px-4 border-t border-[#262620]">
         <div className="max-w-4xl mx-auto">
@@ -286,6 +291,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Social proof */}
+      <Testimonials />
 
       {/* CTA */}
       <section className="py-24 px-4 border-t border-[#262620]">
