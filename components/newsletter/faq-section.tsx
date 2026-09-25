@@ -25,16 +25,18 @@ const QUESTIONS = [
 
 export function FaqSection() {
   return (
-    <section id="faq" className="scroll-mt-20 border-t border-border px-4 py-20 md:py-28">
-      <div className="mx-auto flex max-w-6xl flex-col gap-12 lg:flex-row lg:gap-20">
-        <h2 className="font-display text-5xl text-foreground md:text-6xl lg:w-72 lg:shrink-0">QUESTIONS</h2>
+    <section id="faq" className="scroll-mt-20 border-t border-border px-4 py-16 md:py-24">
+      <div className="mx-auto flex max-w-6xl flex-col gap-10 lg:flex-row lg:gap-20">
+        <h2 className="text-3xl font-semibold tracking-tight text-foreground md:text-4xl lg:w-72 lg:shrink-0">
+          Questions
+        </h2>
         <div className="flex flex-1 flex-col border-t border-border">
           {QUESTIONS.map((item) => (
             <details key={item.q} className="group border-b border-border">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-foreground [&::-webkit-details-marker]:hidden">
                 <span className="font-medium">{item.q}</span>
                 <span
-                  className="font-mono text-lg text-primary transition-transform group-open:rotate-45"
+                  className="text-xl text-muted-foreground transition-transform group-open:rotate-45"
                   aria-hidden="true"
                 >
                   +

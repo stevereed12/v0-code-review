@@ -3,25 +3,25 @@ import { DELIVERY } from "@/lib/newsletter"
 const BRIEFS = [
   {
     time: DELIVERY.premarket,
-    title: "PREMARKET BRIEF",
+    title: "Premarket brief",
     summary: "The full read on the session before it starts.",
     contents: [
-      "Futures and the macro tape — index futures, yields, dollar, crude, VIX",
-      "Overnight catalysts — earnings, guidance, FDA decisions, M&A, macro prints",
-      "Top gappers, each with the catalyst behind the move",
-      "Risk flags on every name — dilution, low float, no news found",
-      "The session calendar — data releases and scheduled speakers",
+      "Macro pulse: SPY, QQQ, VIX, dollar, 10-year yield, crude and gold, with what's driving each",
+      "Top catalysts: earnings, guidance, analyst moves, macro prints and geopolitics",
+      "Sector rotation: which sectors lead, which lag, and why",
+      "The verdict: risk-on or risk-off, and what would change it",
+      "Names to watch, each with the catalyst, conviction level and the risk spelled out",
     ],
   },
   {
     time: DELIVERY.confirmation,
-    title: "CONFIRMATION BRIEF",
-    summary: "What the open confirmed — and what it didn't.",
+    title: "Confirmation brief",
+    summary: "What the open confirmed, and what it didn't.",
     contents: [
       "How the open traded against the premarket read",
-      "Which gappers held and which faded",
+      "Which movers held and which faded",
       "Volume confirmation on the names that matter",
-      "New filings, halts, or flags since the premarket brief",
+      "New filings, halts or flags since the premarket brief",
       "The read for the rest of the morning",
     ],
   },
@@ -29,27 +29,31 @@ const BRIEFS = [
 
 export function BriefsSection() {
   return (
-    <section id="briefs" className="scroll-mt-20 border-t border-border px-4 py-20 md:py-28">
-      <div className="mx-auto flex max-w-6xl flex-col gap-12">
+    <section id="briefs" className="scroll-mt-20 px-4 py-16 md:py-24">
+      <div className="mx-auto flex max-w-6xl flex-col gap-10">
         <div className="flex max-w-2xl flex-col gap-3">
-          <h2 className="font-display text-5xl text-foreground text-balance md:text-6xl">TWO BRIEFS. EVERY TRADING DAY.</h2>
+          <h2 className="text-3xl font-semibold tracking-tight text-foreground text-balance md:text-4xl">
+            Two briefs, every trading day.
+          </h2>
           <p className="leading-relaxed text-muted-foreground text-pretty">
             One before the open, one after it. Short enough to read over coffee, specific enough to act on.
           </p>
         </div>
 
-        <div className="grid gap-px border border-border bg-border md:grid-cols-2">
+        <div className="grid gap-5 md:grid-cols-2">
           {BRIEFS.map((brief) => (
-            <article key={brief.title} className="flex flex-col gap-6 bg-background p-8">
+            <article key={brief.title} className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-7">
               <div className="flex items-baseline justify-between gap-4">
-                <h3 className="font-display text-3xl tracking-wide text-foreground">{brief.title}</h3>
-                <span className="font-mono text-xs text-primary">{brief.time}</span>
+                <h3 className="text-xl font-semibold text-foreground">{brief.title}</h3>
+                <span className="rounded-full bg-muted px-3 py-1 font-mono text-xs text-foreground">
+                  {brief.time}
+                </span>
               </div>
               <p className="text-sm leading-relaxed text-muted-foreground">{brief.summary}</p>
               <ul className="flex flex-col gap-3">
                 {brief.contents.map((item) => (
                   <li key={item} className="flex items-start gap-3 text-sm leading-relaxed text-foreground">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 bg-primary" aria-hidden="true" />
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-positive" aria-hidden="true" />
                     {item}
                   </li>
                 ))}

@@ -2,51 +2,47 @@ import { DELIVERY } from "@/lib/newsletter"
 
 export function Hero() {
   return (
-    <section className="px-4 pb-20 pt-16 md:pb-28 md:pt-24">
-      <div className="mx-auto flex max-w-6xl flex-col gap-14 lg:flex-row lg:items-end lg:justify-between">
-        <div className="flex max-w-3xl flex-col gap-8">
-          <p className="font-mono text-xs tracking-[0.25em] text-primary">
-            THE DAILY PREMARKET BRIEF
-          </p>
-          <h1 className="font-display text-6xl leading-[0.9] text-foreground text-balance sm:text-7xl md:text-8xl lg:text-9xl">
-            INTELLIGENCE IS THE <span className="text-primary">POSITION</span>
+    <section className="px-4 pb-16 pt-14 md:pb-24 md:pt-20">
+      <div className="mx-auto flex max-w-6xl flex-col gap-12 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex max-w-2xl flex-col gap-6">
+          <p className="text-sm font-medium text-muted-foreground">The daily premarket brief</p>
+          <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight text-foreground text-balance md:text-6xl">
+            Intelligence is the{" "}
+            <span className="bg-accent px-1.5 text-accent-foreground [box-decoration-break:clone]">position.</span>
           </h1>
-          <p className="max-w-xl text-base leading-relaxed text-muted-foreground text-pretty md:text-lg">
-            A premarket brief in your inbox before the bell — futures, overnight catalysts, the gappers that
-            matter and the risk flags on each. Then a confirmation brief once the open settles. Walk into the
-            open with the read.
+          <p className="max-w-xl text-lg leading-relaxed text-muted-foreground text-pretty">
+            A premarket brief in your inbox before the bell: futures and macro, overnight catalysts, sector
+            rotation, and the names worth watching, each with the risk spelled out. Then a confirmation brief
+            once the open settles.
           </p>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
             <a
               href="#signup"
-              className="bg-primary px-8 py-4 text-center font-mono text-sm tracking-wider text-primary-foreground transition-colors hover:bg-primary/85"
+              className="rounded-full bg-primary px-7 py-3.5 text-center text-sm font-medium text-primary-foreground transition-opacity hover:opacity-85"
             >
-              START 7-DAY FREE TRIAL
+              Start 7-day free trial
             </a>
-            <p className="font-mono text-xs text-muted-foreground">$49/month after the trial. Cancel anytime.</p>
+            <p className="text-sm text-muted-foreground">$49/month after the trial. Cancel anytime.</p>
           </div>
         </div>
 
-        <aside className="flex max-w-sm flex-col gap-5 border border-border bg-card p-6 lg:mb-2">
-          <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
-            <span className="font-mono text-[11px] tracking-[0.2em] text-muted-foreground">THE CALL</span>
-            <span className="font-display text-2xl tracking-wide text-primary">WHITE 80</span>
-          </div>
-          <p className="text-sm leading-relaxed text-foreground text-pretty">
+        <aside className="flex max-w-sm flex-col gap-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Why &ldquo;White 80&rdquo;</p>
+          <p className="leading-relaxed text-foreground text-pretty">
             In football, the audible is called at the line. The quarterback sees something the defense
             doesn&apos;t and changes the play before the snap.
           </p>
           <p className="text-sm leading-relaxed text-muted-foreground text-pretty">
             The brief is your look at the line before the market snaps at 9:30.
           </p>
-          <dl className="flex flex-col gap-2 border-t border-border pt-4 font-mono text-xs">
+          <dl className="flex flex-col gap-2 border-t border-border pt-4 text-sm">
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Premarket brief</dt>
-              <dd className="text-foreground">{DELIVERY.premarket}</dd>
+              <dd className="font-mono text-foreground">{DELIVERY.premarket}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Confirmation brief</dt>
-              <dd className="text-foreground">{DELIVERY.confirmation}</dd>
+              <dd className="font-mono text-foreground">{DELIVERY.confirmation}</dd>
             </div>
           </dl>
         </aside>
