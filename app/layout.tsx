@@ -25,8 +25,8 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'White 80 — Intelligence Is The Position',
-  description: 'AI-powered trading intelligence desk. Signal generation, watchlist curation, pre-market briefs, and performance tracking.',
+  title: 'White 80 — The Daily Premarket Brief',
+  description: 'A premarket brief before the open — futures, overnight catalysts, top gappers with catalysts, and risk flags — plus a morning confirmation brief. 7-day free trial.',
   generator: 'v0.app',
   icons: {
     icon: [

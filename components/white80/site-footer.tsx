@@ -1,9 +1,9 @@
 import Link from "next/link"
 
 const PRODUCT_LINKS = [
-  { href: "/pricing", label: "Pricing" },
-  { href: "/faq", label: "FAQ" },
-  { href: "/changelog", label: "Changelog" },
+  { href: "/#briefs", label: "The Briefs" },
+  { href: "/#pricing", label: "Pricing" },
+  { href: "/#faq", label: "FAQ" },
 ]
 
 const COMPANY_LINKS = [
@@ -24,7 +24,7 @@ export function SiteFooter() {
               <span className="font-display text-2xl tracking-wide text-[#f4f0e6]">WHITE 80</span>
             </div>
             <p className="font-mono text-xs text-[#6e6a5e] leading-relaxed">
-              Intelligence is the position. An AI research desk for self-directed traders.
+              Intelligence is the position. A daily premarket brief, delivered before the open.
             </p>
           </div>
 
@@ -63,12 +63,19 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-[#262620] flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <p className="mt-10 max-w-3xl font-mono text-[11px] leading-relaxed text-[#6e6a5e]">
+          White 80 is for informational purposes only and is not financial advice. Nothing published by White 80
+          is a recommendation to buy, sell, or hold any security. Content is not personalized to your financial
+          situation. Trading and investing involve risk, including the loss of principal. Past performance does
+          not guarantee future results.
+        </p>
+
+        <div className="mt-6 pt-6 border-t border-[#262620] flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           <p className="font-mono text-[10px] text-[#6e6a5e]">
             © {new Date().getFullYear()} White 80. All rights reserved.
           </p>
           <p className="font-mono text-[10px] text-[#6e6a5e]">
-            Information intelligence platform. Not financial advice. Trade at your own risk.
+            For informational purposes only. Not financial advice.
           </p>
         </div>
       </div>
