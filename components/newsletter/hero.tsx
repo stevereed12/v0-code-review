@@ -27,13 +27,9 @@ export function Hero() {
         </div>
 
         <aside className="flex max-w-sm flex-col gap-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Why &ldquo;White 80&rdquo;</p>
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Every trading day</p>
           <p className="leading-relaxed text-foreground text-pretty">
-            In football, the audible is called at the line. The quarterback sees something the defense
-            doesn&apos;t and changes the play before the snap.
-          </p>
-          <p className="text-sm leading-relaxed text-muted-foreground text-pretty">
-            The brief is your look at the line before the market snaps at 9:30.
+            Walk into the open with the read already done.
           </p>
           <dl className="flex flex-col gap-2 border-t border-border pt-4 text-sm">
             <div className="flex justify-between gap-4">
