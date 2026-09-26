@@ -33,7 +33,7 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-4">
           <Link
-            href="/auth/login"
+            href="/auth/login?next=/account"
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Sign in

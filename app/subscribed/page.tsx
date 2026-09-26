@@ -1,22 +1,26 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import Stripe from "stripe"
 import { DELIVERY } from "@/lib/newsletter"
+import { getPaidNewsletterCheckout, upsertSubscriberFromStripe, type Subscriber } from "@/lib/newsletter-subscribers"
+import { CreateAccountForm } from "@/components/account/create-account-form"
 
 export const metadata: Metadata = {
   title: "You're in — White 80",
   robots: { index: false, follow: false },
 }
 
-async function getCheckoutEmail(sessionId: string | undefined): Promise<string | null> {
-  const secretKey = process.env.STRIPE_SECRET_KEY
-  if (!sessionId || !sessionId.startsWith("cs_") || !secretKey) return null
-  try {
-    const session = await new Stripe(secretKey).checkout.sessions.retrieve(sessionId)
-    return session.customer_details?.email ?? session.customer_email ?? null
-  } catch {
-    return null
-  }
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+      <div className="flex w-full max-w-md flex-col gap-6 rounded-3xl border border-border bg-card p-8 shadow-sm md:p-10">
+        <Link href="/" className="flex items-center gap-2 text-foreground" aria-label="White 80 home">
+          <span className="h-3 w-3 rounded-sm bg-primary" aria-hidden="true" />
+          <span className="text-lg font-semibold tracking-tight">White 80</span>
+        </Link>
+        {children}
+      </div>
+    </main>
+  )
 }
 
 export default async function SubscribedPage({
@@ -25,31 +29,73 @@ export default async function SubscribedPage({
   searchParams: Promise<{ session_id?: string }>
 }) {
   const { session_id } = await searchParams
-  const email = await getCheckoutEmail(session_id)
+  const checkout = await getPaidNewsletterCheckout(session_id)
 
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="flex max-w-lg flex-col gap-6 border border-border bg-card p-8 md:p-10">
-        <div className="flex items-center gap-2">
-          <span className="h-3 w-3 bg-primary" aria-hidden="true" />
-          <span className="font-display text-2xl tracking-wide text-foreground">WHITE 80</span>
-        </div>
-        <h1 className="font-display text-5xl text-foreground text-balance">
-          YOU&apos;RE <span className="text-primary">IN.</span>
+  if (!checkout || !session_id) {
+    return (
+      <Shell>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground text-balance">
+          We couldn&apos;t find that checkout.
         </h1>
         <p className="leading-relaxed text-muted-foreground text-pretty">
-          Your 7-day free trial has started
-          {email ? (
-            <>
-              . Briefs will go to <span className="text-foreground">{email}</span>
-            </>
-          ) : null}
-          . The next premarket brief lands by {DELIVERY.premarket} on the next trading day.
+          If you just paid, give it a moment and refresh. Already have an account? Sign in to see your membership.
         </p>
-        <Link href="/" className="font-mono text-xs tracking-wider text-primary hover:underline">
-          BACK TO WHITE80.IO
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/auth/login?next=/account"
+            className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90"
+          >
+            Sign in
+          </Link>
+          <Link href="/" className="rounded-full border border-border px-5 py-3 text-sm font-semibold text-foreground hover:bg-muted">
+            Back home
+          </Link>
+        </div>
+      </Shell>
+    )
+  }
+
+  // Record the subscriber immediately so the flow doesn't depend on webhook timing.
+  let subscriber: Subscriber | null = null
+  try {
+    subscriber = await upsertSubscriberFromStripe(checkout.subscription, checkout.email)
+  } catch (error) {
+    console.error("Failed to record subscriber:", error)
+  }
+
+  if (subscriber?.user_id) {
+    return (
+      <Shell>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground text-balance">
+          You&apos;re in. Your account is ready.
+        </h1>
+        <p className="leading-relaxed text-muted-foreground text-pretty">
+          Briefs go to <span className="font-medium text-foreground">{checkout.email}</span>. Sign in to manage your
+          membership.
+        </p>
+        <Link
+          href="/auth/login?next=/account"
+          className="rounded-full bg-primary px-5 py-3 text-center text-sm font-semibold text-primary-foreground hover:opacity-90"
+        >
+          Go to my account
         </Link>
+      </Shell>
+    )
+  }
+
+  return (
+    <Shell>
+      <div className="flex flex-col gap-2">
+        <p className="text-sm font-medium text-primary">Payment confirmed</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground text-balance">
+          One last step: set your password.
+        </h1>
+        <p className="leading-relaxed text-muted-foreground text-pretty">
+          Your 7-day trial has started. The next premarket brief lands by {DELIVERY.premarket} on the next trading
+          day. Create a password so you can manage your membership anytime.
+        </p>
       </div>
-    </main>
+      <CreateAccountForm sessionId={session_id} email={checkout.email} />
+    </Shell>
   )
 }
