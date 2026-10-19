@@ -401,15 +401,9 @@ export function White80Dashboard({
     setLoading((s) => ({ ...s, brief: true }))
     setErrors((e) => ({ ...e, brief: null }))
     try {
-      const clientApiKey = getStoredApiKey()
-      if (!clientApiKey) {
-        setShowApiKeyModal(true)
-        setLoading((s) => ({ ...s, brief: false }))
-        return
-      }
-      
+      const clientApiKey = anthropicKey || getStoredApiKey()
       const clientPolygonKey = polygonKey || localStorage.getItem("white80_polygon_key") || undefined
-      
+
       const res = await fetch("/api/brief", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -419,7 +413,9 @@ export function White80Dashboard({
           polygonKey: clientPolygonKey,
         }),
       })
-      
+
+      if (res.status === 401) throw new ApiKeyRequiredError()
+
       if (!res.ok) {
         const errData = await res.json().catch(() => ({ error: "Brief generation failed" }))
         throw new Error(errData.error || "Brief generation failed")
@@ -444,13 +440,7 @@ export function White80Dashboard({
     setLoading((s) => ({ ...s, vibe: true }))
     setErrors((e) => ({ ...e, vibe: null }))
     try {
-      const clientApiKey = getStoredApiKey()
-      if (!clientApiKey) {
-        setShowApiKeyModal(true)
-        setLoading((s) => ({ ...s, vibe: false }))
-        return
-      }
-
+      const clientApiKey = anthropicKey || getStoredApiKey()
       const clientPolygonKey = polygonKey || localStorage.getItem("white80_polygon_key") || undefined
 
       const res = await fetch("/api/vibe", {
@@ -462,6 +452,8 @@ export function White80Dashboard({
           polygonKey: clientPolygonKey,
         }),
       })
+
+      if (res.status === 401) throw new ApiKeyRequiredError()
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({ error: "Vibe check failed" }))

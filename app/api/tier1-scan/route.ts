@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import type { Tier1Signal, SignalResult, ScanConfig } from "@/lib/tier1-types"
 import { DEFAULT_SCAN_CONFIG, SECTOR_ETFS } from "@/lib/tier1-types"
+import { resolveApiKeys } from "@/lib/resolve-api-keys"
 
 // ─── POLYGON API HELPER ──────────────────────────────────────────────────────
 
@@ -405,12 +406,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
-    // Set client-provided key if available
-    const clientKey = body.clientPolygonKey?.trim()
-    if (clientKey) {
-      setRequestApiKey(clientKey)
-    }
-    
+    const { polygonKey: resolvedKey } = await resolveApiKeys({ polygonKey: body.clientPolygonKey })
+    setRequestApiKey(resolvedKey)
+
     const apiKey = getApiKey()
     if (!apiKey) {
       return NextResponse.json({ error: "POLYGON_KEY_REQUIRED" }, { status: 401 })
@@ -476,10 +474,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "ticker parameter required" }, { status: 400 })
   }
   
-  if (clientKey) {
-    setRequestApiKey(clientKey)
-  }
-  
+  const { polygonKey: resolvedKey } = await resolveApiKeys({ polygonKey: clientKey })
+  setRequestApiKey(resolvedKey)
+
   const apiKey = getApiKey()
   if (!apiKey) {
     return NextResponse.json({ error: "POLYGON_KEY_REQUIRED" }, { status: 401 })

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { CLAUDE_MODEL } from "@/lib/ai-config"
+import { resolveApiKeys } from "@/lib/resolve-api-keys"
 
 const POLYGON_BASE = "https://api.polygon.io"
 
@@ -132,10 +133,14 @@ async function getMostActive(apiKey: string): Promise<MarketSnapshot[]> {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { tickers = [], apiKey, polygonKey } = body
-    
+    const { tickers = [] } = body
+    const { anthropicKey: apiKey, polygonKey } = await resolveApiKeys({
+      anthropicKey: body.apiKey,
+      polygonKey: body.polygonKey,
+    })
+
     if (!apiKey) {
-      return NextResponse.json({ error: "Anthropic API key required" }, { status: 400 })
+      return NextResponse.json({ error: "API_KEY_REQUIRED" }, { status: 401 })
     }
 
     // ── Step 1: Pull Polygon market data if key available ──
