@@ -47,6 +47,7 @@ interface DashboardProps {
   hasSubscription?: boolean
   polygonKey?: string | null
   anthropicKey?: string | null
+  serverHasAnthropicKey?: boolean
 }
 
 export function White80Dashboard({ 
@@ -55,6 +56,7 @@ export function White80Dashboard({
   hasSubscription = false,
   polygonKey,
   anthropicKey,
+  serverHasAnthropicKey = false,
 }: DashboardProps) {
   // Core state
   const [watchlist, setWatchlist] = useState<string[]>(SEED_WATCHLIST)
@@ -106,7 +108,7 @@ export function White80Dashboard({
     }
 
     const effectiveKey = anthropicKey || getStoredApiKey()
-    setHasApiKey(!!effectiveKey)
+    setHasApiKey(serverHasAnthropicKey || !!effectiveKey)
     
     setCurrentDate(
       new Date()
