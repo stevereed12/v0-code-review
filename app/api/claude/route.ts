@@ -163,7 +163,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 })
     }
 
-    // Each user must supply their own Anthropic key. No shared server fallback.
     const { anthropicKey: apiKey } = await resolveApiKeys({ anthropicKey: clientApiKey })
     
     if (!apiKey) {

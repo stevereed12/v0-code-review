@@ -38,7 +38,8 @@ export async function resolveApiKeys(clientKeys: {
   }
 
   return {
-    anthropicKey: profileAnthropic || clientKeys.anthropicKey?.trim() || null,
-    polygonKey: profilePolygon || clientKeys.polygonKey?.trim() || null,
+    anthropicKey:
+      profileAnthropic || clientKeys.anthropicKey?.trim() || process.env.ANTHROPIC_API_KEY?.trim() || null,
+    polygonKey: profilePolygon || clientKeys.polygonKey?.trim() || process.env.POLYGON_API_KEY?.trim() || null,
   }
 }
