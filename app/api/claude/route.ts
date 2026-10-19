@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { CLAUDE_MODEL } from "@/lib/ai-config"
+import { resolveApiKeys } from "@/lib/resolve-api-keys"
 
 // Server restart trigger: 2026-04-30T13:25:00
 // ─── JSON EXTRACTION UTILITY ─────────────────────────────────────────────────
@@ -163,7 +164,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Each user must supply their own Anthropic key. No shared server fallback.
-    const apiKey = clientApiKey?.trim()
+    const { anthropicKey: apiKey } = await resolveApiKeys({ anthropicKey: clientApiKey })
     
     if (!apiKey) {
       return NextResponse.json(

@@ -229,6 +229,8 @@ export function White80Dashboard({
     }
     setConfirmReset(false)
     storage.clear()
+    if (anthropicKey) setStoredApiKey(anthropicKey)
+    if (polygonKey) setStoredPolygonKey(polygonKey)
     setWatchlist(SEED_WATCHLIST)
     setPinnedTickers([])
     setBlockedTickers([])
