@@ -42,6 +42,35 @@
   --sidebar-accent-foreground: #f4f0e6;
   --sidebar-border: #262620;
   --sidebar-ring: #c8ff00;
+  --positive: #c8ff00;
+  --negative: #f87171;
+}
+
+/* Bright theme scoped to the public newsletter landing page.
+   The app dashboard keeps the dark terminal palette above. */
+.landing {
+  --background: #fafaf7;
+  --foreground: #14161a;
+  --card: #ffffff;
+  --card-foreground: #14161a;
+  --popover: #ffffff;
+  --popover-foreground: #14161a;
+  --primary: #14161a;
+  --primary-foreground: #fafaf7;
+  --secondary: #f0f1ec;
+  --secondary-foreground: #14161a;
+  --muted: #f0f1ec;
+  --muted-foreground: #5d625a;
+  --accent: #c8ff00;
+  --accent-foreground: #14161a;
+  --destructive: #b42318;
+  --destructive-foreground: #ffffff;
+  --border: #e3e5df;
+  --input: #d9dcd4;
+  --ring: #14161a;
+  --radius: 0.75rem;
+  --positive: #2f7a1f;
+  --negative: #b42318;
 }
 
 .dark {
@@ -103,6 +132,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);

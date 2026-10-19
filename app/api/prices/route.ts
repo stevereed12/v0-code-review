@@ -8,17 +8,41 @@ function getPolygonKey(request: NextRequest): string | null {
   return clientKey || process.env.POLYGON_API_KEY || null
 }
 
+// Determine US market state using real Eastern Time (handles DST correctly)
+function getMarketState(): { marketState: string; session: string } {
+  const now = new Date()
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    hour: "numeric",
+    minute: "numeric",
+    weekday: "short",
+    hour12: false,
+  }).formatToParts(now)
+
+  const get = (type: string) => parts.find((p) => p.type === type)?.value || ""
+  const weekday = get("weekday")
+  const hour = parseInt(get("hour"), 10)
+  const minute = parseInt(get("minute"), 10)
+  const minutes = hour * 60 + minute
+
+  // Weekend = closed
+  if (weekday === "Sat" || weekday === "Sun") {
+    return { marketState: "CLOSED", session: "LAST" }
+  }
+
+  // 4:00 (240) pre | 9:30 (570) regular | 16:00 (960) post | 20:00 (1200) closed
+  if (minutes >= 240 && minutes < 570) return { marketState: "PRE", session: "PRE" }
+  if (minutes >= 570 && minutes < 960) return { marketState: "REGULAR", session: "REGULAR" }
+  if (minutes >= 960 && minutes < 1200) return { marketState: "POST", session: "POST" }
+  return { marketState: "CLOSED", session: "LAST" }
+}
+
 // Fetch price from Polygon
 async function fetchFromPolygon(
   symbol: string,
   apiKey: string
 ): Promise<Record<string, unknown> | null> {
   try {
-    // Get previous day's data for accurate prev_close
-    const today = new Date()
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
-    
     // Snapshot endpoint gives us the latest price + prev day data
     const snapshotUrl = `${POLYGON_BASE}/v2/snapshot/locale/us/markets/stocks/tickers/${symbol}?apiKey=${apiKey}`
     
@@ -41,32 +65,27 @@ async function fetchFromPolygon(
     const prevDay = ticker.prevDay || {}
     const lastQuote = ticker.lastQuote || {}
     const lastTrade = ticker.lastTrade || {}
-    
-    // Determine current price and session
-    const price = lastTrade.p || day.c || prevDay.c
+    const min = ticker.min || {}
+
+    // Freshest-first price cascade: last trade > quote midpoint/ask > latest
+    // minute bar > daily aggregate > previous close. Free-tier snapshots often
+    // omit lastTrade/lastQuote, so min.c is the freshest available there.
+    const quoteMid = lastQuote.P && lastQuote.p ? (lastQuote.P + lastQuote.p) / 2 : lastQuote.P || lastQuote.p
+    const price = lastTrade.p || quoteMid || min.c || day.c || prevDay.c
     const prevClose = prevDay.c || day.o
     const change = price - prevClose
     const changePct = prevClose ? (change / prevClose) * 100 : 0
-    
-    // Determine market state based on timestamp
-    const now = new Date()
-    const hour = now.getUTCHours() - 5 // EST offset (approximate)
-    let marketState = "CLOSED"
-    let session = "LAST"
-    
-    if (hour >= 4 && hour < 9.5) {
-      marketState = "PRE"
-      session = "PRE"
-    } else if (hour >= 9.5 && hour < 16) {
-      marketState = "REGULAR"
-      session = "REGULAR"
-    } else if (hour >= 16 && hour < 20) {
-      marketState = "POST"
-      session = "POST"
-    }
 
-    const ts = lastTrade.t ? Math.floor(lastTrade.t / 1000000000) : Math.floor(Date.now() / 1000)
-    const ageSeconds = Math.max(0, Math.floor(Date.now() / 1000 - ts))
+    // Real Eastern Time market state (DST-safe)
+    const { marketState, session } = getMarketState()
+
+    // Best available data timestamp: lastTrade.t (ns) > lastQuote.t (ns) > min.t (ms)
+    let ts: number
+    if (lastTrade.t) ts = Math.floor(lastTrade.t / 1_000_000_000)
+    else if (lastQuote.t) ts = Math.floor(lastQuote.t / 1_000_000_000)
+    else if (min.t) ts = Math.floor(min.t / 1000)
+    else ts = 0
+    const ageSeconds = ts > 0 ? Math.max(0, Math.floor(Date.now() / 1000 - ts)) : null
 
     return {
       price,
@@ -179,16 +198,35 @@ export async function GET(request: NextRequest) {
   const polygonKey = getPolygonKey(request)
   
   try {
+    // Max acceptable data age during live sessions before cross-checking Yahoo.
+    // Polygon free tier is 15-min delayed; anything older means we got a stale
+    // aggregate (e.g. yesterday's close) instead of a live-ish quote.
+    const STALE_THRESHOLD_SECONDS = 20 * 60
+    const { marketState } = getMarketState()
+    const isLiveSession = marketState === "PRE" || marketState === "REGULAR" || marketState === "POST"
+
     // Fetch all symbols in parallel
     const results = await Promise.all(
       symbols.map(async (symbol) => {
         // Try Polygon first if key available, then fallback to Yahoo
-        let data = null
+        let data: Record<string, unknown> | null = null
         if (polygonKey) {
           data = await fetchFromPolygon(symbol, polygonKey)
         }
         if (!data) {
           data = await fetchFromYahoo(symbol)
+        } else if (isLiveSession) {
+          // Freshness cross-check: if Polygon data is stale (or has no
+          // timestamp) during a live session, compare against Yahoo and keep
+          // whichever quote is fresher.
+          const age = data.age_seconds as number | null
+          if (age === null || age > STALE_THRESHOLD_SECONDS) {
+            const yahoo = await fetchFromYahoo(symbol)
+            const yahooAge = yahoo?.age_seconds as number | null | undefined
+            if (yahoo && typeof yahooAge === "number" && (age === null || yahooAge < age)) {
+              data = yahoo
+            }
+          }
         }
         return { symbol, data }
       })

@@ -31,9 +31,12 @@ export default async function DashboardPage() {
     redirect("/pricing")
   }
 
-  // Check if API keys are set up
-  const hasApiKeys = profile?.polygon_api_key && profile?.anthropic_api_key
-  
+  // Project-level keys count, so users aren't bounced to onboarding when the server already has them.
+  const serverHasAnthropicKey = !!process.env.ANTHROPIC_API_KEY?.trim()
+  const serverHasPolygonKey = !!process.env.POLYGON_API_KEY?.trim()
+  const hasApiKeys =
+    (profile?.anthropic_api_key || serverHasAnthropicKey) && (profile?.polygon_api_key || serverHasPolygonKey)
+
   if (!hasApiKeys) {
     // Has subscription but no API keys - redirect to onboarding
     redirect("/onboarding")
@@ -46,6 +49,7 @@ export default async function DashboardPage() {
       hasSubscription={hasActiveSubscription}
       polygonKey={profile?.polygon_api_key}
       anthropicKey={profile?.anthropic_api_key}
+      serverHasAnthropicKey={serverHasAnthropicKey}
     />
   )
 }

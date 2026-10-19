@@ -51,7 +51,9 @@ function LoginPageContent() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push("/dashboard")
+      const next = new URLSearchParams(window.location.search).get("next")
+      const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard"
+      router.push(safeNext)
       router.refresh()
     }
   }

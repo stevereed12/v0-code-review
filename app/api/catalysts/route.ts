@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { CLAUDE_MODEL } from "@/lib/ai-config"
+import { resolveApiKeys } from "@/lib/resolve-api-keys"
 
 // ─── CATALYST DETECTION API ──────────────────────────────────────────────────
 // Uses Claude to find upcoming catalysts for a batch of tickers
@@ -19,8 +20,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const tickers: string[] = body.tickers || []
-    // Each user must supply their own Anthropic key. No shared server fallback.
-    const apiKey = body.clientApiKey?.trim()
+    // Each user supplies their own Anthropic key (saved on their profile). No shared server fallback.
+    const { anthropicKey: apiKey } = await resolveApiKeys({ anthropicKey: body.clientApiKey })
 
     if (!apiKey) {
       return NextResponse.json({ error: "API_KEY_REQUIRED" }, { status: 401 })

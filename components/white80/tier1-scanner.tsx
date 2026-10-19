@@ -195,7 +195,8 @@ function Tier1Card({
   const [scanStats, setScanStats] = useState<{ total: number; matches: number } | null>(null)
   const [minScore, setMinScore] = useState(2) // Start lower for wider net
   const [showPolygonKeyModal, setShowPolygonKeyModal] = useState(false)
-  const [hasPolygonKey, setHasPolygonKey] = useState(() => !!polygonKey || !!getStoredPolygonKey())
+  // The server resolves keys from the user's profile, so only show the banner once it actually rejects a scan.
+  const [hasPolygonKey, setHasPolygonKey] = useState(true)
 
   // Restore last scan from localStorage on mount
   useEffect(() => {
@@ -317,7 +318,8 @@ function Tier1Card({
       setLastScan(new Date().toLocaleTimeString())
     } catch (err) {
       const message = (err as Error).message
-      if (message === "POLYGON_KEY_REQUIRED" || message.includes("POLYGON_KEY_REQUIRED")) {
+      if (message.includes("POLYGON_KEY_REQUIRED")) {
+        setHasPolygonKey(false)
         setShowPolygonKeyModal(true)
       } else {
         setError(message)
