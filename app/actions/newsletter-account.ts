@@ -9,6 +9,7 @@ import {
   getPaidNewsletterCheckout,
   getStripe,
   getSubscriberForUser,
+  isNewsletterSubscription,
   upsertSubscriberFromStripe,
 } from "@/lib/newsletter-subscribers"
 
@@ -99,7 +100,15 @@ async function setCancelAtPeriodEnd(cancel: boolean): Promise<MembershipState> {
     const updated = await getStripe().subscriptions.update(subscriber.stripe_subscription_id, {
       cancel_at_period_end: cancel,
     })
-    await upsertSubscriberFromStripe(updated, subscriber.email)
+    if (isNewsletterSubscription(updated)) {
+      await upsertSubscriberFromStripe(updated, subscriber.email)
+    } else {
+      // Pro membership: status lives on profiles; Stripe webhooks keep it current, mirror it here too.
+      await createAdminClient()
+        .from("profiles")
+        .update({ subscription_status: updated.status, updated_at: new Date().toISOString() })
+        .eq("subscription_id", updated.id)
+    }
   } catch (error) {
     console.error("Membership update failed:", error)
     return { status: "error", message: "Couldn't update your membership. Please try again." }
