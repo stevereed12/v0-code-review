@@ -648,6 +648,18 @@ export function White80Dashboard({
               {userEmail && (
                 <div className="mt-2 flex items-center gap-2 justify-end">
                   <span className="font-mono text-[9px] text-[#6e6a5e]">{userEmail}</span>
+                  <a
+                    href="/account"
+                    className="font-mono text-[9px] text-[#c8ff00] hover:text-[#c8ff00]/80 transition-colors"
+                  >
+                    MANAGE SUBSCRIPTION
+                  </a>
+                  <a
+                    href="/contact"
+                    className="font-mono text-[9px] text-[#6e6a5e] hover:text-[#f4f0e6] transition-colors"
+                  >
+                    CONTACT
+                  </a>
                 <button
                   onClick={async () => {
                     // Clear all user data before signing out

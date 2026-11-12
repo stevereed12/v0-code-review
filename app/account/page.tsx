@@ -75,7 +75,7 @@ export default async function AccountPage() {
               sign in with that one.
             </p>
             <Link
-              href="/#signup"
+              href="/pricing"
               className="self-start rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90"
             >
               Start 7-day free trial
@@ -125,7 +125,7 @@ function MembershipCard({ subscriber }: { subscriber: Subscriber }) {
 
       {ended ? (
         <Link
-          href="/#signup"
+          href="/pricing"
           className="self-start rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90"
         >
           Rejoin White 80

@@ -111,6 +111,57 @@ export async function getPaidNewsletterCheckout(sessionId: string | undefined | 
   }
 }
 
+// Pro members live in `profiles` (Stripe customer + subscription id), not `newsletter_subscribers`.
+// Build a Subscriber view from the live Stripe subscription so /account can show, cancel and manage it.
+async function getProMembershipForUser(user: { id: string; email?: string | null }): Promise<Subscriber | null> {
+  const { data: profile } = await createAdminClient()
+    .from("profiles")
+    .select("stripe_customer_id, subscription_id, subscription_status, created_at")
+    .eq("id", user.id)
+    .maybeSingle()
+  if (!profile?.stripe_customer_id) return null
+
+  let subscription: Stripe.Subscription | null = null
+  try {
+    const stripe = getStripe()
+    if (profile.subscription_id) {
+      subscription = await stripe.subscriptions.retrieve(profile.subscription_id)
+    } else {
+      const list = await stripe.subscriptions.list({ customer: profile.stripe_customer_id, status: "all", limit: 1 })
+      subscription = list.data[0] ?? null
+    }
+  } catch (error) {
+    console.error("Pro membership lookup failed:", error)
+  }
+  if (!subscription) return null
+
+  const item = subscription.items?.data?.[0]
+  const price = item?.price
+  const productName =
+    (typeof price?.product === "object" && price.product && !price.product.deleted && price.product.name) ||
+    "White 80 Pro"
+
+  return {
+    id: subscription.id,
+    email: (user.email ?? "").toLowerCase(),
+    user_id: user.id,
+    stripe_customer_id: customerIdOf(subscription),
+    stripe_subscription_id: subscription.id,
+    plan: productName,
+    tier: "Pro",
+    price_cents: price?.unit_amount ?? 4900,
+    billing_interval: price?.recurring?.interval ?? "month",
+    status: subscription.status,
+    trial_end: toIso(subscription.trial_end),
+    current_period_end: toIso(getPeriodEnd(subscription)),
+    cancel_at_period_end: subscription.cancel_at_period_end,
+    canceled_at: toIso(subscription.canceled_at),
+    enrolled_at: toIso(subscription.created) ?? profile.created_at ?? new Date().toISOString(),
+  }
+}
+
+const isLive = (s: Subscriber | null) => !!s && s.status !== "canceled"
+
 export async function getSubscriberForUser(user: { id: string; email?: string | null }): Promise<Subscriber | null> {
   const admin = createAdminClient()
 
@@ -119,7 +170,14 @@ export async function getSubscriberForUser(user: { id: string; email?: string | 
     .select(SUBSCRIBER_COLUMNS)
     .eq("user_id", user.id)
     .maybeSingle()
-  if (linked) return linked as Subscriber
+  const newsletter = (linked as Subscriber | null) ?? null
+  if (isLive(newsletter)) return newsletter
+
+  // Pro membership (profiles) takes precedence over an ended newsletter row.
+  const pro = await getProMembershipForUser(user)
+  if (isLive(pro)) return pro
+  if (newsletter) return newsletter
+  if (pro) return pro
 
   if (!user.email) return null
 
