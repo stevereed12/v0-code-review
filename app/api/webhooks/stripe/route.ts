@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
 import { createClient } from "@supabase/supabase-js"
+import { isNewsletterSubscription, syncNewsletterSubscription } from "@/lib/newsletter-subscribers"
+
+// Newer Stripe API versions put the billing period on the subscription item, not the subscription.
+function periodEndIso(subscription: Stripe.Subscription): string | null {
+  const item = subscription.items?.data?.[0] as { current_period_end?: number } | undefined
+  const legacy = (subscription as unknown as { current_period_end?: number }).current_period_end
+  const seconds = item?.current_period_end ?? legacy
+  return seconds ? new Date(seconds * 1000).toISOString() : null
+}
 
 export async function POST(req: NextRequest) {
   const stripeSecretKey = process.env.STRIPE_SECRET_KEY
@@ -53,7 +62,7 @@ export async function POST(req: NextRequest) {
           .update({
             subscription_status: "active",
             subscription_id: subscriptionId,
-            subscription_end_date: new Date(subscription.current_period_end * 1000).toISOString(),
+            subscription_end_date: periodEndIso(subscription),
             updated_at: new Date().toISOString(),
           })
           .eq("id", userId)
@@ -64,6 +73,12 @@ export async function POST(req: NextRequest) {
     case "customer.subscription.updated": {
       const subscription = event.data.object as Stripe.Subscription
       const customerId = subscription.customer as string
+
+      // Newsletter subscriptions live in newsletter_subscribers, not profiles.
+      if (isNewsletterSubscription(subscription)) {
+        await syncNewsletterSubscription(stripe, subscription)
+        break
+      }
 
       const { data: profile } = await supabaseAdmin
         .from("profiles")
@@ -76,7 +91,7 @@ export async function POST(req: NextRequest) {
           .from("profiles")
           .update({
             subscription_status: subscription.status === "active" ? "active" : subscription.status,
-            subscription_end_date: new Date(subscription.current_period_end * 1000).toISOString(),
+            subscription_end_date: periodEndIso(subscription),
             updated_at: new Date().toISOString(),
           })
           .eq("id", profile.id)
@@ -87,6 +102,11 @@ export async function POST(req: NextRequest) {
     case "customer.subscription.deleted": {
       const subscription = event.data.object as Stripe.Subscription
       const customerId = subscription.customer as string
+
+      if (isNewsletterSubscription(subscription)) {
+        await syncNewsletterSubscription(stripe, subscription)
+        break
+      }
 
       const { data: profile } = await supabaseAdmin
         .from("profiles")
