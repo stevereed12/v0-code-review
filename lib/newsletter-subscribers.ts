@@ -170,7 +170,16 @@ export async function getSubscriberForUser(user: { id: string; email?: string | 
     .select(SUBSCRIBER_COLUMNS)
     .eq("user_id", user.id)
     .maybeSingle()
-  const newsletter = (linked as Subscriber | null) ?? null
+  let newsletter = (linked as Subscriber | null) ?? null
+  // Rows can go stale (cancellations made in Stripe before the webhook synced them): confirm with Stripe.
+  if (isLive(newsletter) && newsletter?.stripe_subscription_id) {
+    try {
+      const live = await getStripe().subscriptions.retrieve(newsletter.stripe_subscription_id)
+      newsletter = await upsertSubscriberFromStripe(live, newsletter.email)
+    } catch (error) {
+      console.error("Newsletter subscription refresh failed:", error)
+    }
+  }
   if (isLive(newsletter)) return newsletter
 
   // Pro membership (profiles) takes precedence over an ended newsletter row.
