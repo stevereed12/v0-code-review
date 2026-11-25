@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
 import { createClient } from "@supabase/supabase-js"
 import { isNewsletterSubscription, syncNewsletterSubscription } from "@/lib/newsletter-subscribers"
+import { sendWelcomeEmail } from "@/lib/welcome-email"
 
 // Newer Stripe API versions put the billing period on the subscription item, not the subscription.
 function periodEndIso(subscription: Stripe.Subscription): string | null {
@@ -53,6 +54,25 @@ export async function POST(req: NextRequest) {
       const session = event.data.object as Stripe.Checkout.Session
       const userId = session.metadata?.supabase_user_id
       const subscriptionId = session.subscription as string
+
+      if (session.mode === "subscription" && subscriptionId) {
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+
+        // Landing-page signups: record them now, not only when /subscribed happens to load.
+        if (isNewsletterSubscription(subscription)) {
+          try {
+            await syncNewsletterSubscription(stripe, subscription)
+          } catch (e) {
+            console.error("Newsletter subscriber sync failed:", e)
+          }
+        }
+
+        const email = session.customer_details?.email || session.customer_email
+        if (email) {
+          const trialEnd = subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null
+          await sendWelcomeEmail(email, trialEnd, session.id)
+        }
+      }
 
       if (userId && subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId)
