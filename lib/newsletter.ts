@@ -1,6 +1,6 @@
 export const NEWSLETTER = {
   id: "white80-newsletter",
-  name: "White 80 Daily Brief",
+  name: "White 80 Pro",
   description: "Premarket brief and morning confirmation brief, every trading day.",
   priceInCents: 4900,
   interval: "month" as const,
@@ -8,6 +8,7 @@ export const NEWSLETTER = {
 }
 
 export const DELIVERY = {
-  premarket: "7:00 AM ET",
-  confirmation: "9:45 AM ET",
+  // Railway pipeline sends at 5:00 and 5:45 AM PT (8:00 / ~8:45 AM ET).
+  premarket: "8:00 AM ET",
+  confirmation: "9:00 AM ET",
 }
