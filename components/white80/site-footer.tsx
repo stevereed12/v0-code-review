@@ -1,7 +1,10 @@
 import Link from "next/link"
+import { PODCAST_PATH, RESEARCH_PATH } from "@/lib/growth"
 
 const PRODUCT_LINKS = [
   { href: "/#briefs", label: "The Briefs" },
+  { href: RESEARCH_PATH, label: "Public Research" },
+  { href: PODCAST_PATH, label: "The Tape & The Thesis" },
   { href: "/#pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
 ]

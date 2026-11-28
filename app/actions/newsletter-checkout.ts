@@ -3,11 +3,13 @@
 import Stripe from "stripe"
 import { headers } from "next/headers"
 import { NEWSLETTER } from "@/lib/newsletter"
+import { readCampaign, readPlacement } from "@/lib/growth"
+import { isStripeTestKey, newsletterCheckoutKey } from "@/lib/newsletter-checkout-config"
 
 export type CheckoutState =
   | { status: "idle" }
   | { status: "error"; message: string }
-  | { status: "ready"; url: string }
+  | { status: "ready"; url: string; channel: string; placement: string; sandbox: boolean }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
@@ -30,13 +32,16 @@ export async function startNewsletterCheckout(
     return { status: "error", message: "Enter a valid email address." }
   }
 
-  const secretKey = process.env.STRIPE_SECRET_KEY
+  const secretKey = newsletterCheckoutKey()
   if (!secretKey) {
     return { status: "error", message: "Checkout is temporarily unavailable. Please try again shortly." }
   }
 
   const origin = await resolveOrigin()
   const stripe = new Stripe(secretKey)
+  const campaign = readCampaign((key) => formData.get(key))
+  const placement = readPlacement(formData.get("placement"))
+  const attribution = { placement, ...(campaign ?? {}) }
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -58,9 +63,9 @@ export async function startNewsletterCheckout(
       ],
       subscription_data: {
         trial_period_days: NEWSLETTER.trialDays,
-        metadata: { product_id: NEWSLETTER.id },
+        metadata: { product_id: NEWSLETTER.id, ...attribution },
       },
-      metadata: { product_id: NEWSLETTER.id, source: "landing" },
+      metadata: { product_id: NEWSLETTER.id, source: "landing", ...attribution },
       success_url: `${origin}/subscribed?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/#signup`,
     })
@@ -68,7 +73,13 @@ export async function startNewsletterCheckout(
     if (!session.url) {
       return { status: "error", message: "Could not start checkout. Please try again." }
     }
-    return { status: "ready", url: session.url }
+    return {
+      status: "ready",
+      url: session.url,
+      channel: campaign?.utm_source ?? "untagged",
+      placement,
+      sandbox: isStripeTestKey(secretKey),
+    }
   } catch (error) {
     console.error("Newsletter checkout error:", error)
     return { status: "error", message: "Could not start checkout. Please try again." }

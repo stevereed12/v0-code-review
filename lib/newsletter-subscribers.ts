@@ -1,6 +1,7 @@
 import Stripe from "stripe"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { NEWSLETTER } from "@/lib/newsletter"
+import { newsletterCheckoutKey } from "@/lib/newsletter-checkout-config"
 
 export type Subscriber = {
   id: string
@@ -93,18 +94,20 @@ export async function syncNewsletterSubscription(stripe: Stripe, subscription: S
   return upsertSubscriberFromStripe(subscription, email)
 }
 
-export type PaidCheckout = { email: string; subscription: Stripe.Subscription }
+export type PaidCheckout = { email: string; subscription: Stripe.Subscription; live: boolean }
 
 // A completed Checkout Session is proof of payment; its id is only handed to the payer via the success URL.
 export async function getPaidNewsletterCheckout(sessionId: string | undefined | null): Promise<PaidCheckout | null> {
   if (!sessionId || !/^cs_[A-Za-z0-9_]+$/.test(sessionId)) return null
+  const secretKey = newsletterCheckoutKey()
+  if (!secretKey) return null
   try {
-    const session = await getStripe().checkout.sessions.retrieve(sessionId, { expand: ["subscription"] })
+    const session = await new Stripe(secretKey).checkout.sessions.retrieve(sessionId, { expand: ["subscription"] })
     if (session.status !== "complete" || session.metadata?.product_id !== NEWSLETTER.id) return null
     const email = session.customer_details?.email ?? session.customer_email
     const subscription = session.subscription
     if (!email || !subscription || typeof subscription === "string") return null
-    return { email: email.toLowerCase(), subscription }
+    return { email: email.toLowerCase(), subscription, live: session.livemode }
   } catch (error) {
     console.error("Checkout verification failed:", error)
     return null

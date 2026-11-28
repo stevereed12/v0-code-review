@@ -1,4 +1,5 @@
 import { NEWSLETTER } from "@/lib/newsletter"
+import { TrialLink } from "@/components/newsletter/growth-analytics"
 
 const INCLUDED = [
   "Premarket brief, every trading day",
@@ -41,12 +42,12 @@ export function PricingSection() {
               </li>
             ))}
           </ul>
-          <a
-            href="#signup"
+          <TrialLink
+            placement="pricing"
             className="rounded-full bg-primary px-6 py-3.5 text-center text-sm font-medium text-primary-foreground transition-opacity hover:opacity-85"
           >
             Start 7-day free trial
-          </a>
+          </TrialLink>
         </div>
       </div>
     </section>

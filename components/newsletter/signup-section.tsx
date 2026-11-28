@@ -1,14 +1,20 @@
 "use client"
 
-import { useActionState, useEffect } from "react"
+import { useActionState, useEffect, useRef } from "react"
 import { startNewsletterCheckout, type CheckoutState } from "@/app/actions/newsletter-checkout"
+import { addCheckoutAttribution, trackGrowth } from "@/components/newsletter/growth-analytics"
 
 const INITIAL_STATE: CheckoutState = { status: "idle" }
 
 export function SignupSection() {
   const [state, formAction, pending] = useActionState(startNewsletterCheckout, INITIAL_STATE)
+  const trackedUrl = useRef<string | null>(null)
 
   useEffect(() => {
+    if (state.status === "ready" && !state.sandbox && trackedUrl.current !== state.url) {
+      trackedUrl.current = state.url
+      trackGrowth("Trial Checkout Created", state.channel, state.placement)
+    }
     // Stripe Checkout refuses to render inside an iframe (e.g. an embedded preview),
     // so only auto-redirect at the top level; otherwise the link below opens a new tab.
     if (state.status === "ready" && window.self === window.top) {
@@ -29,7 +35,10 @@ export function SignupSection() {
           </p>
         </div>
 
-        <form action={formAction} className="flex w-full max-w-lg flex-col gap-3 sm:flex-row">
+        <form action={formAction} onSubmit={(event) => addCheckoutAttribution(event.currentTarget)} className="flex w-full max-w-lg flex-col gap-3 sm:flex-row">
+          {["placement", "utm_source", "utm_medium", "utm_campaign"].map((key) => (
+            <input key={key} type="hidden" name={key} />
+          ))}
           <label htmlFor="signup-email" className="sr-only">
             Email address
           </label>

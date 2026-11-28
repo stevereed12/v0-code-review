@@ -42,6 +42,9 @@ export async function createNewsletterAccount(
   if (!checkout) {
     return { status: "error", message: "We couldn't verify your payment. Refresh the page or contact support." }
   }
+  if (!checkout.live) {
+    return { status: "error", message: "A sandbox checkout cannot create a White 80 account." }
+  }
 
   const admin = createAdminClient()
   const subscriber = await upsertSubscriberFromStripe(checkout.subscription, checkout.email)
