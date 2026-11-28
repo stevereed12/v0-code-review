@@ -4,11 +4,12 @@ import Stripe from "stripe"
 import { headers } from "next/headers"
 import { NEWSLETTER } from "@/lib/newsletter"
 import { readCampaign, readPlacement } from "@/lib/growth"
+import { isStripeTestKey, newsletterCheckoutKey } from "@/lib/newsletter-checkout-config"
 
 export type CheckoutState =
   | { status: "idle" }
   | { status: "error"; message: string }
-  | { status: "ready"; url: string; channel: string; placement: string }
+  | { status: "ready"; url: string; channel: string; placement: string; sandbox: boolean }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
@@ -31,7 +32,7 @@ export async function startNewsletterCheckout(
     return { status: "error", message: "Enter a valid email address." }
   }
 
-  const secretKey = process.env.STRIPE_SECRET_KEY
+  const secretKey = newsletterCheckoutKey()
   if (!secretKey) {
     return { status: "error", message: "Checkout is temporarily unavailable. Please try again shortly." }
   }
@@ -72,7 +73,13 @@ export async function startNewsletterCheckout(
     if (!session.url) {
       return { status: "error", message: "Could not start checkout. Please try again." }
     }
-    return { status: "ready", url: session.url, channel: campaign?.utm_source ?? "untagged", placement }
+    return {
+      status: "ready",
+      url: session.url,
+      channel: campaign?.utm_source ?? "untagged",
+      placement,
+      sandbox: isStripeTestKey(secretKey),
+    }
   } catch (error) {
     console.error("Newsletter checkout error:", error)
     return { status: "error", message: "Could not start checkout. Please try again." }

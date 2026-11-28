@@ -11,7 +11,7 @@ export function SignupSection() {
   const trackedUrl = useRef<string | null>(null)
 
   useEffect(() => {
-    if (state.status === "ready" && trackedUrl.current !== state.url) {
+    if (state.status === "ready" && !state.sandbox && trackedUrl.current !== state.url) {
       trackedUrl.current = state.url
       trackGrowth("Trial Checkout Created", state.channel, state.placement)
     }

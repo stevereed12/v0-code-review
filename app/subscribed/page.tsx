@@ -58,6 +58,16 @@ export default async function SubscribedPage({
     )
   }
 
+  if (!checkout.live) {
+    return (
+      <Shell>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Sandbox checkout confirmed</h1>
+        <p className="text-muted-foreground">No real payment was made and no White 80 account was created.</p>
+        <Link href="/" className="text-sm font-semibold text-primary underline">Back home</Link>
+      </Shell>
+    )
+  }
+
   // Record the subscriber immediately so the flow doesn't depend on webhook timing.
   let subscriber: Subscriber | null = null
   try {

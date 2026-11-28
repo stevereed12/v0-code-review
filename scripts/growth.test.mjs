@@ -2,6 +2,15 @@ import assert from "node:assert/strict"
 import { test } from "node:test"
 import { buildDistributionLinks, readCampaign, readPlacement, SAMPLE_PATH, SITE_ORIGIN } from "../lib/growth.ts"
 import { joinResearchList } from "../app/actions/research-signup.ts"
+import { newsletterCheckoutKey } from "../lib/newsletter-checkout-config.ts"
+
+test("preview checkout cannot use a shared or live Stripe key", () => {
+  const shared = { VERCEL_ENV: "preview", STRIPE_SECRET_KEY: "sk_live_fixture" }
+  assert.equal(newsletterCheckoutKey(shared), undefined)
+  assert.equal(newsletterCheckoutKey({ ...shared, STRIPE_PREVIEW_SECRET_KEY: "sk_live_fixture" }), undefined)
+  assert.equal(newsletterCheckoutKey({ ...shared, STRIPE_PREVIEW_SECRET_KEY: "rk_test_fixture" }), "rk_test_fixture")
+  assert.equal(newsletterCheckoutKey({ ...shared, VERCEL_ENV: "production" }), "sk_live_fixture")
+})
 
 test("distribution URLs round-trip into supported attribution", () => {
   for (const { source, url } of buildDistributionLinks(SAMPLE_PATH)) {
