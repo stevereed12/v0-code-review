@@ -1,4 +1,7 @@
 import { DELIVERY } from "@/lib/newsletter"
+import Link from "next/link"
+import { TrialLink } from "@/components/newsletter/growth-analytics"
+import { SAMPLE_PATH } from "@/lib/growth"
 
 export function Hero() {
   return (
@@ -16,14 +19,17 @@ export function Hero() {
             once the open settles.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
-            <a
-              href="#signup"
+            <TrialLink
+              placement="hero"
               className="rounded-full bg-primary px-7 py-3.5 text-center text-sm font-medium text-primary-foreground transition-opacity hover:opacity-85"
             >
               Start 7-day free trial
-            </a>
-            <p className="text-sm text-muted-foreground">$49/month after the trial. Cancel anytime.</p>
+            </TrialLink>
+            <Link href={SAMPLE_PATH} className="text-center text-sm font-medium text-foreground underline underline-offset-4">
+              Read a free sample
+            </Link>
           </div>
+          <p className="text-sm text-muted-foreground">$49/month after the trial. Cancel anytime.</p>
         </div>
 
         <aside className="flex max-w-sm flex-col gap-4 rounded-2xl border border-border bg-card p-6 shadow-sm">

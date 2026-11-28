@@ -1,8 +1,11 @@
 import type { Metadata } from "next"
+import { createHash } from "node:crypto"
 import Link from "next/link"
 import { DELIVERY } from "@/lib/newsletter"
 import { getPaidNewsletterCheckout, upsertSubscriberFromStripe, type Subscriber } from "@/lib/newsletter-subscribers"
 import { CreateAccountForm } from "@/components/account/create-account-form"
+import { TrialCompleted } from "@/components/newsletter/growth-analytics"
+import { readCampaign, readPlacement } from "@/lib/growth"
 
 export const metadata: Metadata = {
   title: "You're in — White 80",
@@ -63,9 +66,19 @@ export default async function SubscribedPage({
     console.error("Failed to record subscriber:", error)
   }
 
+  const campaign = readCampaign((key) => checkout.subscription.metadata[key])
+  const conversion = (
+    <TrialCompleted
+      eventKey={createHash("sha256").update(session_id).digest("hex")}
+      channel={campaign?.utm_source ?? "untagged"}
+      placement={readPlacement(checkout.subscription.metadata.placement)}
+    />
+  )
+
   if (subscriber?.user_id) {
     return (
       <Shell>
+        {conversion}
         <h1 className="text-3xl font-semibold tracking-tight text-foreground text-balance">
           You&apos;re in. Your account is ready.
         </h1>
@@ -85,8 +98,9 @@ export default async function SubscribedPage({
 
   return (
     <Shell>
+      {conversion}
       <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium text-primary">Payment confirmed</p>
+        <p className="text-sm font-medium text-primary">Checkout confirmed</p>
         <h1 className="text-3xl font-semibold tracking-tight text-foreground text-balance">
           One last step: set your password.
         </h1>

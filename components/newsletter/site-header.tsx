@@ -1,10 +1,12 @@
 import Link from "next/link"
+import { RESEARCH_PATH } from "@/lib/growth"
+import { TrialLink } from "@/components/newsletter/growth-analytics"
 
 const NAV = [
-  { href: "#briefs", label: "The briefs" },
-  { href: "#sample", label: "Sample" },
-  { href: "#pricing", label: "Pricing" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/#briefs", label: "The briefs" },
+  { href: RESEARCH_PATH, label: "Research" },
+  { href: "/#pricing", label: "Pricing" },
+  { href: "/#faq", label: "FAQ" },
 ]
 
 export function SiteHeader() {
@@ -38,12 +40,12 @@ export function SiteHeader() {
           >
             Sign in
           </Link>
-          <a
-            href="#signup"
+          <TrialLink
+            placement="header"
             className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-85"
           >
             Free trial
-          </a>
+          </TrialLink>
         </div>
       </div>
     </header>

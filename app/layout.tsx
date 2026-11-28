@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Bebas_Neue, DM_Mono, DM_Sans } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
+import { GrowthAnalytics } from '@/components/newsletter/growth-analytics'
+import { SITE_ORIGIN } from '@/lib/growth'
 import './globals.css'
 
 const bebasNeue = Bebas_Neue({
@@ -25,6 +26,7 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_ORIGIN),
   title: 'White 80 — The Daily Premarket Brief',
   description: 'A premarket brief before the open — futures, overnight catalysts, top gappers with catalysts, and risk flags — plus a morning confirmation brief. 7-day free trial.',
   generator: 'v0.app',
@@ -63,7 +65,7 @@ export default function RootLayout({
     <html lang="en" className={`${bebasNeue.variable} ${dmMono.variable} ${dmSans.variable} bg-background`}>
       <body className="font-sans antialiased bg-background text-foreground">
         {children}
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+        <GrowthAnalytics />
       </body>
     </html>
   )
