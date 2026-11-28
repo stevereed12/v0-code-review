@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "rootDir": ".."
+  },
+  "include": ["./morning-ingest.test.ts", "../lib/morning-edition.ts", "../lib/morning-ingest.ts"]
+}
