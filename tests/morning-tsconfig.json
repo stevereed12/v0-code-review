@@ -8,5 +8,5 @@
     "skipLibCheck": true,
     "rootDir": ".."
   },
-  "include": ["./morning-ingest.test.ts", "../lib/morning-edition.ts", "../lib/morning-ingest.ts"]
+  "include": ["./morning-ingest.test.ts", "./rocket-board.test.ts", "../lib/morning-edition.ts", "../lib/morning-ingest.ts"]
 }

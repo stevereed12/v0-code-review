@@ -9,7 +9,7 @@ const tsc = join(root, "node_modules", "typescript", "bin", "tsc")
 try {
   for (const args of [
     [tsc, "--project", "tests/morning-tsconfig.json", "--outDir", dir],
-    ["--test", join(dir, "tests", "morning-ingest.test.js")],
+    ["--test", join(dir, "tests", "morning-ingest.test.js"), join(dir, "tests", "rocket-board.test.js")],
   ]) {
     const r = spawnSync(process.execPath, args, { cwd: root, stdio: "inherit" })
     if (r.status !== 0) { process.exitCode = r.status ?? 1; break }

@@ -1,9 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
-import { createAdminClient } from "@/lib/supabase/admin"
-import { morningEditionSchema } from "@/lib/morning-edition"
+import { getRocketEdition, requireMorningMembership } from "@/lib/morning-edition-data"
+import { parseSession } from "@/lib/rocket-board"
 
 export const metadata: Metadata = {
   title: "Morning Edition | White80",
@@ -11,7 +9,6 @@ export const metadata: Metadata = {
 }
 export const dynamic = "force-dynamic"
 
-const active = (status: string | null | undefined) => status === "active" || status === "trialing"
 const dateFormat = new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", dateStyle: "medium", timeStyle: "short" })
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" })
 const pct = (value: number) => `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`
@@ -19,31 +16,14 @@ const pct = (value: number) => `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`
 export default async function MorningEditionPage({
   searchParams,
 }: { searchParams: Promise<{ date?: string | string[] }> }) {
-  const auth = await createClient()
-  const { data: { user }, error: authError } = await auth.auth.getUser()
-  if (authError || !user) redirect("/auth/login?next=/dashboard/morning-edition")
-  const admin = createAdminClient()
-  const profile = await admin.from("profiles").select("subscription_status").eq("id", user.id).maybeSingle()
-
-  if (!active(profile.data?.subscription_status)) {
-    // A site-connected subscription or the same confirmed checkout email.
-    // Never use a browser-supplied email or mutate a subscription during a read.
-    const linked = await admin.from("newsletter_subscribers").select("status")
-      .eq("user_id", user.id).in("status", ["active", "trialing"]).limit(1).maybeSingle()
-    const unlinked = !linked.data && user.email_confirmed_at && user.email
-      ? await admin.from("newsletter_subscribers").select("status").eq("email", user.email.trim().toLowerCase())
-        .is("user_id", null).in("status", ["active", "trialing"]).limit(1).maybeSingle()
-      : null
-    if (!active(linked.data?.status) && !active(unlinked?.data?.status)) redirect("/account")
-  }
-
+  const admin = await requireMorningMembership("/dashboard/morning-edition")
   const requested = (await searchParams).date
-  const date = typeof requested === "string" && /^\d{4}-\d{2}-\d{2}$/.test(requested) ? requested : null
-  const query = admin.from("white80_morning_editions").select("content")
-  const latest = requested === undefined ? await query.order("session_date", { ascending: false }).limit(1).maybeSingle() :
-    date ? await query.eq("session_date", date).maybeSingle() : { data: null, error: null }
-  const parsed = morningEditionSchema.safeParse(latest.data?.content)
-  const edition = parsed.success ? parsed.data : null
+  const date = parseSession(requested)
+  const result = requested === undefined || date
+    ? await getRocketEdition(admin, date ?? undefined).then((edition) => ({ edition, unavailable: false }))
+      .catch(() => ({ edition: null, unavailable: true }))
+    : { edition: null, unavailable: false }
+  const { edition } = result
   return (
     <main className="mx-auto max-w-5xl space-y-8 px-5 py-10 md:py-16">
       <header className="border-b border-border pb-6">
@@ -56,7 +36,7 @@ export default async function MorningEditionPage({
 
       {!edition ? (
         <p className="rounded-xl border border-border p-5 text-muted-foreground">
-          {latest.error ? "The edition is temporarily unavailable." : (requested ? "No morning edition is available for that session." : "No morning edition has been published yet.")}
+          {result.unavailable ? "The edition is temporarily unavailable." : (requested ? "No morning edition is available for that session." : "No morning edition has been published yet.")}
         </p>
       ) : (
         <>
@@ -79,35 +59,12 @@ export default async function MorningEditionPage({
             </ul>}
           </section>
 
-          <section className="space-y-4">
+          <section className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-5">
             <div>
-              <h2 className="text-xl font-semibold">Rocket Board Preview</h2>
-              <p className="text-sm text-muted-foreground">{edition.rocketPreview.methodology}</p>
+              <h2 className="text-xl font-semibold">Rocket Board</h2>
+              <p className="mt-1 text-sm text-foreground/70">Read both sides of each setup, see what drove the rank and compare prior editions.</p>
             </div>
-            {edition.rocketPreview.candidates.length === 0 && <p className="text-sm text-muted-foreground">No candidates met the data thresholds.</p>}
-            <div className="grid gap-4 md:grid-cols-2">
-              {edition.rocketPreview.candidates.map((r) => (
-                <article key={r.ticker} className="space-y-3 rounded-xl border border-border bg-card p-5">
-                  <div className="flex items-baseline justify-between gap-4">
-                    <h3 className="font-mono text-xl font-semibold">{r.ticker}</h3>
-                    <p className="font-mono text-sm text-primary">{r.score}/100</p>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{money.format(r.quote.price)} · {pct(r.quote.changePct)} · {r.direction === "up" ? "Outperforming" : "Underperforming"} SPY</p>
-                  {r.commentary ? (
-                    <dl className="space-y-2 text-sm">
-                      <div><dt className="font-semibold">Why it ranked</dt><dd>{r.commentary.why}</dd></div>
-                      <div><dt className="font-semibold">Bull case</dt><dd>{r.commentary.bullCase}</dd></div>
-                      <div><dt className="font-semibold">Bear case</dt><dd>{r.commentary.bearCase}</dd></div>
-                    </dl>
-                  ) : <p className="text-sm text-muted-foreground">No verified commentary for this ticker.</p>}
-                  <dl className="space-y-2 border-t border-border pt-3 text-sm">
-                    {r.factors.map((f) => <div className="flex justify-between gap-4" key={f.name}>
-                      <dt>{f.name}</dt><dd className="font-mono">{f.points}/{f.max}</dd>
-                    </div>)}
-                  </dl>
-                </article>
-              ))}
-            </div>
+            <Link href={`/dashboard/rocket-board?date=${edition.sessionDate}`} className="rounded-md border border-primary/40 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10">Open this edition’s board →</Link>
           </section>
 
           {edition.signals.length > 0 && <section className="space-y-3">
