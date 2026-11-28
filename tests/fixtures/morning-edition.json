@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "editionId": "white80-2026-11-27",
+  "sessionDate": "2026-11-27",
+  "capturedAt": "2026-11-27T13:20:00.000Z",
+  "brief": {
+    "session_date": "2026-11-27",
+    "session_label": "Premarket",
+    "macro_pulse": {
+      "spy": {
+        "price": 101,
+        "change_pct": 1,
+        "context": "Premarket observation as of 13:19 UTC"
+      },
+      "qqq": {
+        "price": 99,
+        "change_pct": -1,
+        "context": "Premarket observation as of 13:19 UTC"
+      }
+    },
+    "catalysts": [],
+    "sector_rotation": {
+      "leading": [],
+      "lagging": []
+    },
+    "verdict": {
+      "tone": "MIXED",
+      "summary": "Benchmark moves were mixed."
+    },
+    "top_plays": [
+      {
+        "ticker": "TEST",
+        "action": "WATCH",
+        "thesis": "Share volume supported the early move."
+      }
+    ]
+  },
+  "signals": [
+    {
+      "ticker": "TEST",
+      "price": 108,
+      "change_pct": 8.000000000000007,
+      "signal": "WATCH",
+      "thesis": "Share volume supported the early move."
+    }
+  ],
+  "rocketPreview": {
+    "methodology": "Tape activity v0 (not the calibrated Rocket Score)",
+    "candidates": [
+      {
+        "ticker": "TEST",
+        "quote": {
+          "ticker": "TEST",
+          "price": 108,
+          "changePct": 8.000000000000007,
+          "asOf": "2026-11-27T13:19:00.000Z",
+          "source": "Massive",
+          "volume": 500000
+        },
+        "direction": "up",
+        "score": 69,
+        "factors": [
+          {
+            "name": "Move relative to SPY",
+            "points": 44,
+            "max": 50
+          },
+          {
+            "name": "Premarket shares traded",
+            "points": 25,
+            "max": 50
+          }
+        ],
+        "commentary": {
+          "ticker": "TEST",
+          "bullCase": "The move could hold.",
+          "bearCase": "The move could fade.",
+          "why": "Share volume supported the early move.",
+          "evidenceIds": [
+            "quote:TEST"
+          ]
+        }
+      }
+    ]
+  },
+  "asymmetry": {
+    "status": "not_scored",
+    "reason": "No validated scenario inputs"
+  },
+  "tickerIntelligence": [
+    {
+      "ticker": "SPY",
+      "quote": {
+        "ticker": "SPY",
+        "price": 101,
+        "changePct": 1.0000000000000009,
+        "asOf": "2026-11-27T13:19:00.000Z",
+        "source": "Massive",
+        "volume": 500000
+      },
+      "evidenceIds": [
+        "quote:SPY"
+      ],
+      "commentary": null
+    },
+    {
+      "ticker": "QQQ",
+      "quote": {
+        "ticker": "QQQ",
+        "price": 99,
+        "changePct": -1.0000000000000009,
+        "asOf": "2026-11-27T13:19:00.000Z",
+        "source": "Massive",
+        "volume": 500000
+      },
+      "evidenceIds": [
+        "quote:QQQ"
+      ],
+      "commentary": null
+    },
+    {
+      "ticker": "TEST",
+      "quote": {
+        "ticker": "TEST",
+        "price": 108,
+        "changePct": 8.000000000000007,
+        "asOf": "2026-11-27T13:19:00.000Z",
+        "source": "Massive",
+        "volume": 500000
+      },
+      "evidenceIds": [
+        "quote:TEST"
+      ],
+      "commentary": {
+        "ticker": "TEST",
+        "bullCase": "The move could hold.",
+        "bearCase": "The move could fade.",
+        "why": "Share volume supported the early move.",
+        "evidenceIds": [
+          "quote:TEST"
+        ]
+      }
+    }
+  ],
+  "analysis": {
+    "status": "narrated",
+    "evidenceIds": [
+      "quote:SPY",
+      "quote:QQQ"
+    ]
+  },
+  "evidence": [
+    {
+      "id": "quote:SPY",
+      "kind": "quote",
+      "tickers": [
+        "SPY"
+      ],
+      "title": "Synthetic test quote",
+      "source": "Massive",
+      "url": "https://example.com/quote",
+      "time": "2026-11-27T13:19:00.000Z"
+    },
+    {
+      "id": "quote:QQQ",
+      "kind": "quote",
+      "tickers": [
+        "QQQ"
+      ],
+      "title": "Synthetic test quote",
+      "source": "Massive",
+      "url": "https://example.com/quote",
+      "time": "2026-11-27T13:19:00.000Z"
+    },
+    {
+      "id": "quote:TEST",
+      "kind": "quote",
+      "tickers": [
+        "TEST"
+      ],
+      "title": "Synthetic test quote",
+      "source": "Massive",
+      "url": "https://example.com/quote",
+      "time": "2026-11-27T13:19:00.000Z"
+    }
+  ],
+  "unavailable": []
+}
